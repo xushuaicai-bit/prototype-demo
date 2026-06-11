@@ -93,7 +93,7 @@
 
       <div class="overflow-x-auto">
         <el-table
-          :data="filteredData"
+          :data="monthlyPaginatedData"
           border
           :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
           :row-class-name="getRowClassName"
@@ -300,20 +300,7 @@
             width="180"
           >
             <template #default="scope">
-              <span
-                class="cursor-pointer hover:bg-blue-100 px-1 rounded block truncate"
-                @dblclick="startEdit(scope.row, 'deviationReason')"
-              >
-                <el-textarea
-                  v-if="editingCell === `${scope.row.id}-deviationReason`"
-                  v-model="editValue"
-                  @blur="finishEdit(scope.row, 'deviationReason')"
-                  @keyup.enter="finishEdit(scope.row, 'deviationReason')"
-                  class="w-full"
-                  :rows="2"
-                />
-                <span v-else>{{ scope.row.deviationReason || '点击编辑' }}</span>
-              </span>
+              <span>{{ scope.row.deviationReason || '' }}</span>
             </template>
           </el-table-column>
 
@@ -347,16 +334,12 @@
             align="center"
           >
             <template #default="scope">
-              <el-select
-                v-model="scope.row.correctiveStatus"
-                placeholder="请选择"
+              <el-tag
+                :type="scope.row.correctiveStatus === '已完成' ? 'success' : scope.row.correctiveStatus === '纠偏中' ? 'warning' : 'info'"
                 size="small"
-                class="w-full"
               >
-                <el-option label="未开始" value="未开始" />
-                <el-option label="纠偏中" value="纠偏中" />
-                <el-option label="已完成" value="已完成" />
-              </el-select>
+                {{ scope.row.correctiveStatus }}
+              </el-tag>
             </template>
           </el-table-column>
 
@@ -406,6 +389,17 @@
             </template>
           </el-table-column>
         </el-table>
+        <div class="flex justify-end mt-3">
+          <el-pagination
+            v-model:current-page="monthlyPage"
+            v-model:page-size="monthlyPageSize"
+            :page-sizes="[10, 20, 50]"
+            :total="filteredData.length"
+            layout="total, sizes, prev, pager, next"
+            background
+            small
+          />
+        </div>
       </div>
     </template>
 
@@ -450,7 +444,7 @@
 
       <div class="overflow-x-auto">
         <el-table
-          :data="quarterlyFilteredData"
+          :data="quarterlyPaginatedData"
           border
           :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
           style="width: 100%; min-width: 2200px;"
@@ -645,20 +639,7 @@
             width="180"
           >
             <template #default="scope">
-              <span
-                class="cursor-pointer hover:bg-blue-100 px-1 rounded block truncate"
-                @dblclick="startEdit(scope.row, 'deviationReason')"
-              >
-                <el-textarea
-                  v-if="editingCell === `${scope.row.id}-deviationReason`"
-                  v-model="editValue"
-                  @blur="finishEdit(scope.row, 'deviationReason')"
-                  @keyup.enter="finishEdit(scope.row, 'deviationReason')"
-                  class="w-full"
-                  :rows="2"
-                />
-                <span v-else>{{ scope.row.deviationReason || '点击编辑' }}</span>
-              </span>
+              <span>{{ scope.row.deviationReason || '' }}</span>
             </template>
           </el-table-column>
 
@@ -692,16 +673,12 @@
             align="center"
           >
             <template #default="scope">
-              <el-select
-                v-model="scope.row.correctiveStatus"
-                placeholder="请选择"
+              <el-tag
+                :type="scope.row.correctiveStatus === '已完成' ? 'success' : scope.row.correctiveStatus === '纠偏中' ? 'warning' : 'info'"
                 size="small"
-                class="w-full"
               >
-                <el-option label="未开始" value="未开始" />
-                <el-option label="纠偏中" value="纠偏中" />
-                <el-option label="已完成" value="已完成" />
-              </el-select>
+                {{ scope.row.correctiveStatus }}
+              </el-tag>
             </template>
           </el-table-column>
 
@@ -727,14 +704,31 @@
             </template>
           </el-table-column>
         </el-table>
+        <div class="flex justify-end mt-3">
+          <el-pagination
+            v-model:current-page="quarterlyPage"
+            v-model:page-size="quarterlyPageSize"
+            :page-sizes="[10, 20, 50]"
+            :total="quarterlyFilteredData.length"
+            layout="total, sizes, prev, pager, next"
+            background
+            small
+          />
+        </div>
       </div>
     </template>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { utils, writeFile } from 'xlsx'
+
+// 分页状态
+const monthlyPage = ref(1)
+const monthlyPageSize = ref(10)
+const quarterlyPage = ref(1)
+const quarterlyPageSize = ref(10)
 
 const monthOptions = [
   { value: '1月', label: '1月' },
@@ -1402,6 +1396,13 @@ const filteredData = computed(() => {
   return data
 })
 
+// 当月偏差表分页数据
+const monthlyPaginatedData = computed(() => {
+  const start = (monthlyPage.value - 1) * monthlyPageSize.value
+  const end = start + monthlyPageSize.value
+  return calculateDerivedFields(rawData).slice(start, end)
+})
+
 const quarterlyFilteredData = computed(() => {
   let data = calculateQuarterlyDerivedFields(quarterlyRawData)
 
@@ -1419,6 +1420,13 @@ const quarterlyFilteredData = computed(() => {
   }
 
   return data
+})
+
+// 季度偏差表分页数据
+const quarterlyPaginatedData = computed(() => {
+  const start = (quarterlyPage.value - 1) * quarterlyPageSize.value
+  const end = start + quarterlyPageSize.value
+  return calculateQuarterlyDerivedFields(quarterlyRawData).slice(start, end)
 })
 
 const formatNumber = (num) => {
@@ -1472,6 +1480,21 @@ const finishEdit = (row, field) => {
 
 const getSummaries = (param) => {
   const { columns, data } = param
+  if (!columns || !data || data.length === 0) {
+    return columns ? columns.map(() => '') : []
+  }
+
+  // 需要求和的数值字段（其余文本字段显示 '-'）
+  const numericProps = [
+    'contractAmount', 'carryForwardRevenue', 'annualPlanRevenue',
+    'annualAccumulatedRevenue', 'totalAccumulatedRevenue',
+    'monthPlanRevenue', 'monthActualRevenue',
+    'deviation', 'negativeDeviation'
+  ]
+
+  // 需要求平均值的百分比字段
+  const avgProps = ['completionRate']
+
   const sums = []
   columns.forEach((column, index) => {
     if (index === 0) {
@@ -1479,22 +1502,41 @@ const getSummaries = (param) => {
       return
     }
 
-    const prop = column.prop
+    const prop = column.prop || column.property
     if (!prop) {
-      sums[index] = ''
+      sums[index] = '-'
+      return
+    }
+
+    // 百分比字段求平均值
+    if (avgProps.includes(prop)) {
+      const values = data.map(item => {
+        const val = item[prop]
+        if (val === undefined || val === null || val === '') return 0
+        const num = parseFloat(val)
+        return isNaN(num) ? 0 : num
+      })
+      const total = values.reduce((prev, curr) => prev + curr, 0)
+      const avg = data.length > 0 ? total / data.length : 0
+      sums[index] = avg.toFixed(2) + '%'
+      return
+    }
+
+    // 数值字段求和
+    if (!numericProps.includes(prop)) {
+      sums[index] = '-'
       return
     }
 
     const values = data.map(item => {
-      const value = parseFloat(item[prop])
-      return isNaN(value) ? 0 : value
+      const val = item[prop]
+      if (val === undefined || val === null || val === '') return 0
+      const num = parseFloat(val)
+      return isNaN(num) ? 0 : num
     })
 
-    if (values.length > 0) {
-      sums[index] = values.reduce((prev, curr) => prev + curr, 0).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    } else {
-      sums[index] = '0.00'
-    }
+    const total = values.reduce((prev, curr) => prev + curr, 0)
+    sums[index] = total.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   })
   return sums
 }
@@ -1579,5 +1621,23 @@ const exportExcel = () => {
 <style scoped>
 .deviation-row {
   background-color: #FFF2F0;
+}
+
+/* 合计行样式 */
+:deep(.el-table__footer-wrapper) {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+:deep(.el-table__footer) {
+  background-color: #f9fafb !important;
+}
+:deep(.el-table__footer-wrapper td) {
+  background-color: #f9fafb !important;
+  font-weight: bold !important;
+  color: #374151 !important;
+}
+:deep(.el-table__footer-wrapper th) {
+  background-color: #f9fafb !important;
 }
 </style>

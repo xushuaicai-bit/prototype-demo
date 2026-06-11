@@ -92,10 +92,10 @@
       </div>
 
       <div class="flex items-center">
-        <label class="text-sm text-gray-600 mr-2">签订状态：</label>
+        <label class="text-sm text-gray-600 mr-2">预警等级：</label>
         <el-select 
           v-model="selectedSignStatus" 
-          placeholder="请选择签订状态" 
+          placeholder="请选择预警等级"  
           class="w-64"
           clearable
         >
@@ -149,11 +149,10 @@
 
     <div class="overflow-x-auto" style="max-width: 100%;">
       <el-table
-        :data="tableData"
+        :data="paginatedTableData"
         border
         :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
         :span-method="objectSpanMethod"
-        :max-height="600"
       >
         <el-table-column
           label="序号"
@@ -282,6 +281,17 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="flex justify-end mt-3">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="tableData.length"
+          layout="total, sizes, prev, pager, next"
+          background
+          small
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -296,14 +306,16 @@ const props = defineProps({
   }
 })
 
+// 分页
+const currentPage = ref(1)
+const pageSize = ref(10)
+
 const selectedProject = ref('')
 const selectedUnit = ref('')
 const selectedStatus = ref('')
 const selectedCategory = ref('')
 const selectedSignStatus = ref('')
 const selectedOverdue = ref('')
-const selectedSupplier = ref('')
-const selectedContractStatus = ref('')
 
 const allProjects = [
   '城乡水务局供水管网改造工程',
@@ -319,19 +331,12 @@ const allProjects = [
 
 const allUnits = [
   '管网事业部', '生态事业部', '区域事业部', '市政事业部', '环境建设',
-  '管道工程', '管道分公司', '运营养护', '二次养护'
+  '管道工程', '管道分公司', '运营养护', '二次养护', '浦东供排水'
 ]
 
 const allStatus = ['特建', '在建', '停工', '完工', '当年竣工']
 const allCategories = ['专业分包', '劳务分包', '材料/设备采购', '周转材料/设备租赁']
-const allSignStatus = ['已签订', '未签订']
-const allContractStatus = ['正常履约', '履约结束', '合同作废']
-const allSuppliers = [
-  '北京华建工程有限公司', '上海水务建设集团', '广州管道工程公司', 
-  '深圳环保科技有限公司', '杭州城建集团', '南京水务工程公司', 
-  '成都建工集团', '武汉市政工程公司', '深圳劳务有限公司',
-  '杭州劳务公司', '广州设备租赁公司'
-]
+const allSignStatus = ['红色预警', '橙色预警', '黄色预警', '未签订']
 const allOverdueOptions = [
   { label: '超期21-44天', value: '21-44' },
   { label: '超期45-60天', value: '45-60' },
@@ -358,7 +363,9 @@ const rawData = [
         plannedDate: '2026-01-15',
         actualDate: '2026-02-20',
         signStatus: '已签订',
-        overdueDays: 30
+        overdueDays: 30,
+        contractStartDate: '2026-02-20',
+        contractEndDate: '2027-08-20'
       },
       {
         category: '劳务分包',
@@ -373,7 +380,9 @@ const rawData = [
         plannedDate: '2026-01-20',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 55
+        overdueDays: 55,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '材料/设备采购',
@@ -388,7 +397,9 @@ const rawData = [
         plannedDate: '2026-01-10',
         actualDate: '2026-01-10',
         signStatus: '已签订',
-        overdueDays: 0
+        overdueDays: 0,
+        contractStartDate: '2026-01-10',
+        contractEndDate: '2026-10-10'
       },
       {
         category: '周转材料/设备租赁',
@@ -403,7 +414,9 @@ const rawData = [
         plannedDate: '2026-02-01',
         actualDate: '2026-02-04',
         signStatus: '已签订',
-        overdueDays: 3
+        overdueDays: 3,
+        contractStartDate: '2026-02-04',
+        contractEndDate: '2026-06-04'
       }
     ]
   },
@@ -426,7 +439,9 @@ const rawData = [
         plannedDate: '2026-01-01',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 65
+        overdueDays: 65,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '劳务分包',
@@ -441,7 +456,9 @@ const rawData = [
         plannedDate: '2026-01-25',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 25
+        overdueDays: 25,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '材料/设备采购',
@@ -456,7 +473,9 @@ const rawData = [
         plannedDate: '2026-02-05',
         actualDate: '2026-02-07',
         signStatus: '已签订',
-        overdueDays: 2
+        overdueDays: 2,
+        contractStartDate: '2026-02-07',
+        contractEndDate: '2026-11-07'
       }
     ]
   },
@@ -476,7 +495,9 @@ const rawData = [
         plannedDate: '2026-02-15',
         actualDate: '2026-02-15',
         signStatus: '已签订',
-        overdueDays: 0
+        overdueDays: 0,
+        contractStartDate: '2026-02-15',
+        contractEndDate: '2027-08-15'
       },
       {
         category: '材料/设备采购',
@@ -488,7 +509,9 @@ const rawData = [
         plannedDate: '2026-02-20',
         actualDate: '2026-02-20',
         signStatus: '已签订',
-        overdueDays: 0
+        overdueDays: 0,
+        contractStartDate: '2026-02-20',
+        contractEndDate: '2026-11-20'
       },
       {
         category: '周转材料/设备租赁',
@@ -500,7 +523,9 @@ const rawData = [
         plannedDate: '2026-03-01',
         actualDate: '2026-03-01',
         signStatus: '已签订',
-        overdueDays: 0
+        overdueDays: 0,
+        contractStartDate: '2026-03-01',
+        contractEndDate: '2026-07-01'
       }
     ]
   },
@@ -520,7 +545,9 @@ const rawData = [
         plannedDate: '2026-01-10',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 35
+        overdueDays: 35,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '劳务分包',
@@ -532,7 +559,9 @@ const rawData = [
         plannedDate: '2026-01-05',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 70
+        overdueDays: 70,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '材料/设备采购',
@@ -544,7 +573,9 @@ const rawData = [
         plannedDate: '2026-02-10',
         actualDate: '2026-02-10',
         signStatus: '已签订',
-        overdueDays: 0
+        overdueDays: 0,
+        contractStartDate: '2026-02-10',
+        contractEndDate: '2026-11-10'
       }
     ]
   },
@@ -564,7 +595,9 @@ const rawData = [
         plannedDate: '2026-01-01',
         actualDate: '2026-01-01',
         signStatus: '已签订',
-        overdueDays: 0
+        overdueDays: 0,
+        contractStartDate: '2026-01-01',
+        contractEndDate: '2027-07-01'
       },
       {
         category: '材料/设备采购',
@@ -576,7 +609,9 @@ const rawData = [
         plannedDate: '2026-01-05',
         actualDate: '2026-01-05',
         signStatus: '已签订',
-        overdueDays: 0
+        overdueDays: 0,
+        contractStartDate: '2026-01-05',
+        contractEndDate: '2026-10-05'
       }
     ]
   },
@@ -596,7 +631,9 @@ const rawData = [
         plannedDate: '2026-01-28',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 22
+        overdueDays: 22,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '劳务分包',
@@ -608,7 +645,9 @@ const rawData = [
         plannedDate: '2026-01-12',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 48
+        overdueDays: 48,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '材料/设备采购',
@@ -620,7 +659,9 @@ const rawData = [
         plannedDate: '2026-01-01',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 75
+        overdueDays: 75,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '周转材料/设备租赁',
@@ -632,7 +673,9 @@ const rawData = [
         plannedDate: '2026-02-15',
         actualDate: '2026-02-15',
         signStatus: '已签订',
-        overdueDays: 0
+        overdueDays: 0,
+        contractStartDate: '2026-02-15',
+        contractEndDate: '2026-06-15'
       }
     ]
   },
@@ -652,7 +695,9 @@ const rawData = [
         plannedDate: '2026-01-20',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 40
+        overdueDays: 40,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '劳务分包',
@@ -664,7 +709,9 @@ const rawData = [
         plannedDate: '2026-01-12',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 58
+        overdueDays: 58,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '材料/设备采购',
@@ -688,7 +735,9 @@ const rawData = [
         plannedDate: '2026-01-05',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 80
+        overdueDays: 80,
+        contractStartDate: '',
+        contractEndDate: ''
       }
     ]
   },
@@ -756,7 +805,9 @@ const rawData = [
         plannedDate: '2026-01-25',
         actualDate: '2026-01-25',
         signStatus: '已签订',
-        overdueDays: 0
+        overdueDays: 0,
+        contractStartDate: '2026-01-25',
+        contractEndDate: '2026-10-25'
       }
     ]
   },
@@ -776,7 +827,9 @@ const rawData = [
         plannedDate: '2026-01-15',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 33
+        overdueDays: 33,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '劳务分包',
@@ -800,7 +853,9 @@ const rawData = [
         plannedDate: '2026-01-01',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 85
+        overdueDays: 85,
+        contractStartDate: '',
+        contractEndDate: ''
       },
       {
         category: '周转材料/设备租赁',
@@ -824,7 +879,85 @@ const rawData = [
         plannedDate: '2026-01-22',
         actualDate: '',
         signStatus: '未签订',
-        overdueDays: 24
+        overdueDays: 24,
+        contractStartDate: '',
+        contractEndDate: ''
+      }
+    ]
+  },
+  {
+    projectCode: 'P010',
+    projectName: '浦东供水管网扩建工程',
+    unit: '浦东供排水',
+    status: '在建',
+    contracts: [
+      {
+        category: '专业分包',
+        supplierName: '上海建工集团',
+        supplierLevel: 'A',
+        contractStatus: '正常履约',
+        contractName: '管网敷设专业分包合同',
+        workScope: 'DN200-DN500管网敷设及附属设施安装',
+        workVolume: '8000米',
+        plannedAmount: 4200000,
+        contractForm: '公开招标',
+        plannedDate: '2026-01-10',
+        actualDate: '2026-01-10',
+        signStatus: '已签订',
+        overdueDays: 0,
+        contractStartDate: '2026-01-10',
+        contractEndDate: '2026-10-10'
+      },
+      {
+        category: '劳务分包',
+        supplierName: '上海劳务公司',
+        supplierLevel: 'B',
+        contractStatus: '正常履约',
+        contractName: '管网敷设劳务分包合同',
+        workScope: '管网敷设劳务作业及辅助施工',
+        workVolume: '8000米',
+        plannedAmount: 1200000,
+        contractForm: '邀请招标',
+        plannedDate: '2026-01-15',
+        actualDate: '',
+        signStatus: '未签订',
+        overdueDays: 40,
+        contractStartDate: '',
+        contractEndDate: ''
+      },
+      {
+        category: '材料/设备采购',
+        supplierName: '上海水务物资公司',
+        supplierLevel: 'A',
+        contractStatus: '正常履约',
+        contractName: '管材管件采购合同',
+        workScope: '球墨铸铁管及配件采购',
+        workVolume: '8000米',
+        plannedAmount: 2800000,
+        contractForm: '集采',
+        plannedDate: '2026-01-05',
+        actualDate: '2026-01-08',
+        signStatus: '已签订',
+        overdueDays: 3,
+        contractStartDate: '2026-01-08',
+        contractEndDate: '2026-10-08'
+      },
+      {
+        category: '周转材料/设备租赁',
+        supplierName: '浦东设备租赁公司',
+        supplierLevel: 'C',
+        contractStatus: '正常履约',
+        contractName: '施工机械租赁合同',
+        workScope: '挖掘机、吊车等机械设备租赁',
+        workVolume: '5台',
+        plannedAmount: 450000,
+        contractForm: '比价',
+        plannedDate: '2026-02-01',
+        actualDate: '2026-02-03',
+        signStatus: '已签订',
+        overdueDays: 2,
+        contractStartDate: '2026-02-03',
+        contractEndDate: '2026-06-03'
       }
     ]
   }
@@ -842,12 +975,6 @@ const applyInitialFilter = () => {
     if (props.initialFilter.overdueDays) {
       selectedOverdue.value = props.initialFilter.overdueDays
     }
-    if (props.initialFilter.supplierName) {
-      selectedSupplier.value = props.initialFilter.supplierName
-    }
-    if (props.initialFilter.contractStatus) {
-      selectedContractStatus.value = props.initialFilter.contractStatus
-    }
     if (props.initialFilter.unit) {
       selectedUnit.value = props.initialFilter.unit
     }
@@ -864,12 +991,6 @@ const applyInitialFilter = () => {
         }
         if (filter.overdueDays) {
           selectedOverdue.value = filter.overdueDays
-        }
-        if (filter.supplierName) {
-          selectedSupplier.value = filter.supplierName
-        }
-        if (filter.contractStatus) {
-          selectedContractStatus.value = filter.contractStatus
         }
         sessionStorage.removeItem('supplyChainFilter')
       }
@@ -893,9 +1014,7 @@ const tableData = computed(() => {
   filteredData.value.forEach(project => {
     project.contracts.forEach(contract => {
       if (selectedCategory.value && contract.category !== selectedCategory.value) return
-      if (selectedSignStatus.value && contract.signStatus !== selectedSignStatus.value) return
-      if (selectedSupplier.value && contract.supplierName !== selectedSupplier.value) return
-      if (selectedContractStatus.value && contract.contractStatus !== selectedContractStatus.value) return
+      if (selectedSignStatus.value && getWarningLabel(contract) !== selectedSignStatus.value) return
       if (selectedOverdue.value) {
         const days = contract.overdueDays
         if (selectedOverdue.value === '21-44' && (days < 21 || days > 44)) return
@@ -914,13 +1033,21 @@ const tableData = computed(() => {
   return result
 })
 
+// 分页数据
+const paginatedTableData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return tableData.value.slice(start, end)
+})
+
 const objectSpanMethod = ({ row, column, rowIndex }) => {
   if (column.prop === 'projectCode' || column.prop === 'projectName' || column.prop === 'unit' || column.prop === 'status') {
     const code = row.projectCode
-    const prevRow = rowIndex > 0 ? tableData.value[rowIndex - 1] : null
-    
+    const data = paginatedTableData.value
+    const prevRow = rowIndex > 0 ? data[rowIndex - 1] : null
+
     if (!prevRow || prevRow.projectCode !== code) {
-      const count = tableData.value.filter(r => r.projectCode === code).length
+      const count = data.filter(r => r.projectCode === code).length
       return {
         rowspan: count,
         colspan: 1
@@ -948,30 +1075,12 @@ const getSignStatusClass = (row) => {
   return ''
 }
 
-const getLevelClass = (level) => {
-  switch (level) {
-    case 'A':
-      return 'bg-green-100 text-green-700 px-2 py-1 rounded text-sm font-medium'
-    case 'B':
-      return 'bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm font-medium'
-    case 'C':
-      return 'bg-orange-100 text-orange-700 px-2 py-1 rounded text-sm font-medium'
-    default:
-      return ''
-  }
-}
-
-const getContractStatusClass = (status) => {
-  switch (status) {
-    case '正常履约':
-      return 'bg-green-100 text-green-700 px-2 py-1 rounded text-sm'
-    case '履约结束':
-      return 'bg-gray-100 text-gray-600 px-2 py-1 rounded text-sm'
-    case '合同作废':
-      return 'bg-red-100 text-red-600 px-2 py-1 rounded text-sm'
-    default:
-      return ''
-  }
+const getWarningLabel = (row) => {
+  const days = row.overdueDays
+  if (days >= 60) return '红色预警'
+  if (days >= 45) return '橙色预警'
+  if (days >= 21) return '黄色预警'
+  return '未签订'
 }
 
 const handleSearch = () => {
@@ -985,8 +1094,6 @@ const handleReset = () => {
   selectedCategory.value = ''
   selectedSignStatus.value = ''
   selectedOverdue.value = ''
-  selectedSupplier.value = ''
-  selectedContractStatus.value = ''
 }
 
 const exportExcel = () => {

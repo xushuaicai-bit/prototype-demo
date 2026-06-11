@@ -32,10 +32,10 @@
 
     <!-- 等级列表区域 -->
     <div class="mt-3 border-t border-gray-100 pt-3 flex-1 flex flex-col min-h-0">
-      <!-- I级风险：全宽大块 -->
+      <!-- I级风险：全宽大块，文字居中 -->
       <div v-if="displayRiskData.length > 0"
-           class="mb-2 px-2.5 py-8 bg-red-50 rounded-lg border border-red-100 flex-shrink-0">
-        <div class="flex items-center justify-between">
+           class="mb-2 px-2.5 py-6 bg-red-50 rounded-lg border border-red-100 flex-shrink-0">
+        <div class="flex flex-col items-center gap-1.5">
           <div class="flex items-center">
             <span class="w-2.5 h-2.5 rounded-full bg-red-500 mr-2"></span>
             <span class="text-sm font-semibold text-gray-800">{{ displayRiskData[0].level }}</span>

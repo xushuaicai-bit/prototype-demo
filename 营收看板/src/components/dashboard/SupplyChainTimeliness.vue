@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl p-4 shadow-sm">
+  <div class="bg-white rounded-xl p-4 shadow-sm h-full flex flex-col">
     <h3 class="text-base font-semibold text-gray-800 mb-4">{{ title }}</h3>
     
     <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
@@ -170,10 +170,10 @@ const combinedItems = computed(() => {
 })
 
 const categoryMap = {
-  '专业分包合同签订及时性': '专业分包',
-  '劳务分包合同签订及时性': '劳务分包',
-  '周转材料/设备租赁合同签订及时性': '周转材料/设备租赁',
-  '材料/设备采购合同签订及时性': '材料/设备采购'
+  '专业分包': '专业分包',
+  '劳务分包': '劳务分包',
+  '周转材料/设备租赁': '周转材料/设备租赁',
+  '材料/设备采购': '材料/设备采购'
 }
 
 const handleTopCardClick = (cardType) => {

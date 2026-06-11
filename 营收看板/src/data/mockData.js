@@ -167,10 +167,10 @@ export const supplyChainTimelinessData = {
   orangeAlert: 5,
   redAlert: 3,
   subItems: [
-    { name: '专业分包合同签订及时性', yellow: 3, orange: 2, red: 1 },
-    { name: '劳务分包合同签订及时性', yellow: 2, orange: 1, red: 1 },
-    { name: '周转材料/设备租赁合同签订及时性', yellow: 2, orange: 1, red: 0 },
-    { name: '材料/设备采购合同签订及时性', yellow: 1, orange: 1, red: 1 }
+    { name: '专业分包', yellow: 3, orange: 2, red: 1 },
+    { name: '劳务分包', yellow: 2, orange: 1, red: 1 },
+    { name: '周转材料/设备租赁', yellow: 2, orange: 1, red: 0 },
+    { name: '材料/设备采购', yellow: 1, orange: 1, red: 1 }
   ],
   subCircles: [
     { percentage: 85, signed: 42, pending: 7, total: 49 },

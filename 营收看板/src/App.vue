@@ -46,6 +46,14 @@
           @navigate="handleNavigate"
           @menu-change="handleChildMenuChange"
         />
+        <div v-else class="h-full flex items-center justify-center text-gray-400">
+          <div class="text-center">
+            <svg class="w-24 h-24 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <p class="text-lg font-medium">该功能正在开发中</p>
+          </div>
+        </div>
       </main>
     </div>
   </div>
@@ -66,6 +74,9 @@ import MarketReport from './views/MarketReport.vue'
 import MarketTracking from './views/MarketTracking.vue'
 import EconomyDashboard from './views/EconomyDashboard.vue'
 import UnifiedDashboard from './views/UnifiedDashboard.vue'
+import FinanceReport from './components/fund/FinanceReport.vue'
+import ProjectStatusSummary from './components/fund/ProjectStatusSummary.vue'
+import BranchReport from './components/fund/BranchReport.vue'
 
 const currentNav = ref('市场管理')
 const currentMenu = ref('')
@@ -79,7 +90,10 @@ const viewMap = {
   '生产看板': markRaw(Dashboard),
   '技术科研看板': markRaw(TechResearchDashboard),
   '经济管理看板': markRaw(EconomyDashboard),
-  '产运看板': markRaw(UnifiedDashboard)
+  '产运看板': markRaw(UnifiedDashboard),
+  '业财统计报表': markRaw(FinanceReport),
+  '按项目状态分类汇总表': markRaw(ProjectStatusSummary),
+  '按分公司分类报表': markRaw(BranchReport)
 }
 
 const currentViewComponent = computed(() => {

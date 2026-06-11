@@ -69,10 +69,9 @@
 
     <div v-if="activeTab === 'construction'" class="overflow-x-auto" style="max-width: 100%;">
       <el-table
-        :data="filteredConstructionData"
+        :data="paginatedConstructionData"
         border
         :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
-        :max-height="600"
       >
         <el-table-column
           label="基层单位"
@@ -284,6 +283,47 @@
         </el-table-column>
       </el-table-column>
       </el-table>
+
+      <!-- 固定底部合计行 -->
+      <div v-if="constructionTotals" class="total-footer-row">
+        <table style="width: 100%; min-width: 2500px; table-layout: fixed; border-collapse: collapse;">
+          <tbody>
+            <tr>
+              <td style="width: 200px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5;">合计</td>
+              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.revenueTarget) }}</td>
+              <td style="width: 140px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: center;">
+                <span :class="getRateTextClass(constructionTotals.completionRate)" class="text-sm font-bold">{{ constructionTotals.completionRate?.toFixed(2) }}%</span>
+              </td>
+              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.carryForwardConstruction) }}</td>
+              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.completedPendingSettlement) }}</td>
+              <td style="width: 160px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.carryForwardTotal) }}</td>
+              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.planConstruction) }}</td>
+              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.planCompleted) }}</td>
+              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.planNew) }}</td>
+              <td style="width: 160px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.planTotal) }}</td>
+              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.actualConstruction) }}</td>
+              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.actualCompleted) }}</td>
+              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.actualNew) }}</td>
+              <td style="width: 160px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.actualTotal) }}</td>
+              <td style="width: 140px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.reportedRevenue) }}</td>
+              <td style="width: 140px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.newContractAmount) }}</td>
+              <td style="width: 140px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.remainingContract) }}</td>
+              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.nextMonthPlan) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex justify-end mt-3">
+        <el-pagination
+          v-model:current-page="constructionPage"
+          v-model:page-size="constructionPageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="filteredConstructionData.length"
+          layout="total, sizes, prev, pager, next"
+          background
+          small
+        />
+      </div>
     </div>
 
     <div v-if="activeTab === 'product'" class="overflow-x-auto">
@@ -373,6 +413,17 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="flex justify-end mt-3">
+        <el-pagination
+          v-model:current-page="productPage"
+          v-model:page-size="productPageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="productData.length"
+          layout="total, sizes, prev, pager, next"
+          background
+          small
+        />
+      </div>
     </div>
 
     <div v-if="activeTab === 'other'" class="overflow-x-auto">
@@ -411,6 +462,17 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="flex justify-end mt-3">
+        <el-pagination
+          v-model:current-page="otherPage"
+          v-model:page-size="otherPageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="otherData.length"
+          layout="total, sizes, prev, pager, next"
+          background
+          small
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -429,6 +491,15 @@ const props = defineProps({
 
 const activeTab = ref('construction')
 const selectedUnits = ref([])
+const constructionTotals = ref(null)
+
+// 分页状态
+const constructionPage = ref(1)
+const constructionPageSize = ref(10)
+const productPage = ref(1)
+const productPageSize = ref(10)
+const otherPage = ref(1)
+const otherPageSize = ref(10)
 
 onMounted(() => {
   if (typeof props.initialFilter === 'object') {
@@ -630,12 +701,29 @@ const rawData = [
     newContractAmount: 2400,
     remainingContract: 4800,
     nextMonthPlan: 430
+  },
+  {
+    id: 10,
+    name: '浦东供排水',
+    revenueTarget: 6000,
+    carryForwardConstruction: 1200,
+    completedPendingSettlement: 600,
+    planConstruction: 1450,
+    planCompleted: 720,
+    planNew: 1200,
+    actualConstruction: 1300,
+    actualCompleted: 650,
+    actualNew: 1100,
+    reportedRevenue: 3050,
+    newContractAmount: 1800,
+    remainingContract: 3600,
+    nextMonthPlan: 320
   }
 ]
 
 const allUnits = [
-  '管网事业部', '生态事业部', '区域事业部', '市政事业部', '环境建设', 
-  '管道工程', '管道分公司', '运营养护', '二次养护'
+  '管网事业部', '生态事业部', '区域事业部', '市政事业部', '环境建设',
+  '管道工程', '管道分公司', '运营养护', '二次养护', '浦东供排水'
 ]
 
 const productData = [
@@ -755,7 +843,18 @@ const calculateTotalsForFiltered = (data) => {
 const filteredConstructionData = computed(() => {
   const calculated = calculateDerivedFields(rawData)
   const filtered = filterDataByUnits(calculated, selectedUnits.value)
-  return [...filtered, calculateTotalsForFiltered(filtered)]
+  const totals = calculateTotalsForFiltered(filtered)
+  constructionTotals.value = totals
+  return [...filtered]
+})
+
+// 施工类分页数据
+const paginatedConstructionData = computed(() => {
+  const calculated = calculateDerivedFields(rawData)
+  const filtered = filterDataByUnits(calculated, selectedUnits.value)
+  const start = (constructionPage.value - 1) * constructionPageSize.value
+  const end = start + constructionPageSize.value
+  return filtered.slice(start, end)
 })
 
 const formatNumber = (num) => {
@@ -776,9 +875,6 @@ const getRateTextClass = (rate) => {
 }
 
 const rowClassName = ({ row }) => {
-  if (row.name === '合计') {
-    return 'font-bold bg-gray-50'
-  }
   return ''
 }
 
@@ -790,23 +886,20 @@ const getProductSummaries = (param) => {
       sums[index] = '合计'
       return
     }
-    
+
     const prop = column.prop
     if (!prop) {
-      sums[index] = ''
+      sums[index] = '-'
       return
     }
-    
+
     const values = data.map(item => {
       const value = parseFloat(item[prop])
       return isNaN(value) ? 0 : value
     })
-    
-    if (values.length > 0) {
-      sums[index] = values.reduce((prev, curr) => prev + curr, 0).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
-    } else {
-      sums[index] = '0.00'
-    }
+
+    const total = values.reduce((prev, curr) => prev + curr, 0)
+    sums[index] = total.toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
   })
   return sums
 }
@@ -819,23 +912,20 @@ const getOtherSummaries = (param) => {
       sums[index] = '合计'
       return
     }
-    
+
     const prop = column.prop
     if (!prop) {
-      sums[index] = ''
+      sums[index] = '-'
       return
     }
-    
+
     const values = data.map(item => {
       const value = parseFloat(item[prop])
       return isNaN(value) ? 0 : value
     })
-    
-    if (values.length > 0) {
-      sums[index] = values.reduce((prev, curr) => prev + curr, 0).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
-    } else {
-      sums[index] = '0.00'
-    }
+
+    const total = values.reduce((prev, curr) => prev + curr, 0)
+    sums[index] = total.toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
   })
   return sums
 }
@@ -860,5 +950,34 @@ const exportExcel = () => {
 <style scoped>
 .green-border {
   border: 2px solid #52c41a;
+}
+
+/* 固定底部合计行 */
+.total-footer-row {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+.total-footer-row td {
+  background-color: #f9fafb !important;
+}
+
+/* el-table 内置合计行统一样式（产品/其他业态） */
+:deep(.el-table__footer-wrapper) {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+:deep(.el-table__footer) {
+  background-color: #f9fafb !important;
+}
+:deep(.el-table__footer-wrapper td) {
+  background-color: #f9fafb !important;
+  font-weight: bold !important;
+  color: #374151 !important;
+}
+:deep(.el-table__footer-wrapper th) {
+  background-color: #f9fafb !important;
 }
 </style>

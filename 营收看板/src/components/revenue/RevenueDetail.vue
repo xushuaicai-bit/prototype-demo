@@ -87,7 +87,7 @@
             <el-option label="全部" value="" />
             <el-option label="黄色预警" value="yellow" />
             <el-option label="橙色预警" value="orange" />
-            <el-option label="红色预警" value="red" />
+            <el-option label="正常" value="normal" />
           </el-select>
         </div>
 
@@ -115,11 +115,10 @@
 
     <div class="overflow-x-auto" style="max-width: 100%;">
       <el-table
-        :data="filteredData"
+        :data="paginatedData"
         border
         :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
         :row-class-name="rowClassName"
-        :max-height="600"
         :summary-method="getSummaries"
         show-summary
       >
@@ -191,13 +190,13 @@
         <el-table-column
           label="是否协管项目"
           prop="isCoManaged"
-          width="120"
+          width="100"
           align="center"
           :header-cell-style="{ backgroundColor: '#95DE64', color: '#fff' }"
           :cell-style="{ backgroundColor: '#F6FFED' }"
         >
           <template #default="scope">
-            <el-switch :value="scope.row.isCoManaged === '是'" disabled />
+            {{ scope.row.isCoManaged }}
           </template>
         </el-table-column>
 
@@ -371,6 +370,17 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="flex justify-end mt-3">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="filteredData.length"
+          layout="total, sizes, prev, pager, next"
+          background
+          small
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -385,6 +395,10 @@ const props = defineProps({
     default: () => ({})
   }
 })
+
+// 分页
+const currentPage = ref(1)
+const pageSize = ref(10)
 
 const months = [
   { key: 'month1', label: '1月上报营收' },
@@ -1776,14 +1790,24 @@ const calculateTotalReportedRevenue = (data) => {
     if (!item.annualPlanRevenue || item.annualPlanRevenue <= 0) {
       if (isNewProject && startTimeVal) {
         const elapsed = now.getTime() - startTimeVal.getTime()
-        if (elapsed > threeMonths) warningLevel = '红色预警'
-        else if (elapsed > twoMonths) warningLevel = '橙色预警'
+        if (elapsed > twoMonths) warningLevel = '橙色预警'
         else if (elapsed > oneMonth) warningLevel = '黄色预警'
       } else {
         const yearElapsed = now.getTime() - yearStart.getTime()
-        if (yearElapsed > twoMonths) warningLevel = '红色预警'
-        else if (yearElapsed > oneMonth) warningLevel = '橙色预警'
+        if (yearElapsed > oneMonth) warningLevel = '橙色预警'
         else if (yearElapsed > oneMonth / 2) warningLevel = '黄色预警'
+      }
+    }
+
+    // 基于营收完成率的预警（针对有计划营收的项目）
+    if (!warningLevel && item.annualPlanRevenue > 0) {
+      const rate = (item.annualAccumulatedRevenue || 0) / item.annualPlanRevenue
+      const monthNow = now.getMonth() + 1
+      const expectedRate = monthNow / 12
+      if (rate < expectedRate * 0.5) {
+        warningLevel = '橙色预警'
+      } else if (rate < expectedRate * 0.75) {
+        warningLevel = '黄色预警'
       }
     }
 
@@ -1847,12 +1871,26 @@ const filteredData = computed(() => {
     data = data.filter(item => {
       if (filters.value.warningLevel === 'yellow') return item.warningLevel === '黄色预警'
       if (filters.value.warningLevel === 'orange') return item.warningLevel === '橙色预警'
-      if (filters.value.warningLevel === 'red') return item.warningLevel === '红色预警'
+      if (filters.value.warningLevel === 'normal') return !item.warningLevel || item.warningLevel === ''
       return true
     })
   }
 
   return data
+})
+
+// 分页数据
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return calculateTotalReportedRevenue(rawData).slice(start, end)
+})
+
+// 切换页码时重置到第1页
+watch([() => filters.value.unit, () => filters.value.status, () => filters.value.revenueCaliber,
+      () => filters.value.isCoManaged, () => filters.value.projectName, () => filters.value.projectCode,
+      () => filters.value.warningLevel], () => {
+  currentPage.value = 1
 })
 
 const formatNumber = (num) => {
@@ -1889,29 +1927,47 @@ const finishEdit = (row, field) => {
 
 const getSummaries = (param) => {
   const { columns, data } = param
+  if (!columns || !data || data.length === 0) {
+    return columns ? columns.map(() => '') : []
+  }
+
+  // 需要求和的数值字段（其余文本字段显示 '-'）
+  const numericProps = [
+    'contractAmount', 'carryForwardRevenue', 'annualPlanRevenue',
+    'annualEstimatedRevenue', 'planAdjustmentRate', 'monthActualRevenue',
+    'annualAccumulatedRevenue', 'startAccumulatedRevenue', 'monthReportedRevenue',
+    'annualReportedRevenue', 'totalReportedRevenue', 'remainingContractAmount',
+    'progress'
+  ]
+
   const sums = []
   columns.forEach((column, index) => {
     if (index === 0) {
       sums[index] = '总计'
       return
     }
-    
-    const prop = column.prop
-    if (!prop) {
-      sums[index] = ''
+
+    const prop = column.prop || column.property
+    if (!prop || !numericProps.includes(prop)) {
+      sums[index] = '-'
       return
     }
-    
+
     const values = data.map(item => {
-      const value = parseFloat(item[prop])
-      return isNaN(value) ? 0 : value
+      const val = item[prop]
+      if (val === undefined || val === null || val === '') return 0
+      const num = parseFloat(val)
+      return isNaN(num) ? 0 : num
     })
-    
-    if (values.length > 0) {
-      const total = values.reduce((prev, curr) => prev + curr, 0)
-      sums[index] = total > 0 ? total.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'
+
+    const total = values.reduce((prev, curr) => prev + curr, 0)
+
+    // 百分比字段求平均值，金额字段求和
+    if (prop === 'planAdjustmentRate' || prop === 'progress') {
+      const avg = data.length > 0 ? total / data.length : 0
+      sums[index] = avg.toFixed(1)
     } else {
-      sums[index] = '-'
+      sums[index] = total.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     }
   })
   return sums
@@ -2066,5 +2122,23 @@ watch(filters, (newFilters) => {
 <style scoped>
 .co-managed-row {
   background-color: #F6FFED;
+}
+
+/* 合计行样式 */
+:deep(.el-table__footer-wrapper) {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+:deep(.el-table__footer) {
+  background-color: #f9fafb !important;
+}
+:deep(.el-table__footer-wrapper td) {
+  background-color: #f9fafb !important;
+  font-weight: bold !important;
+  color: #374151 !important;
+}
+:deep(.el-table__footer-wrapper th) {
+  background-color: #f9fafb !important;
 }
 </style>

@@ -28,13 +28,13 @@
     </div>
 
     <!-- ========== 模块一：施工类营收情况 + 模块二：总体营收情况（并排 4:1） ========== -->
-    <div class="grid grid-cols-12 gap-4">
-    <!-- 模块一：施工类营收情况 (占3/4) -->
-    <div class="col-span-12 lg:col-span-9 bg-white rounded-xl shadow-sm overflow-hidden">
+    <div class="grid grid-cols-12 gap-4 items-stretch">
+    <!-- 模块一：施工类营收情况 (占5/7) -->
+    <div class="col-span-12 lg:col-span-8 bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
       <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
         <h2 class="text-base font-semibold text-white">施工类营收情况</h2>
       </div>
-      <div class="p-4">
+      <div class="p-4 flex-1 flex flex-col">
         <!-- 施工类6个KPI卡片 -->
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
           <div
@@ -57,6 +57,7 @@
                     <path v-else-if="card.icon === 'check-circle'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     <path v-else-if="card.icon === 'file-text'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     <path v-else-if="card.icon === 'calendar'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path v-else-if="card.icon === 'dollar-sign'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div v-if="card.drillable" class="drill-indicator ml-1 relative group">
@@ -70,8 +71,8 @@
           </div>
         </div>
         <!-- 施工类三个小模块列表 -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div class="bg-gray-50 rounded-xl p-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 items-stretch">
+          <div class="bg-gray-50 rounded-xl p-4 flex flex-col">
             <h3 class="text-sm font-semibold text-gray-800 mb-3">施工类当年计划营收</h3>
             <ul class="space-y-1">
               <li
@@ -90,7 +91,7 @@
               </li>
             </ul>
           </div>
-          <div class="bg-gray-50 rounded-xl p-4">
+          <div class="bg-gray-50 rounded-xl p-4 flex flex-col">
             <h3 class="text-sm font-semibold text-gray-800 mb-3">施工类当年累计营收</h3>
             <ul class="space-y-1">
               <li
@@ -109,7 +110,7 @@
               </li>
             </ul>
           </div>
-          <div class="bg-gray-50 rounded-xl p-4">
+          <div class="bg-gray-50 rounded-xl p-4 flex flex-col">
             <h3 class="text-sm font-semibold text-gray-800 mb-3">下月计划</h3>
             <ul class="space-y-1">
               <li
@@ -132,12 +133,12 @@
       </div>
     </div>
 
-    <!-- ========== 模块二：总体营收情况 (占1/4) ========== -->
-    <div class="col-span-12 lg:col-span-3 bg-white rounded-xl shadow-sm overflow-hidden">
-      <div class="bg-gradient-to-r from-cyan-500 to-cyan-600 px-4 py-3">
-        <h2 class="text-base font-semibold text-white">总体营收情况</h2>
-      </div>
-      <div class="p-4">
+    <!-- ========== 模块二：总体营收情况 (占2/7) ========== -->
+    <div class="col-span-12 lg:col-span-4 bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div class="bg-gradient-to-r from-cyan-500 to-cyan-600 px-4 py-3">
+            <h2 class="text-base font-semibold text-white">总体营收情况</h2>
+          </div>
+          <div class="p-4 flex-1 flex flex-col">
         <!-- 总体营收KPI卡片 -->
         <div class="grid grid-cols-1 gap-4 mb-4">
           <div
@@ -164,12 +165,32 @@
                 </div>
               </div>
             </div>
-            <div :class="['mt-2 text-xl font-bold', card.drillable ? 'text-blue-600' : 'text-gray-800']">{{ card.value }}<span class="text-xs font-normal text-gray-500 ml-1">{{ card.unit }}</span></div>
+            <div :class="['mt-2 flex items-center gap-3', card.drillable ? 'text-blue-600' : 'text-gray-800']">
+              <span class="text-xl font-bold">{{ card.value }}<span class="text-xs font-normal text-gray-500 ml-1">{{ card.unit }}</span></span>
+              <!-- 当年累计营收：小圆环进度条 -->
+              <div v-if="card.title === '当年累计营收'"
+                   :title="'指标完成率: ' + overallCompletionRate + '%'"
+                   class="relative w-14 h-14 flex-shrink-0 cursor-help">
+                <svg class="w-14 h-14 -rotate-90" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="15" fill="none" stroke="#e5e7eb" stroke-width="3"/>
+                  <circle cx="18" cy="18" r="15" fill="none"
+                          :stroke="overallCompletionRate >= 100 ? '#22c55e' : overallCompletionRate >= 50 ? '#eab308' : '#ef4444'"
+                          stroke-width="3"
+                          stroke-dasharray="94.25"
+                          :stroke-dashoffset="94.25 * (1 - Math.min(overallCompletionRate, 100) / 100)"
+                          stroke-linecap="round"/>
+                </svg>
+                <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold leading-none"
+                      :class="overallCompletionRate >= 100 ? 'text-green-600' : overallCompletionRate >= 50 ? 'text-yellow-600' : 'text-red-600'">
+                  {{ overallCompletionRate }}%
+                </span>
+              </div>
+            </div>
           </div>
         </div>
         <!-- 总体营收小模块列表 -->
-        <div class="grid grid-cols-1 gap-4">
-          <div class="bg-gray-50 rounded-xl p-4">
+        <div class="grid grid-cols-1 gap-4 flex-1">
+          <div class="bg-gray-50 rounded-xl p-4 flex flex-col">
             <h3 class="text-sm font-semibold text-gray-800 mb-3">当年累计营收</h3>
             <ul class="space-y-1">
               <li
@@ -181,7 +202,7 @@
                 <span class="flex items-center"><span class="w-2 h-2 rounded-full mr-2" style="background: #13c2c2;"></span>{{ item.name }}</span>
                 <div class="flex items-center">
                   <span class="text-gray-600 mr-2">{{ item.value }}</span>
-                  <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -193,22 +214,14 @@
     </div>
     </div><!-- 并排容器结束 -->
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
       <!-- 营收计划上报及时性 + 月度偏差（合并模块） -->
-      <div class="bg-white rounded-xl p-4 shadow-sm space-y-4">
+      <div class="bg-white rounded-xl p-4 shadow-sm space-y-4 flex flex-col">
         <!-- 上半部分：营收计划上报及时性 -->
         <div>
           <h3 class="text-base font-semibold text-gray-800 mb-4">营收计划上报及时性</h3>
-          <!-- 红橙黄预警一行 -->
+          <!-- 红橙黄预警一行（仅保留橙色、黄色） -->
           <div class="flex items-center justify-center gap-4 mb-4">
-            <div
-              class="flex items-center gap-1.5 cursor-pointer hover:bg-red-50 px-2.5 py-1 rounded-full transition-colors"
-              @click="handleWarningDrill('red')"
-            >
-              <span class="w-2.5 h-2.5 rounded-full" style="background: #f5222d;"></span>
-              <span class="text-xs text-gray-600">红色预警</span>
-              <span class="text-sm font-bold" style="color: #f5222d;">{{ timelinessSingle.redAlert }}</span>
-            </div>
             <div
               class="flex items-center gap-1.5 cursor-pointer hover:bg-orange-50 px-2.5 py-1 rounded-full transition-colors"
               @click="handleWarningDrill('orange')"
@@ -284,39 +297,39 @@
             </div>
           </div>
 
-          <!-- 内容区：基层单位列表（无环形图，名称完整显示） -->
-          <div class="max-h-[320px] overflow-y-auto pr-1">
+          <!-- 内容区：基层单位列表（双列网格紧凑布局） -->
+          <div>
             <!-- 偏差项目总数汇总 -->
-            <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 text-xs text-gray-500">
+            <div class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-gray-100 text-xs text-gray-500">
               <span>偏差项目总数: <b class="text-blue-600">{{ totalDeviationCount }}</b> 个</span>
               <span>涉及基层单位: <b class="text-gray-700">{{ unitDeviationData.length }}</b> 家</span>
             </div>
-            <div class="space-y-2">
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1.5">
               <div
                 v-for="(unit, idx) in unitDeviationData"
                 :key="idx"
-                class="group flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                class="group flex items-center justify-between py-1.5 px-2.5 rounded-md hover:bg-gray-50 cursor-pointer transition-colors"
                 @click="handleDeviationDrill(unit.name)"
               >
-                <!-- 左侧：颜色圆点 + 单位名称（完整显示，允许换行） -->
+                <!-- 左侧：颜色圆点 + 单位名称 -->
                 <div class="flex items-center flex-1 min-w-0">
-                  <span class="w-2.5 h-2.5 rounded-full mr-2.5 flex-shrink-0" :style="{ backgroundColor: unit.color }"></span>
-                  <span class="text-sm text-gray-700 whitespace-normal leading-relaxed">{{ unit.name }}</span>
+                  <span class="w-2 h-2 rounded-full mr-1.5 flex-shrink-0" :style="{ backgroundColor: unit.color }"></span>
+                  <span class="text-xs text-gray-700 truncate">{{ unit.name }}</span>
                 </div>
 
-                <!-- 右侧：重点/一般项目标签 + 偏差额（直接标记在界面） -->
-                <div class="flex items-center gap-3 ml-3 flex-shrink-0">
+                <!-- 右侧：重点/一般项目标签 + 偏差额 -->
+                <div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
                   <!-- 重点项目 -->
-                  <span class="text-xs px-1.5 py-0.5 rounded bg-orange-50 text-orange-600 font-medium whitespace-nowrap">
-                    重点项目{{ unit.keyProjectCount }}
+                  <span class="text-[11px] px-1 py-px rounded bg-orange-50 text-orange-600 font-medium whitespace-nowrap">
+                    重点{{ unit.keyProjectCount }}
                   </span>
                   <!-- 一般项目 -->
-                  <span class="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-medium whitespace-nowrap">
-                    一般项目{{ unit.generalProjectCount }}
+                  <span class="text-[11px] px-1 py-px rounded bg-gray-100 text-gray-500 font-medium whitespace-nowrap">
+                    一般{{ unit.generalProjectCount }}
                   </span>
                   <!-- 总偏差额 -->
                   <span
-                    class="text-sm font-bold min-w-[80px] text-right whitespace-nowrap"
+                    class="text-xs font-bold min-w-[70px] text-right whitespace-nowrap"
                     :class="unit.totalAmount >= 0 ? 'text-green-600' : 'text-red-600'"
                   >
                     {{ formatAmount(unit.totalAmount) }}万
@@ -329,21 +342,34 @@
       </div>
 
       <!-- 营收月度统计 -->
-      <div class="bg-white rounded-xl p-4 shadow-sm">
+      <div class="bg-white rounded-xl p-4 shadow-sm flex flex-col">
         <h3 class="text-sm font-semibold text-gray-800 mb-3">营收月度统计</h3>
-        <div ref="revenueChartRef" class="h-80"></div>
+        <div ref="revenueChartRef" class="h-80 flex-1"></div>
       </div>
 
       <!-- 当年累计完成营收情况 -->
-      <div class="bg-white rounded-xl p-4 shadow-sm">
-        <h3 class="text-sm font-semibold text-gray-800 mb-1">当年累计完成营收情况</h3>
-        <div class="text-left text-xs text-gray-500 mb-2">
+      <div class="bg-white rounded-xl p-4 shadow-sm flex flex-col">
+        <!-- 标题栏 + Tab切换 -->
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="text-sm font-semibold text-gray-800">当年累计完成营收情况</h3>
+          <div class="flex gap-1 bg-gray-100 rounded-lg p-0.5">
+            <button
+              :class="['px-3 py-1 text-xs rounded-md transition-all', sectorViewMode === 'business' ? 'bg-white text-blue-600 shadow-sm font-medium' : 'text-gray-500']"
+              @click="switchSectorView('business')"
+            >业务类型</button>
+            <button
+              :class="['px-3 py-1 text-xs rounded-md transition-all', sectorViewMode === 'region' ? 'bg-white text-blue-600 shadow-sm font-medium' : 'text-gray-500']"
+              @click="switchSectorView('region')"
+            >区域</button>
+          </div>
+        </div>
+        <div class="text-left text-xs text-gray-500 mb-2 flex-shrink-0">
     共 <span class="font-bold text-gray-700">{{ totalProjects }}</span> 个项目，
     累计营收 <span class="font-bold text-blue-600">{{ totalRevenue.toLocaleString() }}</span> 万元
   </div>
         <div
           ref="sectorChartRef"
-          class="h-72 cursor-pointer"
+          class="h-72 flex-1 cursor-pointer"
           @click="handleSectorChartClick"
         ></div>
       </div>
@@ -374,13 +400,13 @@ const filterTabs = ref([
 ])
 
 const statCards = ref([
-  { title: '施工类当年计划营收', value: '1,221,800', unit: '万元', icon: 'trending-up', bgClass: 'bg-blue-50', iconClass: 'text-blue-500', drillable: true },
-  { title: '施工类当月完成营收', value: '875,420', unit: '万元', icon: 'target', bgClass: 'bg-green-50', iconClass: 'text-green-500', drillable: true },
-  { title: '施工类当年累计营收', value: '3.56', unit: '万元', icon: 'bar-chart', bgClass: 'bg-purple-50', iconClass: 'text-purple-500', drillable: true },
-  { title: '施工类当年预计完成营收', value: '3.56', unit: '万元', icon: 'check-circle', bgClass: 'bg-cyan-50', iconClass: 'text-cyan-500', drillable: true },
-  { title: '截止当月剩余合同存量', value: '3.56', unit: '万元', icon: 'file-text', bgClass: 'bg-orange-50', iconClass: 'text-orange-500', drillable: true },
-  { title: '施工类下月计划', value: '3.56', unit: '万元', icon: 'calendar', bgClass: 'bg-pink-50', iconClass: 'text-pink-500', drillable: true },
-  { title: '当年累计营收', value: '3.56', unit: '万元', icon: 'dollar-sign', bgClass: 'bg-gray-50', iconClass: 'text-gray-500', drillable: true }
+  { title: '当年计划营收', value: '122,180', unit: '万元', icon: 'trending-up', bgClass: 'bg-blue-50', iconClass: 'text-blue-500', drillable: true },
+  { title: '当月完成营收', value: '8,754', unit: '万元', icon: 'target', bgClass: 'bg-green-50', iconClass: 'text-green-500', drillable: true },
+  { title: '当年累计营收', value: '58,420', unit: '万元', icon: 'bar-chart', bgClass: 'bg-purple-50', iconClass: 'text-purple-500', drillable: true },
+  { title: '当年预计完成营收', value: '98,600', unit: '万元', icon: 'check-circle', bgClass: 'bg-cyan-50', iconClass: 'text-cyan-500', drillable: true },
+  { title: '截止当月剩余合同存量', value: '45,230', unit: '万元', icon: 'file-text', bgClass: 'bg-orange-50', iconClass: 'text-orange-500', drillable: true },
+  { title: '下月计划', value: '9,800', unit: '万元', icon: 'calendar', bgClass: 'bg-pink-50', iconClass: 'text-pink-500', drillable: true },
+  { title: '当年累计营收', value: '60,000', unit: '万元', icon: 'dollar-sign', bgClass: 'bg-gray-50', iconClass: 'text-gray-500', drillable: true }
 ])
 
 // 施工类营收情况模块卡片（前6个）
@@ -461,6 +487,25 @@ const handleWarningDrill = (level) => {
 }
 
 const viewMode = ref('business')
+
+// 累计完成营收情况图表 Tab状态
+const sectorViewMode = ref('business')  // 'business' | 'region'
+
+// 区域维度数据（从业务类型图表tooltip中的区域分布提取）
+const regionData = ref([
+  { name: '上海', projectCount: 25, revenue: 45000 },
+  { name: '长三角总部', projectCount: 24, revenue: 38000 },
+  { name: '中原总部', projectCount: 16, revenue: 22000 },
+  { name: '大湾区总部', projectCount: 18, revenue: 28000 },
+  { name: '境外区域', projectCount: 3, revenue: 8500 },
+  { name: '其他城市区域', projectCount: 10, revenue: 7000 }
+])
+
+// 切换累计营收图表视图
+const switchSectorView = (mode) => {
+  sectorViewMode.value = mode
+  initSectorChart()
+}
 
 const sectorData = ref([
   { name: '投资', projectCount: 5, revenue: 25000 },
@@ -607,10 +652,18 @@ const nextMonthPlan = ref([
 ])
 
 const yearTotalRevenue = ref([
-  { name: '施工类', value: '3,000万元' },
-  { name: '产品类', value: '2,000万元' },
-  { name: '其他类', value: '1,000万元' }
+  { name: '施工类', value: '3,000万元', target: 4000, actual: 3000 },
+  { name: '产品类', value: '2,000万元', target: 2500, actual: 2000 },
+  { name: '其他类', value: '1,000万元', target: 1500, actual: 1000 }
 ])
+
+// 总体指标完成率（基于yearTotalRevenue的target和actual计算）
+const overallCompletionRate = computed(() => {
+  const totalActual = yearTotalRevenue.value.reduce((s, i) => s + (i.actual || 0), 0)
+  const totalTarget = yearTotalRevenue.value.reduce((s, i) => s + (i.target || 0), 0)
+  if (totalTarget <= 0) return '0.0'
+  return ((totalActual / totalTarget) * 100).toFixed(1)
+})
 
 // 营收计划上报及时性 - 单项数据
 const timelinessSingle = ref({
@@ -677,19 +730,8 @@ const initCharts = () => {
 const initSectorChart = () => {
   if (sectorChartRef.value) {
     const chart = echarts.init(sectorChartRef.value)
-    // 固定使用业务类型数据（已删除业态维度）
-    const data = businessData.value
-
-    // 全部区域汇总（每个柱子悬浮都显示所有区域）
-    const allRegionSummary = [
-      { name: '上海', count: 25 },
-      { name: '长三角总部', count: 24 },
-      { name: '中原总部', count: 16 },
-      { name: '大湾区总部', count: 18 },
-      { name: '境外区域', count: 3 },
-      { name: '其他城市区域', count: 10 }
-    ]
-    const totalRegionCount = allRegionSummary.reduce((s, r) => s + r.count, 0)
+    // 根据Tab选择数据源：业务类型 or 区域
+    const data = sectorViewMode.value === 'region' ? regionData.value : businessData.value
 
     chart.setOption({
       tooltip: {
@@ -704,14 +746,6 @@ const initSectorChart = () => {
             else if (param.seriesName === '项目数量') result += '个'
             result += '</div>'
           })
-          // 显示全部6个区域的项目数量
-          result += `<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #eee;font-size:11px;color:#666;">`
-          result += `<div style="font-weight:bold;margin-bottom:3px;">区域分布:</div>`
-          allRegionSummary.forEach(r => {
-            result += `<div style="display:flex;justify-content:space-between;gap:12px;"><span>${r.name}</span><b style="color:#1890ff;">${r.count}个</b></div>`
-          })
-          result += `<div style="margin-top:4px;padding-top:4px;border-top:1px solid #eee;display:flex;justify-content:space-between;"><span>合计</span><b style="color:#f5222d;">${totalRegionCount}个项目</b></div>`
-          result += `</div>`
           return result
         }
       },

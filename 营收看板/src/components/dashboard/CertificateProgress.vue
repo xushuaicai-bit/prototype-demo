@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl p-4 shadow-sm">
+  <div class="bg-white rounded-xl p-4 shadow-sm h-full flex flex-col">
     <div class="flex items-center mb-4">
       <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
       <h3 class="text-base font-semibold text-gray-800">证件办理情况</h3>
