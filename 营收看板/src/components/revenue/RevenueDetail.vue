@@ -51,9 +51,9 @@
           <label class="text-sm text-gray-600 mr-2">营收统计口径：</label>
           <el-select v-model="filters.revenueCaliber" placeholder="请选择" class="w-40">
             <el-option label="全部" value="" />
-            <el-option label="新增立项" value="新增立项" />
-            <el-option label="结转在建项目" value="结转在建项目" />
-            <el-option label="完工待结算项目" value="完工待结算项目" />
+            <el-option label="新接项目" value="新接项目" />
+            <el-option label="年初结转实施项目" value="年初结转实施项目" />
+            <el-option label="年初结转待结项目" value="年初结转待结项目" />
           </el-select>
         </div>
 
@@ -78,7 +78,9 @@
 
         <div class="flex items-center">
           <label class="text-sm text-gray-600 mr-2">下调百分比：</label>
-          <el-input-number v-model="filters.planAdjustmentRateMax" :min="0" :max="100" :precision="1" controls-position="right" class="w-32" />
+          <el-input-number v-model="filters.planAdjustmentRateMin" :min="-100" :max="100" :precision="1" controls-position="right" placeholder="最小值" class="w-28 mr-2" />
+          <span class="text-sm text-gray-500 mr-2">~</span>
+          <el-input-number v-model="filters.planAdjustmentRateMax" :min="-100" :max="100" :precision="1" controls-position="right" placeholder="最大值" class="w-28" />
         </div>
 
         <div class="flex items-center">
@@ -386,7 +388,7 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps, onMounted, watch } from 'vue'
+import { ref, computed, defineProps, onMounted, watch, nextTick } from 'vue'
 import { utils, writeFile } from 'xlsx'
 
 const props = defineProps({
@@ -422,6 +424,7 @@ const filters = ref({
   isCoManaged: '',
   projectName: '',
   projectCode: '',
+  planAdjustmentRateMin: null,
   planAdjustmentRateMax: null,
   warningLevel: ''
 })
@@ -438,7 +441,7 @@ const rawData = [
     region: '浦东',
     owner: '上海市水务局',
     status: '在建',
-    revenueCaliber: '结转在建项目',
+    revenueCaliber: '年初结转实施项目',
     isCoManaged: '否',
     businessType: '水环境治理',
     contractAmount: 125000000,
@@ -476,7 +479,7 @@ const rawData = [
     region: '黄浦',
     owner: '上海市城投集团',
     status: '在建',
-    revenueCaliber: '结转在建项目',
+    revenueCaliber: '年初结转实施项目',
     isCoManaged: '是',
     businessType: '管网改造',
     contractAmount: 86000000,
@@ -514,7 +517,7 @@ const rawData = [
     region: '徐汇',
     owner: '徐汇区市政工程管理中心',
     status: '完工',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '否',
     businessType: '泵站建设',
     contractAmount: 45000000,
@@ -552,7 +555,7 @@ const rawData = [
     region: '长宁',
     owner: '长宁区水务管理局',
     status: '待结算',
-    revenueCaliber: '结转在建项目',
+    revenueCaliber: '年初结转实施项目',
     isCoManaged: '是',
     businessType: '二次供水',
     contractAmount: 62000000,
@@ -590,7 +593,7 @@ const rawData = [
     region: '闵行',
     owner: '闵行区水务局',
     status: '在建',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '否',
     businessType: '管道建设',
     contractAmount: 98000000,
@@ -628,7 +631,7 @@ const rawData = [
     region: '浦东',
     owner: '浦东水务集团',
     status: '已结算',
-    revenueCaliber: '结转在建项目',
+    revenueCaliber: '年初结转实施项目',
     isCoManaged: '否',
     businessType: '管网维修',
     contractAmount: 35000000,
@@ -666,7 +669,7 @@ const rawData = [
     region: '松江',
     owner: '松江区生态环境局',
     status: '在建',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '是',
     businessType: '水环境治理',
     contractAmount: 156000000,
@@ -704,7 +707,7 @@ const rawData = [
     region: '嘉定',
     owner: '嘉定区水务局',
     status: '在建',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '否',
     businessType: '泵站建设',
     contractAmount: 78000000,
@@ -742,7 +745,7 @@ const rawData = [
     region: '青浦',
     owner: '青浦区水务局',
     status: '在建',
-    revenueCaliber: '结转在建项目',
+    revenueCaliber: '年初结转实施项目',
     isCoManaged: '否',
     businessType: '管道改造',
     contractAmount: 55000000,
@@ -780,7 +783,7 @@ const rawData = [
     region: '奉贤',
     owner: '奉贤区生态环境局',
     status: '在建',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '是',
     businessType: '污水处理',
     contractAmount: 138000000,
@@ -818,7 +821,7 @@ const rawData = [
     region: '金山',
     owner: '金山区市政工程管理中心',
     status: '完工',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '否',
     businessType: '管网建设',
     contractAmount: 68000000,
@@ -856,7 +859,7 @@ const rawData = [
     region: '虹口',
     owner: '虹口区水务管理局',
     status: '待结算',
-    revenueCaliber: '结转在建项目',
+    revenueCaliber: '年初结转实施项目',
     isCoManaged: '是',
     businessType: '二次供水',
     contractAmount: 42000000,
@@ -894,7 +897,7 @@ const rawData = [
     region: '杨浦',
     owner: '杨浦区绿化和市容管理局',
     status: '在建',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '否',
     businessType: '水环境治理',
     contractAmount: 89000000,
@@ -932,7 +935,7 @@ const rawData = [
     region: '宝山',
     owner: '宝山区水务局',
     status: '已结算',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '否',
     businessType: '泵站建设',
     contractAmount: 52000000,
@@ -970,7 +973,7 @@ const rawData = [
     region: '静安',
     owner: '静安区市政工程管理中心',
     status: '在建',
-    revenueCaliber: '结转在建项目',
+    revenueCaliber: '年初结转实施项目',
     isCoManaged: '是',
     businessType: '管道改造',
     contractAmount: 72000000,
@@ -1008,7 +1011,7 @@ const rawData = [
     region: '普陀',
     owner: '普陀区水务局',
     status: '在建',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '否',
     businessType: '管道建设',
     contractAmount: 95000000,
@@ -1046,7 +1049,7 @@ const rawData = [
     region: '崇明',
     owner: '崇明区生态环境局',
     status: '在建',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '否',
     businessType: '生态修复',
     contractAmount: 110000000,
@@ -1084,7 +1087,7 @@ const rawData = [
     region: '浦东',
     owner: '浦东新区水务局',
     status: '在建',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '否',
     businessType: '河道治理',
     contractAmount: 55000000,
@@ -1122,7 +1125,7 @@ const rawData = [
     region: '徐汇',
     owner: '徐汇区市政管理局',
     status: '在建',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '是',
     businessType: '管网改造',
     contractAmount: 78000000,
@@ -1160,7 +1163,7 @@ const rawData = [
     region: '浦东',
     owner: '浦东新区绿化局',
     status: '完工',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '否',
     businessType: '绿化工程',
     contractAmount: 28000000,
@@ -1198,7 +1201,7 @@ const rawData = [
     region: '宝山',
     owner: '宝山区水务局',
     status: '完工',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '是',
     businessType: '水厂建设',
     contractAmount: 180000000,
@@ -1236,7 +1239,7 @@ const rawData = [
     region: '嘉定',
     owner: '嘉定区信息中心',
     status: '在建',
-    revenueCaliber: '结转在建项目',
+    revenueCaliber: '年初结转实施项目',
     isCoManaged: '否',
     businessType: '信息化',
     contractAmount: 38000000,
@@ -1274,7 +1277,7 @@ const rawData = [
     region: '静安',
     owner: '静安区建交委',
     status: '在建',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '否',
     businessType: '管网改造',
     contractAmount: 85000000,
@@ -1312,7 +1315,7 @@ const rawData = [
     region: '松江',
     owner: '松江区水务局',
     status: '在建',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '是',
     businessType: '泵站维护',
     contractAmount: 22000000,
@@ -1350,7 +1353,7 @@ const rawData = [
     region: '浦东',
     owner: '浦东排水公司',
     status: '完工',
-    revenueCaliber: '结转在建项目',
+    revenueCaliber: '年初结转实施项目',
     isCoManaged: '否',
     businessType: '管网维护',
     contractAmount: 45000000,
@@ -1388,7 +1391,7 @@ const rawData = [
     region: '闵行',
     owner: '闵行区住房保障局',
     status: '完工',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '是',
     businessType: '二次供水',
     contractAmount: 52000000,
@@ -1426,7 +1429,7 @@ const rawData = [
     region: '嘉定',
     owner: '嘉定区水务局',
     status: '在建',
-    revenueCaliber: '结转在建项目',
+    revenueCaliber: '年初结转实施项目',
     isCoManaged: '是',
     businessType: '管网建设',
     contractAmount: 65000000,
@@ -1464,7 +1467,7 @@ const rawData = [
     region: '青浦',
     owner: '青浦区水务局',
     status: '完工',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '否',
     businessType: '检测服务',
     contractAmount: 18000000,
@@ -1502,7 +1505,7 @@ const rawData = [
     region: '奉贤',
     owner: '奉贤区水务局',
     status: '在建',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '否',
     businessType: '泵站改造',
     contractAmount: 42000000,
@@ -1540,7 +1543,7 @@ const rawData = [
     region: '金山',
     owner: '金山区生态环境局',
     status: '待结算',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '是',
     businessType: '监测站建设',
     contractAmount: 48000000,
@@ -1578,7 +1581,7 @@ const rawData = [
     region: '徐汇',
     owner: '徐汇区房管局',
     status: '在建',
-    revenueCaliber: '新增立项',
+    revenueCaliber: '新接项目',
     isCoManaged: '否',
     businessType: '二次供水',
     contractAmount: 36000000,
@@ -1616,7 +1619,7 @@ const rawData = [
     region: '普陀',
     owner: '普陀区水务局',
     status: '完工',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '否',
     businessType: '泵站建设',
     contractAmount: 72000000,
@@ -1654,7 +1657,7 @@ const rawData = [
     region: '长宁',
     owner: '长宁区建交委',
     status: '已结算',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '否',
     businessType: '管网改造',
     contractAmount: 58000000,
@@ -1692,7 +1695,7 @@ const rawData = [
     region: '浦东',
     owner: '浦东水务集团',
     status: '在建',
-    revenueCaliber: '结转在建项目',
+    revenueCaliber: '年初结转实施项目',
     isCoManaged: '是',
     businessType: '水厂升级',
     contractAmount: 125000000,
@@ -1730,7 +1733,7 @@ const rawData = [
     region: '黄浦',
     owner: '黄浦区生态环境局',
     status: '在建',
-    revenueCaliber: '完工待结算项目',
+    revenueCaliber: '年初结转待结项目',
     isCoManaged: '否',
     businessType: '信息化',
     contractAmount: 28000000,
@@ -1780,7 +1783,7 @@ const calculateTotalReportedRevenue = (data) => {
     const currentYear = now.getFullYear()
     const yearStart = new Date(currentYear, 0, 1)
     const startTimeVal = item.startTime ? new Date(item.startTime) : null
-    const isNewProject = item.revenueCaliber === '新增立项'
+    const isNewProject = item.revenueCaliber === '新接项目'
 
     let oneMonth = 30 * 24 * 60 * 60 * 1000
     let twoMonths = 2 * oneMonth
@@ -1862,9 +1865,12 @@ const filteredData = computed(() => {
   if (filters.value.projectCode) {
     data = data.filter(item => item.projectCode.includes(filters.value.projectCode))
   }
-  // 下调百分比过滤
+  // 下调百分比区间过滤
+  if (filters.value.planAdjustmentRateMin !== null && filters.value.planAdjustmentRateMin !== undefined) {
+    data = data.filter(item => item.planAdjustmentRate >= filters.value.planAdjustmentRateMin)
+  }
   if (filters.value.planAdjustmentRateMax !== null && filters.value.planAdjustmentRateMax !== undefined) {
-    data = data.filter(item => item.planAdjustmentRate < filters.value.planAdjustmentRateMax)
+    data = data.filter(item => item.planAdjustmentRate <= filters.value.planAdjustmentRateMax)
   }
   // 预警等级过滤（复用已有逻辑，但改为直接匹配 warningLevel 字段）
   if (filters.value.warningLevel) {
@@ -1883,13 +1889,13 @@ const filteredData = computed(() => {
 const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
   const end = start + pageSize.value
-  return calculateTotalReportedRevenue(rawData).slice(start, end)
+  return filteredData.value.slice(start, end)
 })
 
 // 切换页码时重置到第1页
 watch([() => filters.value.unit, () => filters.value.status, () => filters.value.revenueCaliber,
       () => filters.value.isCoManaged, () => filters.value.projectName, () => filters.value.projectCode,
-      () => filters.value.warningLevel], () => {
+      () => filters.value.warningLevel, () => filters.value.planAdjustmentRateMin, () => filters.value.planAdjustmentRateMax], () => {
   currentPage.value = 1
 })
 
@@ -1985,6 +1991,7 @@ const handleReset = () => {
     isCoManaged: '',
     projectName: '',
     projectCode: '',
+    planAdjustmentRateMin: null,
     planAdjustmentRateMax: null,
     warningLevel: ''
   }
@@ -2094,9 +2101,13 @@ onMounted(() => {
   
   if (props.initialFilter.statisticType) {
     const statisticTypeMap = {
-      '新接项目': '新增立项',
-      '结转在建项目': '结转在建项目',
-      '完工未结算项目': '完工待结算项目'
+      '新接项目': '新接项目',
+      '年初结转实施项目': '年初结转实施项目',
+      '年初结转待结项目': '年初结转待结项目',
+      // 旧名称兼容映射（从看板跳转时使用）
+      '新增立项': '年初结转实施项目',
+      '结转在建项目': '年初结转实施项目',
+      '完工待结算项目': '年初结转待结项目'
     }
     filters.value.revenueCaliber = statisticTypeMap[props.initialFilter.statisticType] || props.initialFilter.statisticType
   }
@@ -2112,6 +2123,13 @@ onMounted(() => {
   if (props.initialFilter.warningLevel) {
     filters.value.warningLevel = props.initialFilter.warningLevel
   }
+
+  // 校验：如果筛选后无数据但有原始数据，说明筛选条件可能过期，自动重置
+  nextTick(() => {
+    if (rawData.length > 0 && filteredData.value.length === 0) {
+      handleReset()
+    }
+  })
 })
 
 watch(filters, (newFilters) => {

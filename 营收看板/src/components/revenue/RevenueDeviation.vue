@@ -1400,7 +1400,7 @@ const filteredData = computed(() => {
 const monthlyPaginatedData = computed(() => {
   const start = (monthlyPage.value - 1) * monthlyPageSize.value
   const end = start + monthlyPageSize.value
-  return calculateDerivedFields(rawData).slice(start, end)
+  return filteredData.value.slice(start, end)
 })
 
 const quarterlyFilteredData = computed(() => {
@@ -1426,7 +1426,7 @@ const quarterlyFilteredData = computed(() => {
 const quarterlyPaginatedData = computed(() => {
   const start = (quarterlyPage.value - 1) * quarterlyPageSize.value
   const end = start + quarterlyPageSize.value
-  return calculateQuarterlyDerivedFields(quarterlyRawData).slice(start, end)
+  return quarterlyFilteredData.value.slice(start, end)
 })
 
 const formatNumber = (num) => {

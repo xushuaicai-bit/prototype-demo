@@ -1,10 +1,12 @@
 <template>
   <div class="space-y-4">
-    <SupplierContractReport 
-      v-if="currentReport === 'supplier-contract'" 
+    <SupplierContractReport
+      v-if="currentReport === 'supplier-contract'"
+      :initial-filter="reportFilter"
     />
-    <SupplierDetailReport 
-      v-else-if="currentReport === 'supplier-detail'" 
+    <SupplierDetailReport
+      v-else-if="currentReport === 'supplier-detail'"
+      :report-filter="reportFilter"
     />
   </div>
 </template>

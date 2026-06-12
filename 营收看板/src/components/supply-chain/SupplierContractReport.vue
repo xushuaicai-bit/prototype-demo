@@ -92,18 +92,69 @@
       </div>
 
       <div class="flex items-center">
-        <label class="text-sm text-gray-600 mr-2">预警等级：</label>
-        <el-select 
-          v-model="selectedSignStatus" 
-          placeholder="请选择预警等级"  
+        <label class="text-sm text-gray-600 mr-2">供应商名称：</label>
+        <el-select
+          v-model="selectedSupplier"
+          placeholder="请选择供应商"
           class="w-64"
           clearable
         >
-          <el-option 
-            v-for="signStatus in allSignStatus" 
-            :key="signStatus" 
-            :label="signStatus" 
-            :value="signStatus" 
+          <el-option
+            v-for="s in allSuppliers"
+            :key="s"
+            :label="s"
+            :value="s"
+          />
+        </el-select>
+      </div>
+
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">合同状态：</label>
+        <el-select
+          v-model="selectedContractStatus"
+          placeholder="请选择合同状态"
+          class="w-64"
+          clearable
+        >
+          <el-option
+            v-for="cs in allContractStatus"
+            :key="cs"
+            :label="cs"
+            :value="cs"
+          />
+        </el-select>
+      </div>
+
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">供应商等级：</label>
+        <el-select
+          v-model="selectedSupplierLevel"
+          placeholder="请选择供应商等级"
+          class="w-64"
+          clearable
+        >
+          <el-option
+            v-for="level in allSupplierLevels"
+            :key="level"
+            :label="level"
+            :value="level"
+          />
+        </el-select>
+      </div>
+
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">签订状态：</label>
+        <el-select
+          v-model="selectedSignStatus"
+          placeholder="请选择签订状态"
+          class="w-64"
+          clearable
+        >
+          <el-option
+            v-for="signStatus in allSignStatus"
+            :key="signStatus"
+            :label="signStatus"
+            :value="signStatus"
           />
         </el-select>
       </div>
@@ -162,15 +213,14 @@
         />
         
         <el-table-column
-          label="预警等级"
+          label="签订状态"
           prop="signStatus"
           width="100"
           align="center"
         >
           <template #default="scope">
-            <span :class="getSignStatusClass(scope.row)">
-              {{ getWarningLabel(scope.row) }}
-            </span>
+            <span v-if="scope.row.signStatus === '已签订'" class="text-green-600 font-medium">已签订</span>
+            <span v-else :class="getSignStatusClass(scope.row)">{{ getWarningLabel(scope.row) }}</span>
           </template>
         </el-table-column>
         
@@ -209,6 +259,38 @@
           width="130"
           align="center"
         />
+
+        <el-table-column
+          label="供应商名称"
+          prop="supplierName"
+          width="160"
+        />
+
+        <el-table-column
+          label="供应商等级"
+          prop="supplierLevel"
+          width="110"
+          align="center"
+        >
+          <template #default="scope">
+            <span :class="getSupplierLevelClass(scope.row.supplierLevel)">
+              {{ scope.row.supplierLevel }}
+            </span>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+          label="合同状态"
+          prop="contractStatus"
+          width="120"
+          align="center"
+        >
+          <template #default="scope">
+            <span :class="getContractStatusClass(scope.row.contractStatus)">
+              {{ scope.row.contractStatus }}
+            </span>
+          </template>
+        </el-table-column>
 
         <el-table-column
           label="分包合同名称"
@@ -250,6 +332,13 @@
         <el-table-column
           label="计划签订日期"
           prop="plannedDate"
+          width="130"
+          align="center"
+        />
+
+        <el-table-column
+          label="实际签订日期"
+          prop="actualDate"
           width="130"
           align="center"
         />
@@ -315,7 +404,11 @@ const selectedUnit = ref('')
 const selectedStatus = ref('')
 const selectedCategory = ref('')
 const selectedSignStatus = ref('')
+const selectedSupplier = ref('')
+const selectedContractStatus = ref('')
 const selectedOverdue = ref('')
+const selectedSupplierLevel = ref('')
+const allSupplierLevels = ['A', 'B', 'C']
 
 const allProjects = [
   '城乡水务局供水管网改造工程',
@@ -336,7 +429,8 @@ const allUnits = [
 
 const allStatus = ['特建', '在建', '停工', '完工', '当年竣工']
 const allCategories = ['专业分包', '劳务分包', '材料/设备采购', '周转材料/设备租赁']
-const allSignStatus = ['红色预警', '橙色预警', '黄色预警', '未签订']
+const allSignStatus = ['已签订', '未签订', '红色预警', '橙色预警', '黄色预警']
+const allContractStatus = ['正常履约', '履约结束', '违约中']
 const allOverdueOptions = [
   { label: '超期21-44天', value: '21-44' },
   { label: '超期45-60天', value: '45-60' },
@@ -417,6 +511,23 @@ const rawData = [
         overdueDays: 3,
         contractStartDate: '2026-02-04',
         contractEndDate: '2026-06-04'
+      },
+      {
+        category: '材料/设备采购',
+        supplierName: '天津建材供应公司',
+        supplierLevel: 'B',
+        contractStatus: '正常履约',
+        contractName: '阀门配件采购合同',
+        workScope: '各类阀门及管件采购',
+        workVolume: '1批',
+        plannedAmount: 800000,
+        contractForm: '比价',
+        plannedDate: '2026-03-01',
+        actualDate: '',
+        signStatus: '未签订',
+        overdueDays: 12,
+        contractStartDate: '',
+        contractEndDate: ''
       }
     ]
   },
@@ -476,6 +587,23 @@ const rawData = [
         overdueDays: 2,
         contractStartDate: '2026-02-07',
         contractEndDate: '2026-11-07'
+      },
+      {
+        category: '劳务分包',
+        supplierName: '苏州园林养护公司',
+        supplierLevel: 'C',
+        contractStatus: '正常履约',
+        contractName: '景观绿化补种劳务合同',
+        workScope: '苗木补种及日常养护',
+        workVolume: '2万平方米',
+        plannedAmount: 300000,
+        contractForm: '竞争性谈判',
+        plannedDate: '2026-03-05',
+        actualDate: '',
+        signStatus: '未签订',
+        overdueDays: 7,
+        contractStartDate: '',
+        contractEndDate: ''
       }
     ]
   },
@@ -526,6 +654,23 @@ const rawData = [
         overdueDays: 0,
         contractStartDate: '2026-03-01',
         contractEndDate: '2026-07-01'
+      },
+      {
+        category: '材料/设备采购',
+        supplierName: '南京电气设备公司',
+        supplierLevel: 'A',
+        contractStatus: '正常履约',
+        contractName: '配电柜采购合同',
+        workScope: '高低压配电柜及配套设备',
+        workVolume: '15台',
+        plannedAmount: 1200000,
+        contractForm: '集采',
+        plannedDate: '2026-03-10',
+        actualDate: '',
+        signStatus: '未签订',
+        overdueDays: 3,
+        contractStartDate: '',
+        contractEndDate: ''
       }
     ]
   },
@@ -975,8 +1120,14 @@ const applyInitialFilter = () => {
     if (props.initialFilter.overdueDays) {
       selectedOverdue.value = props.initialFilter.overdueDays
     }
-    if (props.initialFilter.unit) {
+    if (props.initialFilter.unit && props.initialFilter.unit !== '全部') {
       selectedUnit.value = props.initialFilter.unit
+    }
+    if (props.initialFilter.contractStatus) {
+      selectedContractStatus.value = props.initialFilter.contractStatus
+    }
+    if (props.initialFilter.supplierLevel) {
+      selectedSupplierLevel.value = props.initialFilter.supplierLevel
     }
   } else {
     try {
@@ -1009,12 +1160,33 @@ const filteredData = computed(() => {
   })
 })
 
+const allSuppliers = computed(() => {
+  const names = new Set()
+  rawData.forEach(project => {
+    project.contracts.forEach(c => {
+      if (c.supplierName) names.add(c.supplierName)
+    })
+  })
+  return [...names].sort()
+})
+
 const tableData = computed(() => {
   const result = []
   filteredData.value.forEach(project => {
     project.contracts.forEach(contract => {
       if (selectedCategory.value && contract.category !== selectedCategory.value) return
-      if (selectedSignStatus.value && getWarningLabel(contract) !== selectedSignStatus.value) return
+      if (selectedSignStatus.value) {
+        if (selectedSignStatus.value === '未签订') {
+          // 未签订 = 所有非已签订合同（含红/橙/黄预警）
+          if (contract.signStatus === '已签订') return
+        } else {
+          const statusVal = getWarningLabel(contract)
+          if (statusVal !== selectedSignStatus.value) return
+        }
+      }
+      if (selectedSupplier.value && contract.supplierName !== selectedSupplier.value) return
+      if (selectedContractStatus.value && contract.contractStatus !== selectedContractStatus.value) return
+      if (selectedSupplierLevel.value && contract.supplierLevel !== selectedSupplierLevel.value) return
       if (selectedOverdue.value) {
         const days = contract.overdueDays
         if (selectedOverdue.value === '21-44' && (days < 21 || days > 44)) return
@@ -1083,6 +1255,24 @@ const getWarningLabel = (row) => {
   return '未签订'
 }
 
+const getSupplierLevelClass = (level) => {
+  const classMap = {
+    'A': 'px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700',
+    'B': 'px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700',
+    'C': 'px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700'
+  }
+  return classMap[level] || ''
+}
+
+const getContractStatusClass = (status) => {
+  const classMap = {
+    '正常履约': 'text-green-600 font-medium',
+    '履约结束': 'text-gray-500',
+    '违约中': 'text-red-500 font-medium'
+  }
+  return classMap[status] || ''
+}
+
 const handleSearch = () => {
   // 搜索：filteredData computed 已自动响应筛选条件变化
 }
@@ -1092,6 +1282,9 @@ const handleReset = () => {
   selectedUnit.value = ''
   selectedStatus.value = ''
   selectedCategory.value = ''
+  selectedSupplier.value = ''
+  selectedContractStatus.value = ''
+  selectedSupplierLevel.value = ''
   selectedSignStatus.value = ''
   selectedOverdue.value = ''
 }

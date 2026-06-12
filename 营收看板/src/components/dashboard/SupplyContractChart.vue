@@ -303,6 +303,19 @@ const initChart = () => {
     } else {
       if (params.name && params.name !== '全部') {
         filter.unit = params.name
+        // 根据点击的堆叠段（seriesName）补充状态筛选
+        if (params.seriesName === '未签') {
+          filter.signStatus = '未签订'
+        } else if (params.seriesName === '红色预警') {
+          filter.signStatus = '未签订'
+          filter.overdueDays = '60+'
+        } else if (params.seriesName === '橙色预警') {
+          filter.signStatus = '未签订'
+          filter.overdueDays = '45-60'
+        } else if (params.seriesName === '黄色预警') {
+          filter.signStatus = '未签订'
+          filter.overdueDays = '21-44'
+        }
       }
     }
     
