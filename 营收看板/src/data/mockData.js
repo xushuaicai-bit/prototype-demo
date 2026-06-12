@@ -1,5 +1,5 @@
 export const projectStats = [
-  { title: '特建', value: '78', unit: '个' },
+  { title: '待建', value: '78', unit: '个' },
   { title: '在建', value: '397', unit: '个' },
   { title: '停工', value: '579', unit: '个' },
   { title: '完工', value: '1458', unit: '个' },

@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-4">
-    <RevenueSummary 
-      v-if="currentReport === 'revenue-summary'" 
-      :initial-filter="reportFilter.unit"
+    <RevenueSummary
+      v-if="currentReport === 'revenue-summary'"
+      :initial-filter="reportFilter"
       @navigate="$emit('navigate', $event)"
     />
     <RevenueDetail 
@@ -10,9 +10,9 @@
       :initial-filter="reportFilter"
     />
     <RevenueDeviation v-else-if="currentReport === 'revenue-deviation'" />
-    <RevenueSummary 
+    <RevenueSummary
       v-else
-      :initial-filter="reportFilter.unit"
+      :initial-filter="reportFilter"
       @navigate="$emit('navigate', $event)"
     />
   </div>

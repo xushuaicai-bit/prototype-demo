@@ -441,8 +441,8 @@ const handleDetailDrill = (statisticType) => {
 const handleSummaryDrill = (tabType) => {
   const tabMap = {
     '施工类': 'construction',
-    '产品类': 'product-revenue',
-    '其他业态类': 'other-revenue'
+    '产品类': 'product',
+    '其他类': 'other'
   }
   emit('navigate', {
     view: 'revenue',

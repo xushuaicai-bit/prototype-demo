@@ -24,7 +24,7 @@
         <el-tabs v-model="activeTab" type="card" class="w-full">
           <el-tab-pane label="施工类总营收" name="construction"></el-tab-pane>
           <el-tab-pane label="产品类总营收" name="product"></el-tab-pane>
-          <el-tab-pane label="其他业态总营收" name="other"></el-tab-pane>
+          <el-tab-pane label="其他类总营收" name="other"></el-tab-pane>
         </el-tabs>
       </div>
     </div>
@@ -503,8 +503,10 @@ const otherPageSize = ref(10)
 
 onMounted(() => {
   if (typeof props.initialFilter === 'object') {
+    // 下钻场景：优先使用传入的 tab
     if (props.initialFilter.tab) {
       activeTab.value = props.initialFilter.tab
+      sessionStorage.setItem('revenueTab', props.initialFilter.tab)
     }
     if (props.initialFilter.unit && props.initialFilter.unit !== '全部') {
       selectedUnits.value = [props.initialFilter.unit]
@@ -514,11 +516,10 @@ onMounted(() => {
     if (savedFilter && savedFilter !== '全部') {
       selectedUnits.value = [savedFilter]
     }
-  }
-  
-  const savedTab = sessionStorage.getItem('revenueTab')
-  if (savedTab) {
-    activeTab.value = savedTab
+    const savedTab = sessionStorage.getItem('revenueTab')
+    if (savedTab) {
+      activeTab.value = savedTab
+    }
   }
 })
 

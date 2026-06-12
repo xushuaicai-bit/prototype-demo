@@ -23,13 +23,20 @@
       </div>
 
       <div class="grid grid-cols-3 gap-3 flex-1 items-stretch">
-        <div
-          v-for="(alert, index) in redAlerts"
-          :key="index"
-          class="text-center p-2 bg-red-50 rounded-lg flex flex-col justify-center"
-        >
-          <div class="text-lg font-bold text-red-600">{{ alert }}</div>
-          <div class="text-xs text-gray-500">红色预警</div>
+        <!-- 开单红色预警 -->
+        <div class="text-center p-2 bg-red-50 rounded-lg flex flex-col justify-center">
+          <div class="text-lg font-bold text-red-600">{{ redAlerts[0] }}</div>
+          <div class="text-xs text-gray-500">开单红色预警</div>
+        </div>
+        <!-- 开单橙色预警 -->
+        <div class="text-center p-2 bg-orange-50 rounded-lg flex flex-col justify-center">
+          <div class="text-lg font-bold text-orange-600">{{ redAlerts[1] }}</div>
+          <div class="text-xs text-gray-500">开单橙色预警</div>
+        </div>
+        <!-- 开单黄色预警 -->
+        <div class="text-center p-2 bg-yellow-50 rounded-lg flex flex-col justify-center">
+          <div class="text-lg font-bold text-yellow-600">{{ redAlerts[2] }}</div>
+          <div class="text-xs text-gray-500">开单黄色预警</div>
         </div>
       </div>
     </div>
