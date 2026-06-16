@@ -461,16 +461,37 @@
           </svg>
           <h2 class="text-lg font-semibold text-gray-800">生产看板</h2>
         </div>
-        <div class="text-right cursor-pointer" @click="handleProjectTotalClick">
-          <div class="text-lg font-bold text-blue-600 hover:text-yellow-600 transition-colors">{{ totalProjectCount }}</div>
-          <div class="text-xs text-gray-500">项目总数</div>
+        <div class="flex items-center gap-3">
+          <!-- 年份选择器 -->
+          <div class="flex items-center space-x-1">
+            <span class="text-xs text-gray-500">年份:</span>
+            <select v-model="productionYear" class="border rounded px-1.5 py-0.5 text-xs">
+              <option value="">全部</option>
+              <option value="2026">2026年</option>
+              <option value="2025">2025年</option>
+            </select>
+          </div>
+          <!-- 仅看产运重点项目 -->
+          <div class="flex items-center space-x-1 px-2 py-0.5 rounded border cursor-pointer hover:bg-gray-50 select-none"
+               :class="showKeyProjectsOnly ? 'bg-blue-50 border-blue-300' : 'border-gray-200'"
+               @click="showKeyProjectsOnly = !showKeyProjectsOnly">
+            <input type="checkbox" :checked="showKeyProjectsOnly" class="w-3 h-3 rounded cursor-pointer" @click.stop />
+            <span class="text-xs whitespace-nowrap" :class="showKeyProjectsOnly ? 'text-blue-700 font-medium' : 'text-gray-600'">
+              仅看产运重点项目
+            </span>
+          </div>
+          <!-- 项目总数 -->
+          <div class="text-right cursor-pointer" @click="handleProjectTotalClick">
+            <div class="text-lg font-bold text-blue-600 hover:text-yellow-600 transition-colors">{{ totalProjectCount }}</div>
+            <div class="text-xs text-gray-500">项目总数</div>
+          </div>
         </div>
       </div>
       <div class="space-y-4">
         <div class="grid grid-cols-12 gap-3 items-stretch">
           <div class="col-span-12 grid grid-cols-5 gap-3">
-            <ProjectStatCard 
-              v-for="stat in projectStats" 
+            <ProjectStatCard
+              v-for="stat in displayProjectStats" 
               :key="stat.title"
               :title="stat.title"
               :value="stat.value"
@@ -481,39 +502,40 @@
           </div>
           
           <div class="col-span-4 cursor-pointer" @click="handleManagementTimelinessClick">
-            <ManagementTimeliness 
-              :title="managementTimelinessData.title"
-              :registration-alerts="managementTimelinessData.registrationAlerts"
-              :planning-alerts="managementTimelinessData.planningAlerts"
-              :sub-items="managementTimelinessData.subItems"
+            <ManagementTimeliness
+              :title="displayManagementTimeliness.title"
+              :registration-alerts="displayManagementTimeliness.registrationAlerts"
+              :planning-alerts="displayManagementTimeliness.planningAlerts"
+              :sub-items="displayManagementTimeliness.subItems"
             />
           </div>
           
           <div class="col-span-4 cursor-pointer" @click="handleRiskTimelinessClick">
-            <RiskTimelinessDisplay :timeliness-data="riskAlertTimeliness" :risk-by-level="riskByLevel" />
+            <RiskTimelinessDisplay :timeliness-data="displayRiskAlertTimeliness" :risk-by-level="displayRiskByLevel" />
           </div>
           
           <div class="col-span-4 cursor-pointer" @click="handleProductionRiskClick">
-            <ProductionRiskSituation 
-              :risk-data="riskByLevel"
+            <ProductionRiskSituation
+              :risk-data="displayRiskByLevel"
               :alerts="windRiskAlert"
             />
           </div>
           
           <div class="col-span-4 cursor-pointer" @click="handleProductionProgressClick">
-            <ProductionProgress 
+            <ProductionProgress
+              :key-project-mode="showKeyProjectsOnly"
               :milestone-title="productionProgress.milestone.title"
               :milestone-total="productionProgress.milestone.total"
               :completed-count="productionProgress.completed.count"
               :completed-total="productionProgress.completed.total"
               :alerts="productionProgress.alerts"
-              :key-project-count="keyProjectProgress.keyProjectCount"
-              :unreported-count="keyProjectProgress.unreportedCount"
-              :key-project-milestone-title="keyProjectProgress.milestone.title"
-              :key-project-milestone-total="keyProjectProgress.milestone.total"
-              :key-project-completed-count="keyProjectProgress.completed.count"
-              :key-project-completed-total="keyProjectProgress.completed.total"
-              :key-project-alerts="keyProjectProgress.alerts"
+              :key-project-count="displayKeyProjectProgress.keyProjectCount"
+              :unreported-count="displayKeyProjectProgress.unreportedCount"
+              :key-project-milestone-title="displayKeyProjectProgress.milestone.title"
+              :key-project-milestone-total="displayKeyProjectProgress.milestone.total"
+              :key-project-completed-count="displayKeyProjectProgress.completed.count"
+              :key-project-completed-total="displayKeyProjectProgress.completed.total"
+              :key-project-alerts="displayKeyProjectProgress.alerts"
             />
           </div>
           
@@ -570,7 +592,13 @@ import {
   productionProgress,
   keyProjectProgress,
   certificateData,
-  inspectionData
+  inspectionData,
+  completedByYear,
+  keyProjectOnlyStats,
+  keyProjectOnlyManagementTimeliness,
+  keyProjectOnlyRiskAlertTimeliness,
+  keyProjectOnlyRiskByLevel,
+  keyProjectOnlyKeyProjectProgress
 } from '../data/mockData.js'
 
 const emit = defineEmits(['navigate', 'drill-down', 'menu-change'])
@@ -1084,6 +1112,43 @@ const handleScSupplierStatDrill = (drillData) => {
 
 // ============ 生产看板的全部 script 逻辑 ============
 const activeCategory = ref(categoryTabs[0].name)
+
+// 年份筛选（仅对完工、当年竣工生效）
+const productionYear = ref('')
+
+// 仅看产运重点项目切换
+const showKeyProjectsOnly = ref(false)
+
+// 项目统计数据：年份筛选仅影响完工(索引3)和当年竣工(索引4)
+const displayProjectStats = computed(() => {
+  const baseStats = showKeyProjectsOnly.value ? keyProjectOnlyStats : projectStats
+  const yearData = productionYear.value ? completedByYear[productionYear.value] : completedByYear.default
+  return baseStats.map((item, idx) => {
+    if (idx === 3) return { ...item, value: yearData.completed }
+    if (idx === 4) return { ...item, value: yearData.currentYear }
+    return item
+  })
+})
+
+// 管理提示及时性（仅受重点项目影响）
+const displayManagementTimeliness = computed(() =>
+  showKeyProjectsOnly.value ? keyProjectOnlyManagementTimeliness : managementTimelinessData
+)
+
+// 风险预警及时性（仅受重点项目影响）
+const displayRiskAlertTimeliness = computed(() =>
+  showKeyProjectsOnly.value ? keyProjectOnlyRiskAlertTimeliness : riskAlertTimeliness
+)
+
+// 风险等级分布（仅受重点项目影响）
+const displayRiskByLevel = computed(() =>
+  showKeyProjectsOnly.value ? keyProjectOnlyRiskByLevel : riskByLevel
+)
+
+// 重点项目生产进度（仅受重点项目影响）
+const displayKeyProjectProgress = computed(() =>
+  showKeyProjectsOnly.value ? keyProjectOnlyKeyProjectProgress : keyProjectProgress
+)
 
 const handleCategoryChange = (name) => {
   activeCategory.value = name

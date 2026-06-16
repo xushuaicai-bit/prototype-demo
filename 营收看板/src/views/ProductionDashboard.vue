@@ -17,17 +17,28 @@
           </div>
           <div class="flex items-center space-x-2">
             <span class="text-sm text-gray-500">年份:</span>
-            <select class="border rounded px-2 py-1 text-sm">
-              <option>2026年</option>
-              <option>2025年</option>
+            <select v-model="selectedYear" class="border rounded px-2 py-1 text-sm">
+              <option value="">全部</option>
+              <option value="2026">2026年</option>
+              <option value="2025">2025年</option>
             </select>
+          </div>
+          <div
+            class="flex items-center space-x-1 px-2 py-1 rounded-md border cursor-pointer hover:bg-gray-50 transition-colors select-none shrink-0"
+            :class="showKeyProjectsOnly ? 'bg-blue-50 border-blue-300' : 'border-gray-200'"
+            @click="showKeyProjectsOnly = !showKeyProjectsOnly"
+          >
+            <input type="checkbox" :checked="showKeyProjectsOnly" class="w-3 h-3 rounded cursor-pointer" @click.stop />
+            <span class="text-xs whitespace-nowrap" :class="showKeyProjectsOnly ? 'text-blue-700 font-medium' : 'text-gray-600'">
+              仅看产运重点项目
+            </span>
           </div>
         </div>
       </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
-      <div v-for="stat in projectStats" :key="stat.title" class="bg-white rounded-xl p-4 shadow-sm">
+      <div v-for="stat in displayProjectStats" :key="stat.title" class="bg-white rounded-xl p-4 shadow-sm">
         <div class="text-sm text-gray-500 mb-1">{{ stat.title }}</div>
         <div class="flex items-baseline">
           <span class="text-2xl font-bold text-gray-800">{{ stat.value }}</span>
@@ -43,20 +54,20 @@
           <div class="flex space-x-4 text-xs">
             <span class="flex items-center">
               <span class="w-2 h-2 rounded-full bg-red-500 mr-1"></span>
-              红色: {{ managementTimelinessData.redAlert }}
+              红色: {{ displayManagementTimeliness.redAlert }}
             </span>
             <span class="flex items-center">
               <span class="w-2 h-2 rounded-full bg-orange-500 mr-1"></span>
-              橙色: {{ managementTimelinessData.orangeAlert }}
+              橙色: {{ displayManagementTimeliness.orangeAlert }}
             </span>
             <span class="flex items-center">
               <span class="w-2 h-2 rounded-full bg-yellow-500 mr-1"></span>
-              黄色: {{ managementTimelinessData.yellowAlert }}
+              黄色: {{ displayManagementTimeliness.yellowAlert }}
             </span>
           </div>
         </div>
         <div class="grid grid-cols-3 gap-2">
-          <div v-for="item in managementTimelinessData.subItems" :key="item.name" class="bg-gray-50 rounded-lg p-2 text-center">
+          <div v-for="item in displayManagementTimeliness.subItems" :key="item.name" class="bg-gray-50 rounded-lg p-2 text-center">
             <div class="text-xs text-gray-500">{{ item.name }}</div>
             <div class="text-sm font-semibold text-gray-800">{{ item.value }}</div>
           </div>
@@ -66,7 +77,7 @@
       <div class="lg:col-span-1 bg-white rounded-xl p-4 shadow-sm">
         <h3 class="text-base font-semibold text-gray-800 mb-3">风险预警</h3>
         <div class="space-y-3">
-          <div v-for="item in riskAlertTimeliness" :key="item.title" class="flex items-center justify-between text-sm">
+          <div v-for="item in displayRiskAlertTimeliness" :key="item.title" class="flex items-center justify-between text-sm">
             <span class="text-gray-600 truncate max-w-40">{{ item.title }}</span>
             <span class="font-medium text-gray-800">{{ item.value }}</span>
           </div>
@@ -76,7 +87,7 @@
       <div class="lg:col-span-1 bg-white rounded-xl p-4 shadow-sm">
         <h3 class="text-base font-semibold text-gray-800 mb-3">风险等级分布</h3>
         <div class="space-y-3">
-          <div v-for="item in riskByLevel" :key="item.level" class="flex items-center">
+          <div v-for="item in displayRiskByLevel" :key="item.level" class="flex items-center">
             <div class="flex-1">
               <div class="flex justify-between text-sm mb-1">
                 <span class="text-gray-600">{{ item.level }}</span>
@@ -149,17 +160,17 @@
       <div class="lg:col-span-1 bg-white rounded-xl p-4 shadow-sm">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-base font-semibold text-gray-800">重点管控里程碑</h3>
-          <span class="text-xs text-red-500">未上报: {{ keyProjectProgress.unreportedCount }}个</span>
+          <span class="text-xs text-red-500">未上报: {{ displayKeyProjectProgress.unreportedCount }}个</span>
         </div>
         <div class="text-center py-4">
-          <div class="text-3xl font-bold text-blue-600">{{ keyProjectProgress.completed.count }}</div>
-          <div class="text-sm text-gray-500">完成/{{ keyProjectProgress.milestone.total }}个</div>
-          <div class="text-xs text-gray-400">重点项目 {{ keyProjectProgress.keyProjectCount }}个</div>
+          <div class="text-3xl font-bold text-blue-600">{{ displayKeyProjectProgress.completed.count }}</div>
+          <div class="text-sm text-gray-500">完成/{{ displayKeyProjectProgress.milestone.total }}个</div>
+          <div class="text-xs text-gray-400">重点项目 {{ displayKeyProjectProgress.keyProjectCount }}个</div>
         </div>
         <div class="flex justify-between mt-2 text-xs text-gray-500">
-          <span>红色: {{ keyProjectProgress.alerts.red }}</span>
-          <span>橙色: {{ keyProjectProgress.alerts.orange }}</span>
-          <span>黄色: {{ keyProjectProgress.alerts.yellow }}</span>
+          <span>红色: {{ displayKeyProjectProgress.alerts.red }}</span>
+          <span>橙色: {{ displayKeyProjectProgress.alerts.orange }}</span>
+          <span>黄色: {{ displayKeyProjectProgress.alerts.yellow }}</span>
         </div>
       </div>
 
@@ -212,7 +223,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import {
   projectStats,
@@ -223,12 +234,55 @@ import {
   productionProgress,
   keyProjectProgress,
   certificateData,
-  inspectionData
+  inspectionData,
+  completedByYear,
+  keyProjectOnlyStats,
+  keyProjectOnlyManagementTimeliness,
+  keyProjectOnlyRiskAlertTimeliness,
+  keyProjectOnlyRiskByLevel,
+  keyProjectOnlyKeyProjectProgress
 } from '../data/mockData.js'
 
 const riskAlertChartRef = ref(null)
 const inspectionChartRef = ref(null)
 const productionTrendChartRef = ref(null)
+
+// 年份筛选（仅对完工、当年竣工生效）
+const selectedYear = ref('')
+
+// 仅看产运重点项目切换
+const showKeyProjectsOnly = ref(false)
+
+// 项目统计数据：年份筛选仅影响完工(索引3)和当年竣工(索引4)
+const displayProjectStats = computed(() => {
+  const baseStats = showKeyProjectsOnly.value ? keyProjectOnlyStats : projectStats
+  const yearData = selectedYear.value ? completedByYear[selectedYear.value] : completedByYear.default
+  return baseStats.map((item, idx) => {
+    if (idx === 3) return { ...item, value: yearData.completed }
+    if (idx === 4) return { ...item, value: yearData.currentYear }
+    return item
+  })
+})
+
+// 管理提示及时性（仅受重点项目影响）
+const displayManagementTimeliness = computed(() =>
+  showKeyProjectsOnly.value ? keyProjectOnlyManagementTimeliness : managementTimelinessData
+)
+
+// 风险预警及时性（仅受重点项目影响）
+const displayRiskAlertTimeliness = computed(() =>
+  showKeyProjectsOnly.value ? keyProjectOnlyRiskAlertTimeliness : riskAlertTimeliness
+)
+
+// 风险等级分布（仅受重点项目影响）
+const displayRiskByLevel = computed(() =>
+  showKeyProjectsOnly.value ? keyProjectOnlyRiskByLevel : riskByLevel
+)
+
+// 重点项目生产进度（仅受重点项目影响）
+const displayKeyProjectProgress = computed(() =>
+  showKeyProjectsOnly.value ? keyProjectOnlyKeyProjectProgress : keyProjectProgress
+)
 
 let charts = []
 

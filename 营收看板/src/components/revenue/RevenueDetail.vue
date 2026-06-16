@@ -93,6 +93,18 @@
           </el-select>
         </div>
 
+        <div class="flex items-center">
+          <label class="text-sm text-gray-600 mr-2">年月：</label>
+          <el-select v-model="filters.detailYear" placeholder="年" class="w-24">
+            <el-option label="2026年" value="2026" />
+            <el-option label="2025年" value="2025" />
+            <el-option label="2024年" value="2024" />
+          </el-select>
+          <el-select v-model="filters.detailMonth" placeholder="月" class="w-20 ml-1">
+            <el-option v-for="m in monthOptions" :key="m.value" :label="m.label" :value="m.value" />
+          </el-select>
+        </div>
+
         <div class="flex items-center gap-2 ml-auto">
           <button
             class="flex items-center px-4 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
@@ -426,7 +438,9 @@ const filters = ref({
   projectCode: '',
   planAdjustmentRateMin: null,
   planAdjustmentRateMax: null,
-  warningLevel: ''
+  warningLevel: '',
+  detailYear: '2026',
+  detailMonth: ''
 })
 
 const editingCell = ref('')

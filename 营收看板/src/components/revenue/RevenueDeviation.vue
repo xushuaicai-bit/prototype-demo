@@ -63,8 +63,11 @@
         </div>
 
         <div class="flex items-center">
-          <label class="text-sm text-gray-600 mr-2">月份选择 (N)：</label>
-          <el-select v-model="selectedMonth" placeholder="请选择月份" class="w-28">
+          <label class="text-sm text-gray-600 mr-2">年月：</label>
+          <el-select v-model="deviationYear" placeholder="年" class="w-24">
+            <el-option v-for="y in yearOptions" :key="y.value" :label="y.label" :value="y.value" />
+          </el-select>
+          <el-select v-model="deviationMonth" placeholder="月" class="w-20 ml-1">
             <el-option v-for="m in monthOptions" :key="m.value" :label="m.label" :value="m.value" />
           </el-select>
         </div>
@@ -218,7 +221,7 @@
           </el-table-column>
 
           <el-table-column
-            :label="`${selectedMonth}计划营收`"
+            :label="`${deviationMonth}计划营收`"
             width="130"
             align="right"
           >
@@ -240,7 +243,7 @@
           </el-table-column>
 
           <el-table-column
-            :label="`${selectedMonth}完成营收`"
+            :label="`${deviationMonth}完成营收`"
             width="130"
             align="right"
           >
@@ -262,7 +265,7 @@
           </el-table-column>
 
           <el-table-column
-            :label="`${selectedMonth}营收完成率`"
+            :label="`${deviationMonth}营收完成率`"
             width="140"
             align="center"
           >
@@ -283,7 +286,7 @@
           </el-table-column>
 
           <el-table-column
-            :label="`${selectedMonth}营收偏差`"
+            :label="`${deviationMonth}营收偏差`"
             width="130"
             align="right"
           >
@@ -295,7 +298,7 @@
           </el-table-column>
 
           <el-table-column
-            :label="`${selectedMonth}营收偏差原因`"
+            :label="`${deviationMonth}营收偏差原因`"
             prop="deviationReason"
             width="180"
           >
@@ -310,19 +313,8 @@
             width="200"
           >
             <template #default="scope">
-              <span
-                class="cursor-pointer hover:bg-blue-100 px-1 rounded block truncate"
-                @dblclick="startEdit(scope.row, 'correctiveMeasures')"
-              >
-                <el-textarea
-                  v-if="editingCell === `${scope.row.id}-correctiveMeasures`"
-                  v-model="editValue"
-                  @blur="finishEdit(scope.row, 'correctiveMeasures')"
-                  @keyup.enter="finishEdit(scope.row, 'correctiveMeasures')"
-                  class="w-full"
-                  :rows="2"
-                />
-                <span v-else>{{ scope.row.correctiveMeasures || '点击编辑' }}</span>
+              <span class="px-1 rounded block truncate">
+                {{ scope.row.correctiveMeasures || '' }}
               </span>
             </template>
           </el-table-column>
@@ -438,6 +430,16 @@
             <el-option label="全部" value="" />
             <el-option label="是" value="是" />
             <el-option label="否" value="否" />
+          </el-select>
+        </div>
+
+        <div class="flex items-center">
+          <label class="text-sm text-gray-600 mr-2">年月：</label>
+          <el-select v-model="quarterlyYear" placeholder="年" class="w-24">
+            <el-option v-for="y in yearOptions" :key="y.value" :label="y.label" :value="y.value" />
+          </el-select>
+          <el-select v-model="quarterlyMonth" placeholder="月" class="w-20 ml-1">
+            <el-option v-for="m in monthOptions" :key="m.value" :label="m.label" :value="m.value" />
           </el-select>
         </div>
       </div>
@@ -649,19 +651,8 @@
             width="200"
           >
             <template #default="scope">
-              <span
-                class="cursor-pointer hover:bg-blue-100 px-1 rounded block truncate"
-                @dblclick="startEdit(scope.row, 'correctiveMeasures')"
-              >
-                <el-textarea
-                  v-if="editingCell === `${scope.row.id}-correctiveMeasures`"
-                  v-model="editValue"
-                  @blur="finishEdit(scope.row, 'correctiveMeasures')"
-                  @keyup.enter="finishEdit(scope.row, 'correctiveMeasures')"
-                  class="w-full"
-                  :rows="2"
-                />
-                <span v-else>{{ scope.row.correctiveMeasures || '点击编辑' }}</span>
+              <span class="px-1 rounded block truncate">
+                {{ scope.row.correctiveMeasures || '' }}
               </span>
             </template>
           </el-table-column>
@@ -745,7 +736,16 @@ const monthOptions = [
   { value: '12月', label: '12月' }
 ]
 
-const selectedMonth = ref('8月')
+const yearOptions = [
+  { value: '2026', label: '2026年' },
+  { value: '2025', label: '2025年' },
+  { value: '2024', label: '2024年' }
+]
+
+const deviationYear = ref('2026')
+const deviationMonth = ref('8')
+const quarterlyYear = ref('2026')
+const quarterlyMonth = ref('')
 const activeDeviationTab = ref('monthly')
 
 const filters = ref({
@@ -1552,12 +1552,12 @@ const handleReset = () => {
     unit: '',
     deviationType: ''
   }
-  selectedMonth.value = ''
+  deviationMonth.value = ''
 }
 
 const exportExcel = () => {
   if (activeDeviationTab.value === 'monthly') {
-    const monthLabel = selectedMonth.value
+    const monthLabel = deviationMonth.value
     const exportData = filteredData.value.map((item, index) => ({
       '序号': index + 1,
       '项目编号': item.projectCode,

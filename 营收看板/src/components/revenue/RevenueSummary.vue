@@ -30,40 +30,57 @@
     </div>
 
     <div v-if="activeTab === 'construction'" class="mb-4 p-3 bg-gray-50 rounded-lg">
-      <div class="flex items-center">
-        <label class="text-sm text-gray-600 mr-2">基层单位：</label>
-        <el-select 
-          v-model="selectedUnits" 
-          multiple 
-          placeholder="请选择基层单位" 
-          class="w-80"
-          collapse-tags
-        >
-          <el-option 
-            v-for="unit in allUnits" 
-            :key="unit" 
-            :label="unit" 
-            :value="unit" 
-          />
-        </el-select>
-        <button 
-          class="ml-2 flex items-center px-4 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
-          @click="handleSearch"
-        >
-          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          搜索
-        </button>
-        <button
-          class="ml-2 flex items-center px-4 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50 transition-colors"
-          @click="handleReset"
-        >
-          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          重置
-        </button>
+      <div class="flex items-center flex-wrap gap-4">
+        <div class="flex items-center">
+          <label class="text-sm text-gray-600 mr-2">基层单位：</label>
+          <el-select
+            v-model="selectedUnits"
+            multiple
+            placeholder="请选择基层单位"
+            class="w-80"
+            collapse-tags
+          >
+            <el-option
+              v-for="unit in allUnits"
+              :key="unit"
+              :label="unit"
+              :value="unit"
+            />
+          </el-select>
+        </div>
+
+        <div class="flex items-center">
+          <label class="text-sm text-gray-600 mr-2">年月：</label>
+          <el-select v-model="summaryYear" placeholder="年" class="w-24">
+            <el-option label="2026年" value="2026" />
+            <el-option label="2025年" value="2025" />
+            <el-option label="2024年" value="2024" />
+          </el-select>
+          <el-select v-model="summaryMonth" placeholder="月" class="w-20 ml-1">
+            <el-option v-for="m in summaryMonthOptions" :key="m" :label="m + '月'" :value="m" />
+          </el-select>
+        </div>
+
+        <div class="flex items-center gap-2 ml-auto">
+          <button
+            class="flex items-center px-4 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+            @click="handleSearch"
+          >
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            搜索
+          </button>
+          <button
+            class="flex items-center px-4 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50 transition-colors"
+            @click="handleReset"
+          >
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            重置
+          </button>
+        </div>
       </div>
     </div>
 
@@ -490,6 +507,9 @@ const props = defineProps({
 })
 
 const activeTab = ref('construction')
+const summaryYear = ref('2026')
+const summaryMonth = ref('')
+const summaryMonthOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const selectedUnits = ref([])
 const constructionTotals = ref(null)
 

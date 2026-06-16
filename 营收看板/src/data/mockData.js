@@ -326,6 +326,62 @@ export const techDashboardData = {
   }
 }
 
+// 按年份的完工/当年竣工数据（仅对这两个指标生效）
+export const completedByYear = {
+  default: { completed: '1458', currentYear: '22' },
+  '2026': { completed: '320', currentYear: '22' },
+  '2025': { completed: '280', currentYear: '18' }
+}
+
+// 仅看产运重点项目时的数据（约为全量的40%）
+export const keyProjectOnlyStats = [
+  { title: '待建', value: '31', unit: '个' },
+  { title: '在建', value: '159', unit: '个' },
+  { title: '停工', value: '232', unit: '个' },
+  { title: '完工', value: '583', unit: '个' },
+  { title: '当年竣工', value: '9', unit: '个' }
+]
+
+export const keyProjectOnlyManagementTimeliness = {
+  title: '管理提示及时性',
+  registrationAlerts: { red: 8, orange: 5, yellow: 9 },
+  planningAlerts: { red: 6, orange: 3, yellow: 7 },
+  subItems: [
+    { name: '待登记', value: 120 },
+    { name: '已登记', value: 83 },
+    { name: '应登记', value: 203 },
+    { name: '应筹划', value: 203 },
+    { name: '待筹划', value: 120 },
+    { name: '项目筹划完成率', value: '41%' },
+    { name: '基本信息完成率', value: '69%' }
+  ]
+}
+
+export const keyProjectOnlyRiskAlertTimeliness = [
+  { title: '当年一、二级风险数量', value: '4个' },
+  { title: '当前进入风险数量', value: '6个' },
+  { title: '当年完成风险数量', value: '3个' },
+  { title: '当年剩余风险数量', value: '3个' },
+  { title: '未来两周进入风险数量（按等级+总量）', value: '4个' },
+  { title: 'I级未来两周进入风险数量', value: '1个' },
+  { title: 'II级未来两周进入风险数量', value: '2个' },
+  { title: 'III级未来两周进入风险数量', value: '1个' }
+]
+
+export const keyProjectOnlyRiskByLevel = [
+  { level: 'I级风险', count: 1, completed: 0 },
+  { level: 'II级风险', count: 2, completed: 0 },
+  { level: 'III级风险', count: 3, completed: 1 }
+]
+
+export const keyProjectOnlyKeyProjectProgress = {
+  milestone: { title: '重点管控里程碑节点', total: 58 },
+  completed: { count: 14, total: 58 },
+  alerts: { red: 1, orange: 5, yellow: 7 },
+  keyProjectCount: 8,
+  unreportedCount: 1
+}
+
 export const researchDashboardData = {
   projects: {
     byCompany: [

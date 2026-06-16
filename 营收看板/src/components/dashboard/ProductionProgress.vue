@@ -2,12 +2,8 @@
   <div class="bg-white rounded-xl p-3 shadow-sm h-full flex flex-col">
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-sm font-semibold text-gray-800">
-        {{ showKeyProjects ? '重点项目生产进度情况' : '生产进度情况' }}
+        {{ keyProjectMode ? '重点项目生产进度情况' : '生产进度情况' }}
       </h3>
-      <div class="flex items-center space-x-1">
-        <input type="checkbox" v-model="showKeyProjects" class="w-3.5 h-3.5" id="keyProjectToggle" />
-        <label for="keyProjectToggle" class="text-xs text-gray-600 cursor-pointer">仅查看重点项目</label>
-      </div>
     </div>
     
     <div class="flex-1 flex flex-col">
@@ -53,7 +49,7 @@
         </div>
       </div>
       
-      <div v-if="showKeyProjects" class="grid grid-cols-2 gap-1.5 mt-2">
+      <div v-if="keyProjectMode" class="grid grid-cols-2 gap-1.5 mt-2">
         <div class="p-1.5 bg-gray-50 rounded-lg text-center">
           <div class="text-sm font-bold text-gray-800">{{ keyProjectCount }}</div>
           <div class="text-xs text-gray-500">重点项目数</div>
@@ -68,7 +64,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   milestoneTitle: String,
@@ -82,29 +78,27 @@ const props = defineProps({
   keyProjectMilestoneTotal: Number,
   keyProjectCompletedCount: Number,
   keyProjectCompletedTotal: Number,
-  keyProjectAlerts: Object
+  keyProjectAlerts: Object,
+  keyProjectMode: { type: Boolean, default: false }
 })
 
-const showKeyProjects = ref(false)
-
-const regularData = computed(() => ({
-  milestoneTitle: props.milestoneTitle,
-  milestoneTotal: props.milestoneTotal,
-  completedCount: props.completedCount,
-  completedTotal: props.completedTotal,
-  alerts: props.alerts
-}))
-
-const keyProjectData = computed(() => ({
-  milestoneTitle: props.keyProjectMilestoneTitle || '重点管控里程碑节点',
-  milestoneTotal: props.keyProjectMilestoneTotal || props.milestoneTotal,
-  completedCount: props.keyProjectCompletedCount || props.completedCount,
-  completedTotal: props.keyProjectCompletedTotal || props.completedTotal,
-  alerts: props.keyProjectAlerts || props.alerts
-}))
-
 const currentData = computed(() => {
-  return showKeyProjects.value ? keyProjectData.value : regularData.value
+  if (props.keyProjectMode) {
+    return {
+      milestoneTitle: props.keyProjectMilestoneTitle || '重点管控里程碑节点',
+      milestoneTotal: props.keyProjectMilestoneTotal || props.milestoneTotal,
+      completedCount: props.keyProjectCompletedCount || props.completedCount,
+      completedTotal: props.keyProjectCompletedTotal || props.completedTotal,
+      alerts: props.keyProjectAlerts || props.alerts
+    }
+  }
+  return {
+    milestoneTitle: props.milestoneTitle,
+    milestoneTotal: props.milestoneTotal,
+    completedCount: props.completedCount,
+    completedTotal: props.completedTotal,
+    alerts: props.alerts
+  }
 })
 
 const percentage = computed(() => {
