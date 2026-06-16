@@ -29,9 +29,9 @@
       </div>
     </div>
 
-    <div v-if="activeTab === 'construction'" class="mb-4 p-3 bg-gray-50 rounded-lg">
+    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
       <div class="flex items-center flex-wrap gap-4">
-        <div class="flex items-center">
+        <div v-if="activeTab === 'construction'" class="flex items-center">
           <label class="text-sm text-gray-600 mr-2">基层单位：</label>
           <el-select
             v-model="selectedUnits"
