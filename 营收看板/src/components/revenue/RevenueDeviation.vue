@@ -434,12 +434,15 @@
         </div>
 
         <div class="flex items-center">
-          <label class="text-sm text-gray-600 mr-2">年月：</label>
+          <label class="text-sm text-gray-600 mr-2">年季：</label>
           <el-select v-model="quarterlyYear" placeholder="年" class="w-24">
             <el-option v-for="y in yearOptions" :key="y.value" :label="y.label" :value="y.value" />
           </el-select>
-          <el-select v-model="quarterlyMonth" placeholder="月" class="w-20 ml-1">
-            <el-option v-for="m in monthOptions" :key="m.value" :label="m.label" :value="m.value" />
+          <el-select v-model="quarterlyQuarter" placeholder="季" class="w-20 ml-1">
+            <el-option label="Q1" value="Q1" />
+            <el-option label="Q2" value="Q2" />
+            <el-option label="Q3" value="Q3" />
+            <el-option label="Q4" value="Q4" />
           </el-select>
         </div>
       </div>
@@ -743,9 +746,9 @@ const yearOptions = [
 ]
 
 const deviationYear = ref('2026')
-const deviationMonth = ref('8')
+const deviationMonth = ref('8月')
 const quarterlyYear = ref('2026')
-const quarterlyMonth = ref('')
+const quarterlyQuarter = ref('')
 const activeDeviationTab = ref('monthly')
 
 const filters = ref({
