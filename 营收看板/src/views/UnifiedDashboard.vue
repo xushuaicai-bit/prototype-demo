@@ -426,6 +426,7 @@
                   :sub-title="supplierStat1Data.subTitle"
                   :categories="supplierStat1Data.categories"
                   :series="supplierStat1Data.series"
+                  :levels="supplierStat1Data.levels"
                   :current-unit="selectedFilter"
                   @drill-down="handleScSupplierStatDrill"
                 />
@@ -933,18 +934,34 @@ const initCharts = () => {
         }
       },
       legend: { data: ['年初结转实施项目', '年初结转待结项目', '当年新签项目', '当月计划完成率'], bottom: 2, itemWidth: 14, itemHeight: 10, textStyle: { fontSize: 11 }, icon: 'roundRect' },
-      grid: { left: '8%', right: '12%', bottom: '18%', top: '8%', containLabel: true },
-      xAxis: { type: 'category', data: ['2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04'] },
+      grid: { left: '8%', right: '12%', bottom: '22%', top: '8%', containLabel: true },
+      xAxis: {
+        type: 'category',
+        data: ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06'],
+        axisLabel: { interval: 0, rotate: 30, fontSize: 11, margin: 12 }
+      },
       yAxis: [
         { type: 'value', name: '万元', nameTextStyle: { fontSize: 12, padding: [0, 0, 0, 8] } },
         { type: 'value', name: '%', min: 0, max: 100, position: 'right', nameTextStyle: { fontSize: 12, padding: [0, 8, 0, 0] } }
       ],
       series: [
-        { name: '年初结转实施项目', type: 'bar', data: [1500, 2000, 2500, 3000, 3500, 4000], itemStyle: { color: '#1890ff' } },
-        { name: '年初结转待结项目', type: 'bar', data: [1000, 1500, 2000, 2000, 2500, 3000], itemStyle: { color: '#722ed1' } },
-        { name: '当年新签项目', type: 'bar', data: [500, 1000, 1500, 2000, 2500, 3000], itemStyle: { color: '#13c2c2' } },
-        { name: '当月计划完成率', type: 'line', yAxisIndex: 1, data: [85, 92, 88, 95, 90, 96], itemStyle: { color: '#fa8c16' }, symbol: 'circle', symbolSize: 6 }
+        { name: '年初结转实施项目', type: 'bar', data: [2500, 3000, 3500, 4000, 4200, 4500], itemStyle: { color: '#1890ff' } },
+        { name: '年初结转待结项目', type: 'bar', data: [2000, 2000, 2500, 3000, 3200, 3400], itemStyle: { color: '#722ed1' } },
+        { name: '当年新签项目', type: 'bar', data: [1500, 2000, 2500, 3000, 3200, 3400], itemStyle: { color: '#13c2c2' } },
+        { name: '当月计划完成率', type: 'line', yAxisIndex: 1, data: [88, 95, 90, 96, 93, 98], itemStyle: { color: '#fa8c16' }, symbol: 'circle', symbolSize: 6 }
       ]
+    })
+
+    revenueChart.off('click')
+    revenueChart.on('click', (params) => {
+      if (params && params.name) {
+        const [year, month] = params.name.split('-')
+        emit('navigate', {
+          view: 'revenue',
+          report: 'revenue-detail',
+          filter: { detailYear: year, detailMonth: parseInt(month) }
+        })
+      }
     })
   }
 
@@ -976,7 +993,7 @@ const initSectorChart = () => {
         }
       },
       legend: { data: ['累计营收', '项目数量'], bottom: 2, itemWidth: 14, itemHeight: 10, textStyle: { fontSize: 11 } },
-      grid: { left: '10%', right: '10%', bottom: '24%', top: '5%', containLabel: true },
+      grid: { left: '10%', right: '10%', bottom: '24%', top: '14%', containLabel: true },
       xAxis: {
         type: 'category',
         data: data.map(item => item.name),
@@ -988,8 +1005,8 @@ const initSectorChart = () => {
         }
       },
       yAxis: [
-        { type: 'value', name: '累计营收(万元)', position: 'left' },
-        { type: 'value', name: '项目数量', position: 'right' }
+        { type: 'value', name: '项目数量', position: 'left' },
+        { type: 'value', name: '累计营收(万元)', position: 'right' }
       ],
       series: [
         {

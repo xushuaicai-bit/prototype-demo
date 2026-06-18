@@ -708,7 +708,7 @@ const initCharts = () => {
       },
       legend: { data: ['年初结转实施项目', '年初结转待结项目', '当年新签项目', '当月计划完成率'], bottom: 2, itemWidth: 14, itemHeight: 10, textStyle: { fontSize: 11 }, icon: 'roundRect' },
       grid: { left: '8%', right: '12%', bottom: '18%', top: '8%', containLabel: true },
-      xAxis: { type: 'category', data: ['2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04'] },
+      xAxis: { type: 'category', data: ['2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04'], axisLabel: { interval: 0, rotate: 35, fontSize: 11, margin: 12 } },
       yAxis: [
         { type: 'value', name: '万元', nameTextStyle: { fontSize: 12, padding: [0, 0, 0, 8] } },
         { type: 'value', name: '%', min: 0, max: 100, position: 'right', nameTextStyle: { fontSize: 12, padding: [0, 8, 0, 0] } }
@@ -750,7 +750,7 @@ const initSectorChart = () => {
         }
       },
       legend: { data: ['累计营收', '项目数量'], bottom: 2, itemWidth: 14, itemHeight: 10, textStyle: { fontSize: 11 } },
-      grid: { left: '10%', right: '10%', bottom: '24%', top: '5%', containLabel: true },
+      grid: { left: '10%', right: '10%', bottom: '24%', top: '14%', containLabel: true },
       xAxis: {
         type: 'category',
         data: data.map(item => item.name),

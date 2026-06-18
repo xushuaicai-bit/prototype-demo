@@ -274,7 +274,7 @@
         </el-table-column>
 
         <el-table-column
-          label="当月完成营收"
+        :label="dynamicMonthLabel + '完成营收'"
           prop="monthActualRevenue"
           width="140"
           align="right"
@@ -307,7 +307,7 @@
         </el-table-column>
 
         <el-table-column
-          label="当月上报股份营收"
+        :label="dynamicMonthLabel + '上报股份营收'"
           prop="monthReportedRevenue"
           width="160"
           align="right"
@@ -340,7 +340,7 @@
         </el-table-column>
 
         <el-table-column
-          label="截止当月剩余合同存量"
+        :label="'截止' + dynamicMonthLabel + '剩余合同存量'"
           prop="remainingContractAmount"
           width="160"
           align="right"
@@ -414,6 +414,21 @@ const props = defineProps({
 const currentPage = ref(1)
 const pageSize = ref(10)
 
+const monthOptions = [
+  { value: 1, label: '1月' },
+  { value: 2, label: '2月' },
+  { value: 3, label: '3月' },
+  { value: 4, label: '4月' },
+  { value: 5, label: '5月' },
+  { value: 6, label: '6月' },
+  { value: 7, label: '7月' },
+  { value: 8, label: '8月' },
+  { value: 9, label: '9月' },
+  { value: 10, label: '10月' },
+  { value: 11, label: '11月' },
+  { value: 12, label: '12月' }
+]
+
 const months = [
   { key: 'month1', label: '1月上报营收' },
   { key: 'month2', label: '2月上报营收' },
@@ -429,6 +444,11 @@ const months = [
   { key: 'month12', label: '12月上报营收' }
 ]
 
+const dynamicMonthLabel = computed(() => {
+  const m = filters.value.detailMonth
+  return m ? `${m}月` : '当月'
+})
+
 const filters = ref({
   unit: '',
   status: '',
@@ -440,7 +460,7 @@ const filters = ref({
   planAdjustmentRateMax: null,
   warningLevel: '',
   detailYear: '2026',
-  detailMonth: ''
+  detailMonth: 6
 })
 
 const editingCell = ref('')
@@ -2136,6 +2156,14 @@ onMounted(() => {
   
   if (props.initialFilter.warningLevel) {
     filters.value.warningLevel = props.initialFilter.warningLevel
+  }
+
+  if (props.initialFilter.detailYear) {
+    filters.value.detailYear = props.initialFilter.detailYear
+  }
+
+  if (props.initialFilter.detailMonth !== undefined) {
+    filters.value.detailMonth = props.initialFilter.detailMonth
   }
 
   // 校验：如果筛选后无数据但有原始数据，说明筛选条件可能过期，自动重置

@@ -216,13 +216,36 @@ export const supplyContractChartData = {
 }
 
 export const supplierStatChart1Data = {
-  title: '供应商统计',
-  subTitle: 'A级承包商统计',
+  title: '合格供应商',
+  subTitle: '合格供应商统计',
   categories: ['专业分包', '劳务分包', '周转材料', '材料/设备采购'],
+  levels: {
+    A: {
+      supplierCount: 150,
+      countByCategory: [45, 38, 32, 35],
+      contractCount: [8, 7, 5, 6],
+      contractAmount: [25000, 23000, 18000, 20000],
+      color: '#3b82f6'
+    },
+    B: {
+      supplierCount: 120,
+      countByCategory: [36, 30, 26, 28],
+      contractCount: [6, 5, 4, 5],
+      contractAmount: [20000, 18000, 14000, 13000],
+      color: '#10b981'
+    },
+    C: {
+      supplierCount: 80,
+      countByCategory: [24, 20, 18, 18],
+      contractCount: [4, 3, 2, 3],
+      contractAmount: [14000, 12000, 10000, 8000],
+      color: '#f59e0b'
+    }
+  },
   series: [
-    { name: 'A级承包商数量', data: [150, 120, 80, 90], color: '#3b82f6' },
-    { name: '履约中合同数（非集采）', data: [300, 280, 200, 220], color: '#93c5fd' },
-    { name: '履约中合同额（非集采）', data: [250, 230, 180, 200], color: '#dbeafe' }
+    { name: '供应商数量', data: [150, 120, 80, 90], color: '#3b82f6' },
+    { name: '履约中合同数', data: [300, 280, 200, 220], color: '#93c5fd' },
+    { name: '履约中合同额(万元)', data: [25000, 23000, 18000, 20000], color: '#dbeafe' }
   ]
 }
 

@@ -49,7 +49,7 @@
           </el-select>
         </div>
 
-        <div class="flex items-center">
+        <div v-show="activeTab !== 'construction'" class="flex items-center">
           <label class="text-sm text-gray-600 mr-2">年月：</label>
           <el-select v-model="summaryYear" placeholder="年" class="w-24">
             <el-option label="2026年" value="2026" />
@@ -84,11 +84,12 @@
       </div>
     </div>
 
-    <div v-if="activeTab === 'construction'" class="overflow-x-auto" style="max-width: 100%;">
+    <div v-if="activeTab === 'construction'" class="overflow-x-auto">
       <el-table
         :data="paginatedConstructionData"
         border
         :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
+        style="min-width: 2500px;"
       >
         <el-table-column
           label="基层单位"
@@ -279,26 +280,16 @@
             </template>
           </el-table-column>
           <el-table-column
-          label="截止本月剩余合同存量"
-          prop="remainingContract"
-          width="140"
-          align="right"
-        >
-          <template #default="scope">
-            {{ formatNumber(scope.row.remainingContract) }}
-          </template>
+            label="截止本月剩余合同存量"
+            prop="remainingContract"
+            width="140"
+            align="right"
+          >
+            <template #default="scope">
+              {{ formatNumber(scope.row.remainingContract) }}
+            </template>
+          </el-table-column>
         </el-table-column>
-        <el-table-column
-          label="下月计划"
-          prop="nextMonthPlan"
-          width="120"
-          align="right"
-        >
-          <template #default="scope">
-            {{ formatNumber(scope.row.nextMonthPlan) }}
-          </template>
-        </el-table-column>
-      </el-table-column>
       </el-table>
 
       <!-- 固定底部合计行 -->
@@ -325,7 +316,6 @@
               <td style="width: 140px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.reportedRevenue) }}</td>
               <td style="width: 140px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.newContractAmount) }}</td>
               <td style="width: 140px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.remainingContract) }}</td>
-              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.nextMonthPlan) }}</td>
             </tr>
           </tbody>
         </table>
