@@ -45,16 +45,16 @@ export const managementTimelinessData = {
     { name: '应登记', value: 508 },
     { name: '应筹划', value: 508 },
     { name: '待筹划', value: 300 },
-    { name: '项目筹划完成率', value: '45%' },
-    { name: '基本信息完成率', value: '72%' }
+    { name: '项目筹划完成率', value: '41%' },
+    { name: '基本信息完成率', value: '41%' }
   ]
 }
 
 export const riskAlertTimeliness = [
   { title: '当年一、二级风险数量', value: '10个' },
-  { title: '当前进入风险数量', value: '15个' },
+  { title: '当前进入风险数量', value: '2个' },
   { title: '当年完成风险数量', value: '8个' },
-  { title: '当年剩余风险数量', value: '7个' },
+  { title: '当年剩余风险数量', value: '20个' },
   { title: '未来两周进入风险数量（按等级+总量）', value: '9个' },
   { title: 'I级未来两周进入风险数量', value: '2个' },
   { title: 'II级未来两周进入风险数量', value: '4个' },
@@ -382,9 +382,9 @@ export const keyProjectOnlyManagementTimeliness = {
 
 export const keyProjectOnlyRiskAlertTimeliness = [
   { title: '当年一、二级风险数量', value: '4个' },
-  { title: '当前进入风险数量', value: '6个' },
+  { title: '当前进入风险数量', value: '1个' },
   { title: '当年完成风险数量', value: '3个' },
-  { title: '当年剩余风险数量', value: '3个' },
+  { title: '当年剩余风险数量', value: '8个' },
   { title: '未来两周进入风险数量（按等级+总量）', value: '4个' },
   { title: 'I级未来两周进入风险数量', value: '1个' },
   { title: 'II级未来两周进入风险数量', value: '2个' },

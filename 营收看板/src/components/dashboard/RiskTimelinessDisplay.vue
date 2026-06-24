@@ -119,7 +119,7 @@ const initCurrentChart = () => {
         formatter: () =>
           `{total|${d.total}个}\n` +
           `{label|当前进入}\n` +
-          `{sub|风险数量}`,
+          `{sub|风险}`,
         rich: {
           total: {
             fontSize: 18,
@@ -156,8 +156,8 @@ const initCurrentChart = () => {
         }
       },
       data: [
-        { value: d.completed, name: '当年完成风险数量', itemStyle: { color: '#22c55e' } },
-        { value: d.remaining, name: '当年剩余风险数量', itemStyle: { color: '#fb923c' } }
+        { value: d.completed, name: '完成风险数量', itemStyle: { color: '#22c55e' } },
+        { value: d.remaining, name: '剩余风险数量', itemStyle: { color: '#fb923c' } }
       ]
     }]
   })

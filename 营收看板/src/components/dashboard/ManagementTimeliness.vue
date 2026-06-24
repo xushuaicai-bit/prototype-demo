@@ -144,7 +144,6 @@ const initRegistrationChart = () => {
         show: true,
         position: 'center',
         formatter: () =>
-          `{rate|${d.rate}%}\n` +
           `{done|已登记${d.done}}\n` +
           `{pending|未登记${d.pending}}`,
         rich: {
@@ -220,7 +219,6 @@ const initPlanningChart = () => {
         show: true,
         position: 'center',
         formatter: () =>
-          `{rate|${d.rate}%}\n` +
           `{done|已筹划${d.done}}\n` +
           `{pending|未筹划${d.pending}}`,
         rich: {

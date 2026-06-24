@@ -80,6 +80,37 @@
             </svg>
             重置
           </button>
+          <el-popover placement="bottom-end" :width="260" trigger="click">
+            <template #reference>
+              <button class="flex items-center px-4 py-1.5 bg-gray-100 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                </svg>
+                列设置
+              </button>
+            </template>
+            <div class="flex flex-col gap-1 max-h-[400px] overflow-y-auto">
+              <div class="flex items-center justify-between pb-2 mb-2 border-b">
+                <span class="text-sm font-medium text-gray-600">选择显示列</span>
+                <el-checkbox :model-value="isAllSelected" @change="toggleAllColumns">全选</el-checkbox>
+              </div>
+              <div v-for="col in allColumnOptions" :key="col.prop" :class="{ 'pt-2 mt-1 border-t': col.isGroup }">
+                <el-checkbox
+                  v-if="col.isGroup"
+                  v-model="col.visible"
+                  class="!font-bold !text-gray-700"
+                  @change="(val) => toggleGroup(col, val)"
+                >{{ col.label }}</el-checkbox>
+                <el-checkbox
+                  v-else
+                  v-model="col.visible"
+                  :disabled="col.fixed"
+                >
+                  {{ col.label }}
+                </el-checkbox>
+              </div>
+            </div>
+          </el-popover>
         </div>
       </div>
     </div>
@@ -89,7 +120,7 @@
         :data="paginatedConstructionData"
         border
         :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
-        style="min-width: 2500px;"
+        style="min-width: 3500px;"
       >
         <el-table-column
           label="基层单位"
@@ -111,6 +142,7 @@
           prop="revenueTarget"
           width="120"
           align="right"
+          v-if="visibleColumns.has('revenueTarget')"
         >
           <template #default="scope">
             {{ formatNumber(scope.row.revenueTarget) }}
@@ -122,6 +154,7 @@
           prop="completionRate"
           width="140"
           align="center"
+          v-if="visibleColumns.has('completionRate')"
         >
           <template #default="scope">
             <div class="flex flex-col items-center">
@@ -139,12 +172,13 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="结转至当年及以后营收">
+        <el-table-column label="结转至当年及以后营收" v-if="visibleColumns.has('_group_carryForward')">
           <el-table-column
             label="结转在建项目"
             prop="carryForwardConstruction"
             width="130"
             align="right"
+            v-if="visibleColumns.has('carryForwardConstruction')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.carryForwardConstruction) }}
@@ -155,6 +189,7 @@
             prop="completedPendingSettlement"
             width="130"
             align="right"
+            v-if="visibleColumns.has('completedPendingSettlement')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.completedPendingSettlement) }}
@@ -165,6 +200,7 @@
             prop="carryForwardTotal"
             width="160"
             align="right"
+            v-if="visibleColumns.has('carryForwardTotal')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.carryForwardTotal) }}
@@ -172,12 +208,107 @@
           </el-table-column>
         </el-table-column>
 
-        <el-table-column label="本年度计划营收">
+        <el-table-column label="当月计划营收" v-if="visibleColumns.has('_group_monthlyPlan')">
+          <el-table-column
+            label="结转在建项目"
+            prop="monthlyPlanConstruction"
+            width="130"
+            align="right"
+            v-if="visibleColumns.has('monthlyPlanConstruction')"
+          >
+            <template #default="scope">
+              {{ formatNumber(scope.row.monthlyPlanConstruction) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="完工待结算项目"
+            prop="monthlyPlanCompleted"
+            width="130"
+            align="right"
+            v-if="visibleColumns.has('monthlyPlanCompleted')"
+          >
+            <template #default="scope">
+              {{ formatNumber(scope.row.monthlyPlanCompleted) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="新接项目"
+            prop="monthlyPlanNew"
+            width="120"
+            align="right"
+            v-if="visibleColumns.has('monthlyPlanNew')"
+          >
+            <template #default="scope">
+              {{ formatNumber(scope.row.monthlyPlanNew) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="当月计划营收-合计"
+            prop="monthlyPlanTotal"
+            width="160"
+            align="right"
+            v-if="visibleColumns.has('monthlyPlanTotal')"
+          >
+            <template #default="scope">
+              {{ formatNumber(scope.row.monthlyPlanTotal) }}
+            </template>
+          </el-table-column>
+        </el-table-column>
+
+        <el-table-column label="当月完成营收" v-if="visibleColumns.has('_group_monthlyActual')">
+          <el-table-column
+            label="结转在建项目"
+            prop="monthlyActualConstruction"
+            width="130"
+            align="right"
+            v-if="visibleColumns.has('monthlyActualConstruction')"
+          >
+            <template #default="scope">
+              {{ formatNumber(scope.row.monthlyActualConstruction) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="完工待结算项目"
+            prop="monthlyActualCompleted"
+            width="130"
+            align="right"
+            v-if="visibleColumns.has('monthlyActualCompleted')"
+          >
+            <template #default="scope">
+              {{ formatNumber(scope.row.monthlyActualCompleted) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="新接项目"
+            prop="monthlyActualNew"
+            width="120"
+            align="right"
+            v-if="visibleColumns.has('monthlyActualNew')"
+          >
+            <template #default="scope">
+              {{ formatNumber(scope.row.monthlyActualNew) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="当月完成营收-合计"
+            prop="monthlyActualTotal"
+            width="160"
+            align="right"
+            v-if="visibleColumns.has('monthlyActualTotal')"
+          >
+            <template #default="scope">
+              {{ formatNumber(scope.row.monthlyActualTotal) }}
+            </template>
+          </el-table-column>
+        </el-table-column>
+
+        <el-table-column label="本年度计划营收" v-if="visibleColumns.has('_group_plan')">
           <el-table-column
             label="结转在建项目"
             prop="planConstruction"
             width="130"
             align="right"
+            v-if="visibleColumns.has('planConstruction')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.planConstruction) }}
@@ -188,6 +319,7 @@
             prop="planCompleted"
             width="130"
             align="right"
+            v-if="visibleColumns.has('planCompleted')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.planCompleted) }}
@@ -198,6 +330,7 @@
             prop="planNew"
             width="120"
             align="right"
+            v-if="visibleColumns.has('planNew')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.planNew) }}
@@ -208,6 +341,7 @@
             prop="planTotal"
             width="160"
             align="right"
+            v-if="visibleColumns.has('planTotal')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.planTotal) }}
@@ -215,12 +349,13 @@
           </el-table-column>
         </el-table-column>
 
-        <el-table-column label="本年度累计完成营收">
+        <el-table-column label="本年度累计完成营收" v-if="visibleColumns.has('_group_actual')">
           <el-table-column
             label="结转在建项目"
             prop="actualConstruction"
             width="130"
             align="right"
+            v-if="visibleColumns.has('actualConstruction')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.actualConstruction) }}
@@ -231,6 +366,7 @@
             prop="actualCompleted"
             width="130"
             align="right"
+            v-if="visibleColumns.has('actualCompleted')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.actualCompleted) }}
@@ -241,6 +377,7 @@
             prop="actualNew"
             width="120"
             align="right"
+            v-if="visibleColumns.has('actualNew')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.actualNew) }}
@@ -251,6 +388,7 @@
             prop="actualTotal"
             width="160"
             align="right"
+            v-if="visibleColumns.has('actualTotal')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.actualTotal) }}
@@ -258,12 +396,13 @@
           </el-table-column>
         </el-table-column>
 
-        <el-table-column label="上报营收及剩余合同存量">
+        <el-table-column label="上报营收及剩余合同存量" v-if="visibleColumns.has('_group_report')">
           <el-table-column
             label="本年上报股份营收"
             prop="reportedRevenue"
             width="140"
             align="right"
+            v-if="visibleColumns.has('reportedRevenue')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.reportedRevenue) }}
@@ -274,6 +413,7 @@
             prop="newContractAmount"
             width="140"
             align="right"
+            v-if="visibleColumns.has('newContractAmount')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.newContractAmount) }}
@@ -284,6 +424,7 @@
             prop="remainingContract"
             width="140"
             align="right"
+            v-if="visibleColumns.has('remainingContract')"
           >
             <template #default="scope">
               {{ formatNumber(scope.row.remainingContract) }}
@@ -294,7 +435,7 @@
 
       <!-- 固定底部合计行 -->
       <div v-if="constructionTotals" class="total-footer-row">
-        <table style="width: 100%; min-width: 2500px; table-layout: fixed; border-collapse: collapse;">
+        <table style="width: 100%; min-width: 3500px; table-layout: fixed; border-collapse: collapse;">
           <tbody>
             <tr>
               <td style="width: 200px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5;">合计</td>
@@ -305,6 +446,14 @@
               <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.carryForwardConstruction) }}</td>
               <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.completedPendingSettlement) }}</td>
               <td style="width: 160px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.carryForwardTotal) }}</td>
+              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyPlanConstruction) }}</td>
+              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyPlanCompleted) }}</td>
+              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyPlanNew) }}</td>
+              <td style="width: 160px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyPlanTotal) }}</td>
+              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyActualConstruction) }}</td>
+              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyActualCompleted) }}</td>
+              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyActualNew) }}</td>
+              <td style="width: 160px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyActualTotal) }}</td>
               <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.planConstruction) }}</td>
               <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.planCompleted) }}</td>
               <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.planNew) }}</td>
@@ -575,7 +724,13 @@ const rawData = [
     reportedRevenue: 12800,
     newContractAmount: 7500,
     remainingContract: 15000,
-    nextMonthPlan: 1350
+    nextMonthPlan: 1350,
+    monthlyPlanConstruction: 500,
+    monthlyPlanCompleted: 250,
+    monthlyPlanNew: 420,
+    monthlyActualConstruction: 480,
+    monthlyActualCompleted: 230,
+    monthlyActualNew: 400
   },
   {
     id: 2,
@@ -592,7 +747,13 @@ const rawData = [
     reportedRevenue: 11300,
     newContractAmount: 6600,
     remainingContract: 13200,
-    nextMonthPlan: 1200
+    nextMonthPlan: 1200,
+    monthlyPlanConstruction: 440,
+    monthlyPlanCompleted: 220,
+    monthlyPlanNew: 370,
+    monthlyActualConstruction: 420,
+    monthlyActualCompleted: 200,
+    monthlyActualNew: 350
   },
   {
     id: 3,
@@ -609,7 +770,13 @@ const rawData = [
     reportedRevenue: 10300,
     newContractAmount: 6000,
     remainingContract: 12000,
-    nextMonthPlan: 1100
+    nextMonthPlan: 1100,
+    monthlyPlanConstruction: 400,
+    monthlyPlanCompleted: 200,
+    monthlyPlanNew: 340,
+    monthlyActualConstruction: 380,
+    monthlyActualCompleted: 180,
+    monthlyActualNew: 320
   },
   {
     id: 4,
@@ -626,7 +793,13 @@ const rawData = [
     reportedRevenue: 9200,
     newContractAmount: 5400,
     remainingContract: 10800,
-    nextMonthPlan: 980
+    nextMonthPlan: 980,
+    monthlyPlanConstruction: 360,
+    monthlyPlanCompleted: 180,
+    monthlyPlanNew: 300,
+    monthlyActualConstruction: 340,
+    monthlyActualCompleted: 170,
+    monthlyActualNew: 290
   },
   {
     id: 5,
@@ -643,7 +816,13 @@ const rawData = [
     reportedRevenue: 8200,
     newContractAmount: 4800,
     remainingContract: 9600,
-    nextMonthPlan: 870
+    nextMonthPlan: 870,
+    monthlyPlanConstruction: 320,
+    monthlyPlanCompleted: 160,
+    monthlyPlanNew: 270,
+    monthlyActualConstruction: 300,
+    monthlyActualCompleted: 150,
+    monthlyActualNew: 260
   },
   {
     id: 6,
@@ -660,7 +839,13 @@ const rawData = [
     reportedRevenue: 7200,
     newContractAmount: 4200,
     remainingContract: 8400,
-    nextMonthPlan: 760
+    nextMonthPlan: 760,
+    monthlyPlanConstruction: 280,
+    monthlyPlanCompleted: 140,
+    monthlyPlanNew: 230,
+    monthlyActualConstruction: 260,
+    monthlyActualCompleted: 130,
+    monthlyActualNew: 220
   },
   {
     id: 7,
@@ -677,7 +862,13 @@ const rawData = [
     reportedRevenue: 6100,
     newContractAmount: 3600,
     remainingContract: 7200,
-    nextMonthPlan: 650
+    nextMonthPlan: 650,
+    monthlyPlanConstruction: 240,
+    monthlyPlanCompleted: 120,
+    monthlyPlanNew: 200,
+    monthlyActualConstruction: 220,
+    monthlyActualCompleted: 110,
+    monthlyActualNew: 190
   },
   {
     id: 8,
@@ -694,7 +885,13 @@ const rawData = [
     reportedRevenue: 5100,
     newContractAmount: 3000,
     remainingContract: 6000,
-    nextMonthPlan: 540
+    nextMonthPlan: 540,
+    monthlyPlanConstruction: 200,
+    monthlyPlanCompleted: 100,
+    monthlyPlanNew: 170,
+    monthlyActualConstruction: 180,
+    monthlyActualCompleted: 90,
+    monthlyActualNew: 160
   },
   {
     id: 9,
@@ -711,7 +908,13 @@ const rawData = [
     reportedRevenue: 4050,
     newContractAmount: 2400,
     remainingContract: 4800,
-    nextMonthPlan: 430
+    nextMonthPlan: 430,
+    monthlyPlanConstruction: 160,
+    monthlyPlanCompleted: 80,
+    monthlyPlanNew: 130,
+    monthlyActualConstruction: 140,
+    monthlyActualCompleted: 70,
+    monthlyActualNew: 130
   },
   {
     id: 10,
@@ -728,7 +931,13 @@ const rawData = [
     reportedRevenue: 3050,
     newContractAmount: 1800,
     remainingContract: 3600,
-    nextMonthPlan: 320
+    nextMonthPlan: 320,
+    monthlyPlanConstruction: 120,
+    monthlyPlanCompleted: 60,
+    monthlyPlanNew: 100,
+    monthlyActualConstruction: 110,
+    monthlyActualCompleted: 55,
+    monthlyActualNew: 95
   }
 ]
 
@@ -736,6 +945,83 @@ const allUnits = [
   '管网事业部', '生态事业部', '区域事业部', '市政事业部', '环境建设',
   '管道工程', '管道分公司', '运营养护', '二次养护', '浦东供排水'
 ]
+
+// 列筛选配置
+const allColumnOptions = ref([
+  { label: '基层单位', prop: 'name', visible: true, fixed: true },
+  { label: '营收指标', prop: 'revenueTarget', visible: true },
+  { label: '指标完成率', prop: 'completionRate', visible: true },
+  { label: '【结转至当年及以后营收】', prop: '_group_carryForward', isGroup: true, visible: true },
+  { label: '结转在建项目', prop: 'carryForwardConstruction', visible: true },
+  { label: '完工待结算项目', prop: 'completedPendingSettlement', visible: true },
+  { label: '结转至当年及以后营收合计', prop: 'carryForwardTotal', visible: true },
+  { label: '【当月计划营收】', prop: '_group_monthlyPlan', isGroup: true, visible: true },
+  { label: '结转在建项目', prop: 'monthlyPlanConstruction', visible: true },
+  { label: '完工待结算项目', prop: 'monthlyPlanCompleted', visible: true },
+  { label: '新接项目', prop: 'monthlyPlanNew', visible: true },
+  { label: '当月计划营收-合计', prop: 'monthlyPlanTotal', visible: true },
+  { label: '【当月完成营收】', prop: '_group_monthlyActual', isGroup: true, visible: true },
+  { label: '结转在建项目', prop: 'monthlyActualConstruction', visible: true },
+  { label: '完工待结算项目', prop: 'monthlyActualCompleted', visible: true },
+  { label: '新接项目', prop: 'monthlyActualNew', visible: true },
+  { label: '当月完成营收-合计', prop: 'monthlyActualTotal', visible: true },
+  { label: '【本年度计划营收】', prop: '_group_plan', isGroup: true, visible: true },
+  { label: '结转在建项目', prop: 'planConstruction', visible: true },
+  { label: '完工待结算项目', prop: 'planCompleted', visible: true },
+  { label: '新接项目', prop: 'planNew', visible: true },
+  { label: '本年度计划营收-合计', prop: 'planTotal', visible: true },
+  { label: '【本年度累计完成营收】', prop: '_group_actual', isGroup: true, visible: true },
+  { label: '结转在建项目', prop: 'actualConstruction', visible: true },
+  { label: '完工待结算项目', prop: 'actualCompleted', visible: true },
+  { label: '新接项目', prop: 'actualNew', visible: true },
+  { label: '本年度累计完成营收-合计', prop: 'actualTotal', visible: true },
+  { label: '【上报营收及剩余合同存量】', prop: '_group_report', isGroup: true, visible: true },
+  { label: '本年上报股份营收', prop: 'reportedRevenue', visible: true },
+  { label: '新接项目合同额（去税）', prop: 'newContractAmount', visible: true },
+  { label: '截止本月剩余合同存量', prop: 'remainingContract', visible: true }
+])
+
+const visibleColumns = computed(() => {
+  return new Set(allColumnOptions.value.filter(col => col.visible).map(col => col.prop))
+})
+
+// 分组与子列的映射关系
+const groupChildMap = {
+  _group_carryForward: ['carryForwardConstruction', 'completedPendingSettlement', 'carryForwardTotal'],
+  _group_monthlyPlan: ['monthlyPlanConstruction', 'monthlyPlanCompleted', 'monthlyPlanNew', 'monthlyPlanTotal'],
+  _group_monthlyActual: ['monthlyActualConstruction', 'monthlyActualCompleted', 'monthlyActualNew', 'monthlyActualTotal'],
+  _group_plan: ['planConstruction', 'planCompleted', 'planNew', 'planTotal'],
+  _group_actual: ['actualConstruction', 'actualCompleted', 'actualNew', 'actualTotal'],
+  _group_report: ['reportedRevenue', 'newContractAmount', 'remainingContract']
+}
+
+// 切换分组时联动子列
+const toggleGroup = (groupCol, visible) => {
+  const children = groupChildMap[groupCol.prop] || []
+  children.forEach(childProp => {
+    const child = allColumnOptions.value.find(c => c.prop === childProp)
+    if (child && !child.fixed) {
+      child.visible = visible
+    }
+  })
+}
+
+const toggleAllColumns = () => {
+  const allVisible = allColumnOptions.value.filter(c => !c.fixed).every(c => c.visible)
+  const newValue = !allVisible
+  allColumnOptions.value.forEach(col => {
+    if (!col.fixed) {
+      col.visible = newValue
+      if (col.isGroup) {
+        toggleGroup(col, newValue)
+      }
+    }
+  })
+}
+
+const isAllSelected = computed(() => {
+  return allColumnOptions.value.filter(c => !c.fixed).every(c => c.visible)
+})
 
 const productData = [
   {
@@ -782,6 +1068,8 @@ const calculateDerivedFields = (data) => {
     result.carryForwardTotal = item.carryForwardConstruction + item.completedPendingSettlement
     result.planTotal = item.planConstruction + item.planCompleted + item.planNew
     result.actualTotal = item.actualConstruction + item.actualCompleted + item.actualNew
+    result.monthlyPlanTotal = item.monthlyPlanConstruction + item.monthlyPlanCompleted + item.monthlyPlanNew
+    result.monthlyActualTotal = item.monthlyActualConstruction + item.monthlyActualCompleted + item.monthlyActualNew
     
     if (item.revenueTarget > 0) {
       result.completionRate = (result.actualTotal / item.revenueTarget) * 100
@@ -822,6 +1110,14 @@ const calculateTotalsForFiltered = (data) => {
     newContractAmount: 0,
     remainingContract: 0,
     nextMonthPlan: 0,
+    monthlyPlanConstruction: 0,
+    monthlyPlanCompleted: 0,
+    monthlyPlanNew: 0,
+    monthlyPlanTotal: 0,
+    monthlyActualConstruction: 0,
+    monthlyActualCompleted: 0,
+    monthlyActualNew: 0,
+    monthlyActualTotal: 0,
     completionRate: 0
   }
   
@@ -842,6 +1138,14 @@ const calculateTotalsForFiltered = (data) => {
     totals.newContractAmount += item.newContractAmount
     totals.remainingContract += item.remainingContract
     totals.nextMonthPlan += item.nextMonthPlan
+    totals.monthlyPlanConstruction += item.monthlyPlanConstruction
+    totals.monthlyPlanCompleted += item.monthlyPlanCompleted
+    totals.monthlyPlanNew += item.monthlyPlanNew
+    totals.monthlyPlanTotal += item.monthlyPlanTotal
+    totals.monthlyActualConstruction += item.monthlyActualConstruction
+    totals.monthlyActualCompleted += item.monthlyActualCompleted
+    totals.monthlyActualNew += item.monthlyActualNew
+    totals.monthlyActualTotal += item.monthlyActualTotal
   })
   
   if (totals.revenueTarget > 0) {
