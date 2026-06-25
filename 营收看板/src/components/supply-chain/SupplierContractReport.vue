@@ -391,7 +391,7 @@ const allUnits = [
   '管道工程', '管道分公司', '运营养护', '二次养护', '浦东供排水'
 ]
 
-const allStatus = ['特建', '在建', '停工', '完工', '当年竣工']
+const allStatus = ['在建', '停工', '完工', '竣工未送审', '已送审', '审定未销项', '业务销项']
 const allCategories = ['专业分包', '劳务分包', '材料/设备采购', '周转材料/设备租赁']
 const allSignStatus = ['已签订', '未签订', '红色预警', '橙色预警', '黄色预警']
 const allContractStatus = ['正常履约', '履约结束', '违约中']
@@ -575,7 +575,7 @@ const rawData = [
     projectCode: 'P003',
     projectName: '区域供水一体化工程',
     unit: '区域事业部',
-    status: '特建',
+    status: '已送审',
     contracts: [
       {
         category: '专业分包',
@@ -924,7 +924,7 @@ const rawData = [
     projectCode: 'P009',
     projectName: '管网监测系统',
     unit: '二次养护',
-    status: '特建',
+    status: '已送审',
     contracts: [
       {
         category: '专业分包',
