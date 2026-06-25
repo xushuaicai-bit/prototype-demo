@@ -25,19 +25,7 @@
     <div class="flex flex-wrap gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
       <div class="flex items-center">
         <label class="text-sm text-gray-600 mr-2">项目名称：</label>
-        <el-select 
-          v-model="selectedProject" 
-          placeholder="请选择项目名称" 
-          class="w-64"
-          clearable
-        >
-          <el-option 
-            v-for="project in allProjects" 
-            :key="project" 
-            :label="project" 
-            :value="project" 
-          />
-        </el-select>
+        <el-input v-model="selectedProject" placeholder="请输入项目名称" class="w-48" clearable />
       </div>
       
       <div class="flex items-center">
@@ -93,19 +81,7 @@
 
       <div class="flex items-center">
         <label class="text-sm text-gray-600 mr-2">供应商名称：</label>
-        <el-select
-          v-model="selectedSupplier"
-          placeholder="请选择供应商"
-          class="w-64"
-          clearable
-        >
-          <el-option
-            v-for="s in allSuppliers"
-            :key="s"
-            :label="s"
-            :value="s"
-          />
-        </el-select>
+        <el-input v-model="selectedSupplier" placeholder="请输入供应商名称" class="w-48" clearable />
       </div>
 
       <div class="flex items-center">
@@ -409,18 +385,6 @@ const selectedContractStatus = ref('')
 const selectedOverdue = ref('')
 const selectedSupplierLevel = ref('')
 const allSupplierLevels = ['A', 'B', 'C']
-
-const allProjects = [
-  '城乡水务局供水管网改造工程',
-  '生态环境治理项目',
-  '区域供水一体化工程',
-  '市政道路新建项目',
-  '污水处理厂升级改造',
-  '管道改造二期工程',
-  '水务综合管理平台',
-  '智慧水务云平台',
-  '管网监测系统'
-]
 
 const allUnits = [
   '管网事业部', '生态事业部', '区域事业部', '市政事业部', '环境建设',
@@ -1153,21 +1117,11 @@ const applyInitialFilter = () => {
 
 const filteredData = computed(() => {
   return rawData.filter(project => {
-    if (selectedProject.value && project.projectName !== selectedProject.value) return false
+    if (selectedProject.value && !project.projectName.includes(selectedProject.value)) return false
     if (selectedUnit.value && project.unit !== selectedUnit.value) return false
     if (selectedStatus.value && project.status !== selectedStatus.value) return false
     return true
   })
-})
-
-const allSuppliers = computed(() => {
-  const names = new Set()
-  rawData.forEach(project => {
-    project.contracts.forEach(c => {
-      if (c.supplierName) names.add(c.supplierName)
-    })
-  })
-  return [...names].sort()
 })
 
 const tableData = computed(() => {
@@ -1184,7 +1138,7 @@ const tableData = computed(() => {
           if (statusVal !== selectedSignStatus.value) return
         }
       }
-      if (selectedSupplier.value && contract.supplierName !== selectedSupplier.value) return
+      if (selectedSupplier.value && !contract.supplierName.includes(selectedSupplier.value)) return
       if (selectedContractStatus.value && contract.contractStatus !== selectedContractStatus.value) return
       if (selectedSupplierLevel.value && contract.supplierLevel !== selectedSupplierLevel.value) return
       if (selectedOverdue.value) {
