@@ -278,7 +278,7 @@ const initChart = () => {
       itemWidth: 14,
       itemHeight: 10,
       textStyle: { fontSize: 11 },
-      data: seriesData.filter(s => s.name !== '履约中合同数').map(s => s.name)
+      data: isTop10Chart.value ? seriesData.map(s => s.name) : seriesData.filter(s => s.name !== '履约中合同数').map(s => s.name)
     },
     grid: {
       left: '3%',

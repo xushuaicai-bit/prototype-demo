@@ -270,24 +270,42 @@ export const supplierStatChart2Data = {
 
 export const materialProcurementData = {
   title: '材料集采合同情况',
-  categories: ['股份集采项目', '环境集采项目'],
-  series: [
-    {
-      name: '采购合同签订数量',
-      data: [150, 120],
-      color: '#3b82f6'
+  // 大标签统计值（置于图表上方）
+  summary: {
+    '股份集采项目': { signedCount: 150, executingCount: 130, completionRate: 87 },
+    '环境集采项目': { signedCount: 120, executingCount: 100, completionRate: 83 }
+  },
+  // 按股份/环境分组的主材明细
+  groups: {
+    '股份': {
+      materials: ['钢筋', '水泥', '混凝土', '钢管', '干粉砂浆', '注浆管', '声测管'],
+      contractCount: [45, 38, 32, 28, 25, 18, 15],
+      contractAmount: [3200, 2800, 2400, 2000, 1800, 1200, 1000],
+      actualAmount: [3000, 2600, 2200, 1800, 1600, 1000, 900],
+      paidAmount: [2500, 2200, 1800, 1500, 1200, 800, 700]
     },
-    {
-      name: '项目合同执行数量',
-      data: [130, 100],
-      color: '#93c5fd'
-    },
-    {
-      name: '集采完成率',
-      data: [100, 95],
-      color: '#10b981'
+    '环境': {
+      materials: ['球墨铸铁管', '蝶阀', '闸阀'],
+      contractCount: [50, 40, 30],
+      contractAmount: [4500, 3200, 2400],
+      actualAmount: [4200, 3000, 2200],
+      paidAmount: [3500, 2500, 1800]
     }
-  ]
+  },
+  // 集租汇总（只有股份）
+  rentSummary: {
+    '股份集租项目': { signedCount: 85, executingCount: 72, completionRate: 85 }
+  },
+  // 集租分组（只有股份，无环境）
+  rentGroups: {
+    '股份': {
+      materials: ['塔吊', '施工电梯'],
+      contractCount: [12, 8],
+      contractAmount: [5800, 3200],
+      actualAmount: [5200, 2800],
+      paidAmount: [4500, 2200]
+    }
+  }
 }
 
 export const techDashboardData = {

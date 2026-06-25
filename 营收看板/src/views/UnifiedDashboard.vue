@@ -443,9 +443,10 @@
           <div class="lg:col-span-1 flex flex-col">
             <MaterialProcurementChart
               :title="procurementData.title"
-              :categories="procurementData.categories"
-              :series="procurementData.series"
-              :category-options="procurementData.categoryOptions"
+              :summary="procurementData.summary"
+              :groups="procurementData.groups"
+              :rent-summary="procurementData.rentSummary"
+              :rent-groups="procurementData.rentGroups"
               :current-unit="selectedFilter"
             />
           </div>

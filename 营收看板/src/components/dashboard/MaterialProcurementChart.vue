@@ -28,29 +28,37 @@
       </div>
     </div>
 
-    <div class="flex flex-wrap gap-2 mb-3">
-      <button
-        v-for="cat in currentCategoryOptions"
-        :key="cat.value"
-        :class="[
-          'px-3 py-1 text-xs font-medium rounded-lg transition-all',
-          activeCategory === cat.value
-            ? 'bg-blue-500 text-white shadow-sm'
-            : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-        ]"
-        @click="handleCategoryChange(cat.value)"
-      >
-        {{ cat.label }}
-      </button>
+    <!-- 大标签统计 -->
+    <div class="flex gap-3 mb-3">
+      <div class="flex-1 bg-blue-50 rounded-lg px-3 py-2 text-center cursor-pointer hover:shadow-md transition-shadow" @click="openExternalLink">
+        <div class="text-xs text-gray-500">采购合同签订数量</div>
+        <div class="text-lg font-bold text-blue-600">{{ currentSummary.signedCount || 0 }}</div>
+      </div>
+      <div class="flex-1 bg-green-50 rounded-lg px-3 py-2 text-center cursor-pointer hover:shadow-md transition-shadow" @click="openExternalLink">
+        <div class="text-xs text-gray-500">项目合同执行数量</div>
+        <div class="text-lg font-bold text-green-600">{{ currentSummary.executingCount || 0 }}</div>
+      </div>
+      <div class="flex-1 bg-orange-50 rounded-lg px-3 py-2 text-center">
+        <div class="text-xs text-gray-500">集采完成率</div>
+        <div class="text-lg font-bold text-orange-600">{{ currentSummary.completionRate || 0 }}%</div>
+      </div>
     </div>
 
-    <div class="bg-green-50 border-l-4 border-green-500 rounded-r-lg px-4 py-2 mb-3">
-      <p class="text-sm text-green-800">
-        <span class="font-semibold">{{ currentUnit }}</span>
-        签订{{ currentTabName }}合同<span class="font-semibold text-green-600">{{ procurementStats.signed }}</span>个，
-        履约中<span class="font-semibold text-green-600">{{ procurementStats.executing }}</span>个，
-        {{ currentTabName }}执行率<span class="font-semibold text-green-600">{{ procurementStats.executionRate }}</span>%
-      </p>
+    <!-- 股份/环境切换按钮 -->
+    <div class="flex gap-2 mb-3">
+      <button
+        v-for="key in groupKeys"
+        :key="key"
+        :class="[
+          'px-4 py-1.5 text-sm font-medium rounded-lg transition-all',
+          activeGroup === key
+            ? 'bg-blue-500 text-white shadow-sm'
+            : 'bg-gray-100 text-gray-600 hover:bg-blue-50'
+        ]"
+        @click="switchGroup(key)"
+      >
+        {{ key }}{{ activeTab === '集采' ? '集采' : '集租' }}项目
+      </button>
     </div>
 
     <div ref="chartRef" class="flex-1 min-h-[300px]"></div>
@@ -63,9 +71,10 @@ import * as echarts from 'echarts'
 
 const props = defineProps({
   title: String,
-  categories: Array,
-  series: Array,
-  categoryOptions: Object,
+  summary: Object,
+  groups: Object,
+  rentSummary: Object,
+  rentGroups: Object,
   currentUnit: {
     type: String,
     default: '全部'
@@ -76,13 +85,7 @@ const chartRef = ref(null)
 let chart = null
 
 const activeTab = ref('集采')
-const activeCategory = ref('全部')
-
-const currentTabName = computed(() => activeTab.value)
-
-const currentCategoryOptions = computed(() => {
-  return props.categoryOptions?.[activeTab.value] || []
-})
+const activeGroup = ref('股份')
 
 const currentTitle = computed(() => {
   if (activeTab.value === '集采') {
@@ -91,52 +94,60 @@ const currentTitle = computed(() => {
   return '设备集租合同情况'
 })
 
-const displaySeries = computed(() => {
-  if (!props.series) return []
-  return props.series.map(s => ({
-    ...s,
-    name: s.name?.replace('集采', activeTab.value)
-  }))
+const currentGroups = computed(() => {
+  return activeTab.value === '集采' ? props.groups : props.rentGroups
 })
 
-const getDisplayCategories = () => {
-  if (!props.categories) return []
-  return props.categories.map(cat => cat.replace('集采', activeTab.value))
-}
-
-const procurementStats = computed(() => {
-  const stats = {
-    '集采': { signed: 120, executing: 105, executionRate: 88 },
-    '集租': { signed: 85, executing: 72, executionRate: 85 }
-  }
-  return stats[activeTab.value] || { signed: 0, executing: 0, executionRate: 0 }
+const groupKeys = computed(() => {
+  return Object.keys(currentGroups.value || {})
 })
 
-const currentUnit = computed(() => props.currentUnit || '全部')
+const currentGroup = computed(() => {
+  return currentGroups.value?.[activeGroup.value] || {}
+})
+
+const currentSummary = computed(() => {
+  const suffix = activeTab.value === '集采' ? '集采项目' : '集租项目'
+  const key = activeGroup.value + suffix
+  const summaryMap = activeTab.value === '集采' ? props.summary : props.rentSummary
+  return summaryMap?.[key] || {}
+})
 
 const switchTab = (tab) => {
   activeTab.value = tab
-  activeCategory.value = '全部'
+  activeGroup.value = '股份'
   if (chart) {
     initChart()
   }
 }
 
-const handleCategoryChange = (value) => {
-  activeCategory.value = value
+const switchGroup = (key) => {
+  activeGroup.value = key
+  if (chart) {
+    initChart()
+  }
+}
+
+const openExternalLink = () => {
+  window.open('https://www.smart-worksite.com/hj/#/micro/supplies/biz/enterprise/supplies/frame-contract/index', '_blank')
 }
 
 const initChart = () => {
   if (!chartRef.value) return
-  
+
   if (chart) {
     chart.dispose()
   }
-  
+
   chart = echarts.init(chartRef.value)
-  
-  const displayCategories = getDisplayCategories()
-  
+
+  const group = currentGroup.value
+  const materials = group.materials || []
+  const contractCount = group.contractCount || []
+  const contractAmount = group.contractAmount || []
+  const actualAmount = group.actualAmount || []
+  const paidAmount = group.paidAmount || []
+
   const option = {
     tooltip: {
       trigger: 'axis',
@@ -159,48 +170,61 @@ const initChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: displayCategories
+      data: materials,
+      axisLabel: { fontSize: 11, interval: 0, rotate: materials.length > 5 ? 30 : 0 }
     },
     yAxis: [
       {
         type: 'value',
         name: '数量',
-        axisLabel: { fontSize: 11, interval: 0 }
+        axisLabel: { fontSize: 11 }
       },
       {
         type: 'value',
-        name: '完成率(%)',
-        max: 100,
+        name: '金额(万元)',
         position: 'right',
-        axisLabel: { fontSize: 11, interval: 0 }
+        axisLabel: { fontSize: 11 }
       }
     ],
     series: [
-      ...props.series.slice(0, 2).map(s => ({
-        name: s.name?.replace('集采', activeTab.value),
-        type: 'bar',
-        data: s.data,
-        itemStyle: {
-          color: s.color
-        }
-      })),
       {
-        name: props.series[2]?.name?.replace('集采', activeTab.value),
+        name: '合同签订数量',
+        type: 'bar',
+        data: contractCount,
+        itemStyle: { color: '#3b82f6' }
+      },
+      {
+        name: '合同签订金额',
         type: 'line',
         yAxisIndex: 1,
-        data: props.series[2]?.data || [],
-        itemStyle: {
-          color: props.series[2]?.color
-        },
-        lineStyle: {
-          color: props.series[2]?.color
-        }
+        data: contractAmount,
+        smooth: true,
+        itemStyle: { color: '#f59e0b' },
+        lineStyle: { color: '#f59e0b', width: 2 }
+      },
+      {
+        name: '实际采购金额',
+        type: 'line',
+        yAxisIndex: 1,
+        data: actualAmount,
+        smooth: true,
+        itemStyle: { color: '#10b981' },
+        lineStyle: { color: '#10b981', width: 2 }
+      },
+      {
+        name: '已支付金额',
+        type: 'line',
+        yAxisIndex: 1,
+        data: paidAmount,
+        smooth: true,
+        itemStyle: { color: '#ef4444' },
+        lineStyle: { color: '#ef4444', width: 2 }
       }
     ]
   }
-  
+
   chart.setOption(option)
-  
+
   chart.on('click', () => {
     window.open('https://www.smart-worksite.com/hj/#/micro/supplies/biz/enterprise/supplies/frame-contract/index', '_blank')
   })
@@ -220,7 +244,7 @@ onBeforeUnmount(() => {
   chart && chart.dispose()
 })
 
-watch(() => [props.series, props.categories], () => {
+watch(() => [props.summary, props.groups, props.rentSummary, props.rentGroups], () => {
   if (chart) {
     initChart()
   }
