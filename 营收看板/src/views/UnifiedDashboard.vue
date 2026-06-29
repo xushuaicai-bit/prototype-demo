@@ -244,7 +244,7 @@
               <!-- 单圆环 + 已上报/待上报 -->
               <div class="flex items-center justify-center gap-5">
                 <!-- 圆环 -->
-                <div :title="'完成率：' + timelinessSingle.percentage + '%'" class="relative w-24 h-24 cursor-pointer hover:opacity-90 flex-shrink-0">
+                <div :title="'完成率：' + timelinessSingle.percentage + '%'" class="relative w-24 h-24 cursor-pointer hover:opacity-90 flex-shrink-0" @click="handleTimelinessDrill('all')">
                   <svg class="w-24 h-24" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r="42" stroke="#e5e7eb" stroke-width="10" fill="none" />
                     <circle
@@ -261,11 +261,11 @@
                 </div>
                 <!-- 圆环外：已上报 / 待上报 -->
                 <div class="text-sm space-y-2">
-                  <div class="text-gray-700">
+                  <div class="text-gray-700 cursor-pointer hover:bg-blue-50 rounded px-1 transition-colors" @click="handleTimelinessDrill('submitted')">
                     <span class="text-blue-600 font-medium">&#9679;</span> 已上报
                     <span class="ml-1.5 font-medium text-blue-600">{{ timelinessSingle.submitted }}</span>
                   </div>
-                  <div class="text-gray-500">
+                  <div class="text-gray-500 cursor-pointer hover:bg-gray-100 rounded px-1 transition-colors" @click="handleTimelinessDrill('pending')">
                     <span class="text-gray-400 font-medium">&#9711;</span> 待上报
                     <span class="ml-1.5 font-medium text-gray-600">{{ timelinessSingle.pending }}</span>
                   </div>
@@ -277,8 +277,7 @@
             <div class="pt-4 border-t border-gray-100">
               <!-- 标题栏 + 年月双选择器 -->
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-semibold text-gray-800 flex items-center">
-                  <span class="w-1 h-4 bg-blue-500 rounded-full mr-2"></span>
+                <h3 class="text-base font-semibold text-gray-800">
                   {{ selectedYear }}年{{ selectedMonth }}月营收偏差情况
                 </h3>
                 <div class="flex items-center gap-2">
@@ -623,8 +622,8 @@ const filterTabs = ref([
 // ============ 营收看板的全部 script 逻辑 ============
 const statCards = ref([
   { title: '当年计划营收', value: '122,180', unit: '万元', icon: 'trending-up', bgClass: 'bg-blue-50', iconClass: 'text-blue-500', drillable: true },
-  { title: '当月完成营收', value: '8,754', unit: '万元', icon: 'target', bgClass: 'bg-green-50', iconClass: 'text-green-500', drillable: true },
   { title: '当年累计营收', value: '58,420', unit: '万元', icon: 'bar-chart', bgClass: 'bg-purple-50', iconClass: 'text-purple-500', drillable: true },
+  { title: '当月完成营收', value: '8,754', unit: '万元', icon: 'target', bgClass: 'bg-green-50', iconClass: 'text-green-500', drillable: true },
   { title: '当年预计完成营收', value: '98,600', unit: '万元', icon: 'check-circle', bgClass: 'bg-cyan-50', iconClass: 'text-cyan-500', drillable: true },
   { title: '截止当月剩余合同存量', value: '45,230', unit: '万元', icon: 'file-text', bgClass: 'bg-orange-50', iconClass: 'text-orange-500', drillable: true },
   { title: '下月计划', value: '9,800', unit: '万元', icon: 'calendar', bgClass: 'bg-pink-50', iconClass: 'text-pink-500', drillable: true },
@@ -685,17 +684,26 @@ const handleDeviationDrill = (unit) => {
 }
 
 const handleTimelinessDrill = (type) => {
-  if (type === 'pending') {
-    emit('navigate', {
-      view: 'image-view',
-      report: '',
-      filter: {}
-    })
-  } else {
+  if (type === 'all') {
+    // 应上报：查看全部数据（传空字符串显式重置筛选）
     emit('navigate', {
       view: 'revenue',
       report: 'revenue-detail',
-      filter: { hasPlanRevenue: true }
+      filter: { isReportedAnnualPlan: '' }
+    })
+  } else if (type === 'submitted') {
+    // 已上报：查看是否已上报年度计划=是的数据
+    emit('navigate', {
+      view: 'revenue',
+      report: 'revenue-detail',
+      filter: { isReportedAnnualPlan: '是' }
+    })
+  } else if (type === 'pending') {
+    // 待上报：查看是否已上报年度计划=否的数据
+    emit('navigate', {
+      view: 'revenue',
+      report: 'revenue-detail',
+      filter: { isReportedAnnualPlan: '否' }
     })
   }
 }
@@ -1174,6 +1182,10 @@ const handleCategoryChange = (name) => {
 
 const handleProjectTotalClick = () => {
   window.open('https://www.smart-worksite.com/hj/#/micro/market/biz/ent/market/prod-project/index', '_blank')
+}
+
+const handleTimelinessReportClick = () => {
+  window.open('https://www.smart-worksite.com/hj/#/micro/market/biz/ent/market/general/contract', '_blank')
 }
 
 const handleManagementTimelinessClick = () => {

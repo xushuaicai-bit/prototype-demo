@@ -49,7 +49,7 @@
           </el-select>
         </div>
 
-        <div v-show="activeTab !== 'construction'" class="flex items-center">
+        <div class="flex items-center">
           <label class="text-sm text-gray-600 mr-2">年月：</label>
           <el-select v-model="summaryYear" placeholder="年" class="w-24">
             <el-option label="2026年" value="2026" />
@@ -115,12 +115,15 @@
       </div>
     </div>
 
-    <div v-if="activeTab === 'construction'" class="overflow-x-auto">
+    <div v-if="activeTab === 'construction'">
       <el-table
         :data="paginatedConstructionData"
         border
         :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
-        style="min-width: 3500px;"
+        show-summary
+        :summary-method="getConstructionSummaries"
+        :summary-cell-style="{ background: '#f9fafb', fontWeight: 'bold' }"
+        @sort-change="handleSortChange"
       >
         <el-table-column
           label="基层单位"
@@ -142,6 +145,7 @@
           prop="revenueTarget"
           width="120"
           align="right"
+          sortable="custom"
           v-if="visibleColumns.has('revenueTarget')"
         >
           <template #default="scope">
@@ -154,6 +158,7 @@
           prop="completionRate"
           width="140"
           align="center"
+          sortable="custom"
           v-if="visibleColumns.has('completionRate')"
         >
           <template #default="scope">
@@ -178,6 +183,7 @@
             prop="carryForwardConstruction"
             width="130"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('carryForwardConstruction')"
           >
             <template #default="scope">
@@ -189,6 +195,7 @@
             prop="completedPendingSettlement"
             width="130"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('completedPendingSettlement')"
           >
             <template #default="scope">
@@ -200,6 +207,7 @@
             prop="carryForwardTotal"
             width="160"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('carryForwardTotal')"
           >
             <template #default="scope">
@@ -214,6 +222,7 @@
             prop="monthlyPlanConstruction"
             width="130"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('monthlyPlanConstruction')"
           >
             <template #default="scope">
@@ -225,6 +234,7 @@
             prop="monthlyPlanCompleted"
             width="130"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('monthlyPlanCompleted')"
           >
             <template #default="scope">
@@ -236,6 +246,7 @@
             prop="monthlyPlanNew"
             width="120"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('monthlyPlanNew')"
           >
             <template #default="scope">
@@ -247,6 +258,7 @@
             prop="monthlyPlanTotal"
             width="160"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('monthlyPlanTotal')"
           >
             <template #default="scope">
@@ -261,6 +273,7 @@
             prop="monthlyActualConstruction"
             width="130"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('monthlyActualConstruction')"
           >
             <template #default="scope">
@@ -272,6 +285,7 @@
             prop="monthlyActualCompleted"
             width="130"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('monthlyActualCompleted')"
           >
             <template #default="scope">
@@ -283,6 +297,7 @@
             prop="monthlyActualNew"
             width="120"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('monthlyActualNew')"
           >
             <template #default="scope">
@@ -294,6 +309,7 @@
             prop="monthlyActualTotal"
             width="160"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('monthlyActualTotal')"
           >
             <template #default="scope">
@@ -308,6 +324,7 @@
             prop="planConstruction"
             width="130"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('planConstruction')"
           >
             <template #default="scope">
@@ -319,6 +336,7 @@
             prop="planCompleted"
             width="130"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('planCompleted')"
           >
             <template #default="scope">
@@ -330,6 +348,7 @@
             prop="planNew"
             width="120"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('planNew')"
           >
             <template #default="scope">
@@ -341,6 +360,7 @@
             prop="planTotal"
             width="160"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('planTotal')"
           >
             <template #default="scope">
@@ -355,6 +375,7 @@
             prop="actualConstruction"
             width="130"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('actualConstruction')"
           >
             <template #default="scope">
@@ -366,6 +387,7 @@
             prop="actualCompleted"
             width="130"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('actualCompleted')"
           >
             <template #default="scope">
@@ -377,6 +399,7 @@
             prop="actualNew"
             width="120"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('actualNew')"
           >
             <template #default="scope">
@@ -388,6 +411,7 @@
             prop="actualTotal"
             width="160"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('actualTotal')"
           >
             <template #default="scope">
@@ -402,6 +426,7 @@
             prop="reportedRevenue"
             width="140"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('reportedRevenue')"
           >
             <template #default="scope">
@@ -413,6 +438,7 @@
             prop="newContractAmount"
             width="140"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('newContractAmount')"
           >
             <template #default="scope">
@@ -424,6 +450,7 @@
             prop="remainingContract"
             width="140"
             align="right"
+            sortable="custom"
             v-if="visibleColumns.has('remainingContract')"
           >
             <template #default="scope">
@@ -433,42 +460,6 @@
         </el-table-column>
       </el-table>
 
-      <!-- 固定底部合计行 -->
-      <div v-if="constructionTotals" class="total-footer-row">
-        <table style="width: 100%; min-width: 3500px; table-layout: fixed; border-collapse: collapse;">
-          <tbody>
-            <tr>
-              <td style="width: 200px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5;">合计</td>
-              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.revenueTarget) }}</td>
-              <td style="width: 140px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: center;">
-                <span :class="getRateTextClass(constructionTotals.completionRate)" class="text-sm font-bold">{{ constructionTotals.completionRate?.toFixed(2) }}%</span>
-              </td>
-              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.carryForwardConstruction) }}</td>
-              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.completedPendingSettlement) }}</td>
-              <td style="width: 160px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.carryForwardTotal) }}</td>
-              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyPlanConstruction) }}</td>
-              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyPlanCompleted) }}</td>
-              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyPlanNew) }}</td>
-              <td style="width: 160px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyPlanTotal) }}</td>
-              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyActualConstruction) }}</td>
-              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyActualCompleted) }}</td>
-              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyActualNew) }}</td>
-              <td style="width: 160px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.monthlyActualTotal) }}</td>
-              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.planConstruction) }}</td>
-              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.planCompleted) }}</td>
-              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.planNew) }}</td>
-              <td style="width: 160px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.planTotal) }}</td>
-              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.actualConstruction) }}</td>
-              <td style="width: 130px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.actualCompleted) }}</td>
-              <td style="width: 120px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.actualNew) }}</td>
-              <td style="width: 160px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.actualTotal) }}</td>
-              <td style="width: 140px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.reportedRevenue) }}</td>
-              <td style="width: 140px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.newContractAmount) }}</td>
-              <td style="width: 140px; background: #f9fafb; font-weight: bold; padding: 12px 8px; border: 1px solid #ebeef5; text-align: right;">{{ formatNumber(constructionTotals.remainingContract) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
       <div class="flex justify-end mt-3">
         <el-pagination
           v-model:current-page="constructionPage"
@@ -482,14 +473,14 @@
       </div>
     </div>
 
-    <div v-if="activeTab === 'product'" class="overflow-x-auto">
+    <div v-if="activeTab === 'product'">
       <el-table
-        :data="productData"
+        :data="sortedProductData"
         border
         :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
         show-summary
         :summary-method="getProductSummaries"
-        style="width: 100%; min-width: 800px;"
+        @sort-change="handleProductSortChange"
       >
         <el-table-column
           label="基层单位"
@@ -502,6 +493,7 @@
           prop="revenueTarget"
           width="120"
           align="right"
+          sortable="custom"
         >
           <template #default="scope">
             {{ formatNumber(scope.row.revenueTarget) }}
@@ -512,6 +504,7 @@
           prop="completionRate"
           width="140"
           align="center"
+          sortable="custom"
         >
           <template #default="scope">
             <div class="flex flex-col items-center">
@@ -533,6 +526,7 @@
           prop="annualPlan"
           width="120"
           align="right"
+          sortable="custom"
         >
           <template #default="scope">
             {{ formatNumber(scope.row.annualPlan) }}
@@ -543,6 +537,7 @@
           prop="monthlyActual"
           width="120"
           align="right"
+          sortable="custom"
         >
           <template #default="scope">
             {{ formatNumber(scope.row.monthlyActual) }}
@@ -553,6 +548,7 @@
           prop="annualActual"
           width="120"
           align="right"
+          sortable="custom"
         >
           <template #default="scope">
             {{ formatNumber(scope.row.annualActual) }}
@@ -563,6 +559,7 @@
           prop="nextMonthPlan"
           width="120"
           align="right"
+          sortable="custom"
         >
           <template #default="scope">
             {{ formatNumber(scope.row.nextMonthPlan) }}
@@ -582,14 +579,14 @@
       </div>
     </div>
 
-    <div v-if="activeTab === 'other'" class="overflow-x-auto">
+    <div v-if="activeTab === 'other'">
       <el-table
-        :data="otherData"
+        :data="sortedOtherData"
         border
         :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
         show-summary
         :summary-method="getOtherSummaries"
-        style="width: 100%; min-width: 600px;"
+        @sort-change="handleOtherSortChange"
       >
         <el-table-column
           label="业态类型"
@@ -602,6 +599,7 @@
           prop="monthlyActual"
           width="120"
           align="right"
+          sortable="custom"
         >
           <template #default="scope">
             {{ formatNumber(scope.row.monthlyActual) }}
@@ -612,6 +610,7 @@
           prop="annualActual"
           width="120"
           align="right"
+          sortable="custom"
         >
           <template #default="scope">
             {{ formatNumber(scope.row.annualActual) }}
@@ -634,7 +633,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 const emit = defineEmits(['navigate'])
 
@@ -647,7 +646,7 @@ const props = defineProps({
 
 const activeTab = ref('construction')
 const summaryYear = ref('2026')
-const summaryMonth = ref('')
+const summaryMonth = ref(6)
 const summaryMonthOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const selectedUnits = ref([])
 const constructionTotals = ref(null)
@@ -659,6 +658,39 @@ const productPage = ref(1)
 const productPageSize = ref(10)
 const otherPage = ref(1)
 const otherPageSize = ref(10)
+
+// 排序状态
+const sortProp = ref('')
+const sortOrder = ref('')
+const productSortProp = ref('')
+const productSortOrder = ref('')
+const otherSortProp = ref('')
+const otherSortOrder = ref('')
+
+const sortData = (data, prop, order) => {
+  if (!prop || !order) return data
+  return [...data].sort((a, b) => {
+    const va = a[prop] ?? 0
+    const vb = b[prop] ?? 0
+    return order === 'ascending' ? va - vb : vb - va
+  })
+}
+
+const handleSortChange = ({ prop, order }) => {
+  sortProp.value = prop || ''
+  sortOrder.value = order || ''
+  constructionPage.value = 1
+}
+const handleProductSortChange = ({ prop, order }) => {
+  productSortProp.value = prop || ''
+  productSortOrder.value = order || ''
+  productPage.value = 1
+}
+const handleOtherSortChange = ({ prop, order }) => {
+  otherSortProp.value = prop || ''
+  otherSortOrder.value = order || ''
+  otherPage.value = 1
+}
 
 onMounted(() => {
   if (typeof props.initialFilter === 'object') {
@@ -941,6 +973,31 @@ const rawData = [
   }
 ]
 
+// 按年月生成施工类数据（同年月稳定，不同年月数据不同）
+const yearBaseMap = { 2024: 0.85, 2025: 0.92, 2026: 1.0 }
+const generateConstructionData = (year, month) => {
+  const y = parseInt(year) || 2026
+  const m = parseInt(month) || 6
+  const yearBase = yearBaseMap[y] ?? 1.0
+  const cumFactor = m / 6
+  const monthWave = 0.8 + Math.abs(Math.sin(y * 12 + m)) * 0.4
+  const declineFactor = 1.3 - m * 0.04
+  return rawData.map(item => {
+    const r = { ...item }
+    ;['monthlyPlanConstruction','monthlyPlanCompleted','monthlyPlanNew',
+      'monthlyActualConstruction','monthlyActualCompleted','monthlyActualNew','nextMonthPlan']
+      .forEach(f => { r[f] = Math.round(item[f] * yearBase * monthWave) })
+    ;['actualConstruction','actualCompleted','actualNew','reportedRevenue','newContractAmount']
+      .forEach(f => { r[f] = Math.round(item[f] * yearBase * cumFactor) })
+    r.remainingContract = Math.round(item.remainingContract * yearBase * declineFactor)
+    ;['revenueTarget','carryForwardConstruction','completedPendingSettlement',
+      'planConstruction','planCompleted','planNew']
+      .forEach(f => { r[f] = Math.round(item[f] * yearBase) })
+    return r
+  })
+}
+const constructionData = computed(() => generateConstructionData(summaryYear.value, summaryMonth.value))
+
 const allUnits = [
   '管网事业部', '生态事业部', '区域事业部', '市政事业部', '环境建设',
   '管道工程', '管道分公司', '运营养护', '二次养护', '浦东供排水'
@@ -1061,6 +1118,14 @@ const otherData = [
   }
 ]
 
+const sortedProductData = computed(() => {
+  return sortData(productData, productSortProp.value, productSortOrder.value)
+})
+
+const sortedOtherData = computed(() => {
+  return sortData(otherData, otherSortProp.value, otherSortOrder.value)
+})
+
 const calculateDerivedFields = (data) => {
   return data.map(item => {
     let result = { ...item }
@@ -1156,7 +1221,7 @@ const calculateTotalsForFiltered = (data) => {
 }
 
 const filteredConstructionData = computed(() => {
-  const calculated = calculateDerivedFields(rawData)
+  const calculated = calculateDerivedFields(constructionData.value)
   const filtered = filterDataByUnits(calculated, selectedUnits.value)
   const totals = calculateTotalsForFiltered(filtered)
   constructionTotals.value = totals
@@ -1165,11 +1230,12 @@ const filteredConstructionData = computed(() => {
 
 // 施工类分页数据
 const paginatedConstructionData = computed(() => {
-  const calculated = calculateDerivedFields(rawData)
+  const calculated = calculateDerivedFields(constructionData.value)
   const filtered = filterDataByUnits(calculated, selectedUnits.value)
+  const sorted = sortData(filtered, sortProp.value, sortOrder.value)
   const start = (constructionPage.value - 1) * constructionPageSize.value
   const end = start + constructionPageSize.value
-  return filtered.slice(start, end)
+  return sorted.slice(start, end)
 })
 
 const formatNumber = (num) => {
@@ -1191,6 +1257,19 @@ const getRateTextClass = (rate) => {
 
 const rowClassName = ({ row }) => {
   return ''
+}
+
+const getConstructionSummaries = ({ columns }) => {
+  return columns.map((column, index) => {
+    if (index === 0) return '合计'
+    const totals = constructionTotals.value || {}
+    const prop = column.prop
+    if (prop === 'completionRate') {
+      return totals.completionRate != null ? totals.completionRate.toFixed(2) + '%' : ''
+    }
+    const val = totals[prop]
+    return val != null ? formatNumber(val) : ''
+  })
 }
 
 const getProductSummaries = (param) => {
@@ -1249,12 +1328,20 @@ const drillDown = (unitName) => {
   emit('navigate', { view: 'revenue', report: 'revenue-detail', filter: { unit: unitName } })
 }
 
+// 年月变化时重置施工类分页
+watch([summaryYear, summaryMonth], () => {
+  constructionPage.value = 1
+})
+
 const handleSearch = () => {
   // 搜索：filteredData computed 已自动响应 selectedUnits 变化
 }
 
 const handleReset = () => {
   selectedUnits.value = []
+  summaryYear.value = '2026'
+  summaryMonth.value = 6
+  constructionPage.value = 1
 }
 
 const exportExcel = () => {
@@ -1267,18 +1354,7 @@ const exportExcel = () => {
   border: 2px solid #52c41a;
 }
 
-/* 固定底部合计行 */
-.total-footer-row {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-}
-.total-footer-row td {
-  background-color: #f9fafb !important;
-}
-
-/* el-table 内置合计行统一样式（产品/其他业态） */
+/* el-table 内置合计行统一样式（所有业态） */
 :deep(.el-table__footer-wrapper) {
   position: sticky;
   bottom: 0;

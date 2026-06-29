@@ -67,6 +67,15 @@
         </div>
 
         <div class="flex items-center">
+          <label class="text-sm text-gray-600 mr-2">是否已上报年度计划：</label>
+          <el-select v-model="filters.isReportedAnnualPlan" placeholder="请选择" class="w-32">
+            <el-option label="全部" value="" />
+            <el-option label="是" value="是" />
+            <el-option label="否" value="否" />
+          </el-select>
+        </div>
+
+        <div class="flex items-center">
           <label class="text-sm text-gray-600 mr-2">项目名称：</label>
           <el-input v-model="filters.projectName" placeholder="请输入" class="w-48" />
         </div>
@@ -127,7 +136,7 @@
         </div>
     </div>
 
-    <div class="overflow-x-auto" style="max-width: 100%;">
+    <div style="max-width: 100%;">
       <el-table
         :data="paginatedData"
         border
@@ -221,6 +230,7 @@
           prop="contractAmount"
           width="140"
           align="right"
+          sortable
         >
           <template #default="scope">
             {{ formatNumber(scope.row.contractAmount) }}
@@ -232,9 +242,23 @@
           prop="carryForwardRevenue"
           width="160"
           align="right"
+          sortable
         >
           <template #default="scope">
             {{ formatNumber(scope.row.carryForwardRevenue) }}
+          </template>
+        </el-table-column>
+
+        <el-table-column
+          label="是否已上报年度计划"
+          prop="isReportedAnnualPlan"
+          width="160"
+          align="center"
+        >
+          <template #default="scope">
+            <el-tag :type="scope.row.isReportedAnnualPlan === '是' ? 'success' : 'info'" size="small">
+              {{ scope.row.isReportedAnnualPlan }}
+            </el-tag>
           </template>
         </el-table-column>
 
@@ -243,6 +267,7 @@
           prop="annualPlanRevenue"
           width="140"
           align="right"
+          sortable
         >
           <template #default="scope">
             {{ formatNumber(scope.row.annualPlanRevenue) }}
@@ -254,6 +279,7 @@
           prop="annualEstimatedRevenue"
           width="160"
           align="right"
+          sortable
         >
           <template #default="scope">
             {{ formatNumber(scope.row.annualEstimatedRevenue) }}
@@ -265,6 +291,7 @@
           prop="planAdjustmentRate"
           width="140"
           align="right"
+          sortable
         >
           <template #default="scope">
             <span :class="{ 'text-red-600': scope.row.planAdjustmentRate < 0, 'text-green-600': scope.row.planAdjustmentRate > 0 }">
@@ -278,6 +305,7 @@
           prop="monthActualRevenue"
           width="140"
           align="right"
+          sortable
         >
           <template #default="scope">
             {{ formatNumber(scope.row.monthActualRevenue) }}
@@ -289,6 +317,7 @@
           prop="annualAccumulatedRevenue"
           width="140"
           align="right"
+          sortable
         >
           <template #default="scope">
             {{ formatNumber(scope.row.annualAccumulatedRevenue) }}
@@ -300,6 +329,7 @@
           prop="startAccumulatedRevenue"
           width="140"
           align="right"
+          sortable
         >
           <template #default="scope">
             {{ formatNumber(scope.row.startAccumulatedRevenue) }}
@@ -311,6 +341,7 @@
           prop="monthReportedRevenue"
           width="160"
           align="right"
+          sortable
         >
           <template #default="scope">
             {{ formatNumber(scope.row.monthReportedRevenue) }}
@@ -322,6 +353,7 @@
           prop="annualReportedRevenue"
           width="160"
           align="right"
+          sortable
         >
           <template #default="scope">
             {{ formatNumber(scope.row.annualReportedRevenue) }}
@@ -333,6 +365,7 @@
           prop="totalReportedRevenue"
           width="160"
           align="right"
+          sortable
         >
           <template #default="scope">
             {{ formatNumber(scope.row.totalReportedRevenue) }}
@@ -344,6 +377,7 @@
           prop="remainingContractAmount"
           width="160"
           align="right"
+          sortable
         >
           <template #default="scope">
             {{ formatNumber(scope.row.remainingContractAmount) }}
@@ -355,6 +389,7 @@
           prop="progress"
           width="120"
           align="center"
+          sortable
         >
           <template #default="scope">
             <div class="flex items-center justify-center">
@@ -454,6 +489,7 @@ const filters = ref({
   status: '',
   revenueCaliber: '',
   isCoManaged: '',
+  isReportedAnnualPlan: '',
   projectName: '',
   projectCode: '',
   planAdjustmentRateMin: null,
@@ -1796,6 +1832,287 @@ const rawData = [
     month10: 0,
     month11: 0,
     month12: 0
+  },
+  // ===== 以下 10 条为“是否已上报年度计划=否”的数据，覆盖橙预警/黄预警/正常 =====
+  {
+    id: 36,
+    projectCode: 'XM-2026-036',
+    projectName: '闵行区河道生态修复工程',
+    unit: '生态事业部',
+    region: '闵行',
+    owner: '闵行区水务局',
+    status: '在建',
+    revenueCaliber: '新接项目',
+    isCoManaged: '否',
+    businessType: '水环境治理',
+    contractAmount: 32000000,
+    carryForwardRevenue: 0,
+    annualAccumulatedRevenue: 8500000,
+    quarterlyAccumulatedRevenue: 3000000,
+    annualReportedRevenue: 8000000,
+    totalReportedRevenue: 8000000,
+    remainingContractAmount: 23500000,
+    annualPlanRevenue: 0,
+    annualEstimatedRevenue: 0,
+    planAdjustmentRate: 0,
+    monthActualRevenue: 2200000,
+    startAccumulatedRevenue: 8500000,
+    progress: 28,
+    startTime: '2026-03-05',
+    month1: 0, month2: 0, month3: 2000000, month4: 2100000, month5: 2200000, month6: 2200000,
+    month7: 0, month8: 0, month9: 0, month10: 0, month11: 0, month12: 0
+  },
+  {
+    id: 37,
+    projectCode: 'XM-2026-037',
+    projectName: '松江区污水管网改造项目',
+    unit: '管网事业部',
+    region: '松江',
+    owner: '松江区水务局',
+    status: '在建',
+    revenueCaliber: '新接项目',
+    isCoManaged: '否',
+    businessType: '管网改造',
+    contractAmount: 25000000,
+    carryForwardRevenue: 0,
+    annualAccumulatedRevenue: 6600000,
+    quarterlyAccumulatedRevenue: 2400000,
+    annualReportedRevenue: 6200000,
+    totalReportedRevenue: 6200000,
+    remainingContractAmount: 18800000,
+    annualPlanRevenue: 0,
+    annualEstimatedRevenue: 0,
+    planAdjustmentRate: 0,
+    monthActualRevenue: 1800000,
+    startAccumulatedRevenue: 6600000,
+    progress: 25,
+    startTime: '2026-03-12',
+    month1: 0, month2: 0, month3: 1500000, month4: 1600000, month5: 1700000, month6: 1800000,
+    month7: 0, month8: 0, month9: 0, month10: 0, month11: 0, month12: 0
+  },
+  {
+    id: 38,
+    projectCode: 'XM-2026-038',
+    projectName: '青浦区生态湿地建设项目',
+    unit: '生态事业部',
+    region: '青浦',
+    owner: '青浦区生态环境局',
+    status: '在建',
+    revenueCaliber: '新接项目',
+    isCoManaged: '否',
+    businessType: '生态修复',
+    contractAmount: 18000000,
+    carryForwardRevenue: 0,
+    annualAccumulatedRevenue: 4800000,
+    quarterlyAccumulatedRevenue: 1700000,
+    annualReportedRevenue: 4500000,
+    totalReportedRevenue: 4500000,
+    remainingContractAmount: 13500000,
+    annualPlanRevenue: 0,
+    annualEstimatedRevenue: 0,
+    planAdjustmentRate: 0,
+    monthActualRevenue: 1300000,
+    startAccumulatedRevenue: 4800000,
+    progress: 22,
+    startTime: '2026-03-20',
+    month1: 0, month2: 0, month3: 1200000, month4: 1100000, month5: 1200000, month6: 1300000,
+    month7: 0, month8: 0, month9: 0, month10: 0, month11: 0, month12: 0
+  },
+  {
+    id: 39,
+    projectCode: 'XM-2026-039',
+    projectName: '奉贤区供水管道新建工程',
+    unit: '管道工程',
+    region: '奉贤',
+    owner: '奉贤区自来水公司',
+    status: '在建',
+    revenueCaliber: '新接项目',
+    isCoManaged: '是',
+    businessType: '管道建设',
+    contractAmount: 42000000,
+    carryForwardRevenue: 0,
+    annualAccumulatedRevenue: 5500000,
+    quarterlyAccumulatedRevenue: 2000000,
+    annualReportedRevenue: 5200000,
+    totalReportedRevenue: 5200000,
+    remainingContractAmount: 36800000,
+    annualPlanRevenue: 0,
+    annualEstimatedRevenue: 0,
+    planAdjustmentRate: 0,
+    monthActualRevenue: 1500000,
+    startAccumulatedRevenue: 5500000,
+    progress: 14,
+    startTime: '2026-04-10',
+    month1: 0, month2: 0, month3: 0, month4: 1200000, month5: 1400000, month6: 1500000,
+    month7: 0, month8: 0, month9: 0, month10: 0, month11: 0, month12: 0
+  },
+  {
+    id: 40,
+    projectCode: 'XM-2026-040',
+    projectName: '宝山区雨污分流改造工程',
+    unit: '市政事业部',
+    region: '宝山',
+    owner: '宝山区建设管理委',
+    status: '在建',
+    revenueCaliber: '新接项目',
+    isCoManaged: '否',
+    businessType: '市政排水',
+    contractAmount: 28000000,
+    carryForwardRevenue: 0,
+    annualAccumulatedRevenue: 2800000,
+    quarterlyAccumulatedRevenue: 1100000,
+    annualReportedRevenue: 2600000,
+    totalReportedRevenue: 2600000,
+    remainingContractAmount: 25400000,
+    annualPlanRevenue: 0,
+    annualEstimatedRevenue: 0,
+    planAdjustmentRate: 0,
+    monthActualRevenue: 800000,
+    startAccumulatedRevenue: 2800000,
+    progress: 10,
+    startTime: '2026-05-05',
+    month1: 0, month2: 0, month3: 0, month4: 0, month5: 1000000, month6: 800000,
+    month7: 0, month8: 0, month9: 0, month10: 0, month11: 0, month12: 0
+  },
+  {
+    id: 41,
+    projectCode: 'XM-2026-041',
+    projectName: '嘉定区道路绿化提升项目',
+    unit: '区域事业部',
+    region: '嘉定',
+    owner: '嘉定区交通委',
+    status: '在建',
+    revenueCaliber: '新接项目',
+    isCoManaged: '否',
+    businessType: '园林绿化',
+    contractAmount: 15000000,
+    carryForwardRevenue: 0,
+    annualAccumulatedRevenue: 2200000,
+    quarterlyAccumulatedRevenue: 900000,
+    annualReportedRevenue: 2000000,
+    totalReportedRevenue: 2000000,
+    remainingContractAmount: 13000000,
+    annualPlanRevenue: 0,
+    annualEstimatedRevenue: 0,
+    planAdjustmentRate: 0,
+    monthActualRevenue: 700000,
+    startAccumulatedRevenue: 2200000,
+    progress: 12,
+    startTime: '2026-05-12',
+    month1: 0, month2: 0, month3: 0, month4: 0, month5: 900000, month6: 700000,
+    month7: 0, month8: 0, month9: 0, month10: 0, month11: 0, month12: 0
+  },
+  {
+    id: 42,
+    projectCode: 'XM-2026-042',
+    projectName: '浦东新区海绵城市试点工程',
+    unit: '环境建设',
+    region: '浦东',
+    owner: '浦东新区生态环境局',
+    status: '在建',
+    revenueCaliber: '新接项目',
+    isCoManaged: '是',
+    businessType: '海绵城市',
+    contractAmount: 35000000,
+    carryForwardRevenue: 0,
+    annualAccumulatedRevenue: 1600000,
+    quarterlyAccumulatedRevenue: 600000,
+    annualReportedRevenue: 1500000,
+    totalReportedRevenue: 1500000,
+    remainingContractAmount: 33500000,
+    annualPlanRevenue: 0,
+    annualEstimatedRevenue: 0,
+    planAdjustmentRate: 0,
+    monthActualRevenue: 500000,
+    startAccumulatedRevenue: 1600000,
+    progress: 5,
+    startTime: '2026-05-20',
+    month1: 0, month2: 0, month3: 0, month4: 0, month5: 600000, month6: 500000,
+    month7: 0, month8: 0, month9: 0, month10: 0, month11: 0, month12: 0
+  },
+  {
+    id: 43,
+    projectCode: 'XM-2026-043',
+    projectName: '静安区老旧小区改造工程',
+    unit: '市政事业部',
+    region: '静安',
+    owner: '静安区房管局',
+    status: '在建',
+    revenueCaliber: '新接项目',
+    isCoManaged: '否',
+    businessType: '小区改造',
+    contractAmount: 20000000,
+    carryForwardRevenue: 0,
+    annualAccumulatedRevenue: 600000,
+    quarterlyAccumulatedRevenue: 200000,
+    annualReportedRevenue: 550000,
+    totalReportedRevenue: 550000,
+    remainingContractAmount: 19450000,
+    annualPlanRevenue: 0,
+    annualEstimatedRevenue: 0,
+    planAdjustmentRate: 0,
+    monthActualRevenue: 300000,
+    startAccumulatedRevenue: 600000,
+    progress: 3,
+    startTime: '2026-06-05',
+    month1: 0, month2: 0, month3: 0, month4: 0, month5: 0, month6: 300000,
+    month7: 0, month8: 0, month9: 0, month10: 0, month11: 0, month12: 0
+  },
+  {
+    id: 44,
+    projectCode: 'XM-2026-044',
+    projectName: '杨浦区滨水景观带工程',
+    unit: '区域事业部',
+    region: '杨浦',
+    owner: '杨浦区绿化市容局',
+    status: '在建',
+    revenueCaliber: '新接项目',
+    isCoManaged: '否',
+    businessType: '景观工程',
+    contractAmount: 12000000,
+    carryForwardRevenue: 0,
+    annualAccumulatedRevenue: 400000,
+    quarterlyAccumulatedRevenue: 150000,
+    annualReportedRevenue: 380000,
+    totalReportedRevenue: 380000,
+    remainingContractAmount: 11620000,
+    annualPlanRevenue: 0,
+    annualEstimatedRevenue: 0,
+    planAdjustmentRate: 0,
+    monthActualRevenue: 200000,
+    startAccumulatedRevenue: 400000,
+    progress: 2,
+    startTime: '2026-06-12',
+    month1: 0, month2: 0, month3: 0, month4: 0, month5: 0, month6: 200000,
+    month7: 0, month8: 0, month9: 0, month10: 0, month11: 0, month12: 0
+  },
+  {
+    id: 45,
+    projectCode: 'XM-2026-045',
+    projectName: '虹口区智慧水务监测项目',
+    unit: '运营养护',
+    region: '虹口',
+    owner: '虹口区水务局',
+    status: '在建',
+    revenueCaliber: '新接项目',
+    isCoManaged: '否',
+    businessType: '信息化',
+    contractAmount: 8000000,
+    carryForwardRevenue: 0,
+    annualAccumulatedRevenue: 150000,
+    quarterlyAccumulatedRevenue: 50000,
+    annualReportedRevenue: 140000,
+    totalReportedRevenue: 140000,
+    remainingContractAmount: 7860000,
+    annualPlanRevenue: 0,
+    annualEstimatedRevenue: 0,
+    planAdjustmentRate: 0,
+    monthActualRevenue: 80000,
+    startAccumulatedRevenue: 150000,
+    progress: 2,
+    startTime: '2026-06-20',
+    month1: 0, month2: 0, month3: 0, month4: 0, month5: 0, month6: 80000,
+    month7: 0, month8: 0, month9: 0, month10: 0, month11: 0, month12: 0
   }
 ]
 
@@ -1812,6 +2129,9 @@ const calculateTotalReportedRevenue = (data) => {
       }
     }
 
+    // 派生：是否已上报年度计划（当年计划营收有值即为“是”）
+    const isReportedAnnualPlan = (item.annualPlanRevenue && item.annualPlanRevenue > 0) ? '是' : '否'
+
     // 预警等级计算
     const now = new Date()
     const currentYear = now.getFullYear()
@@ -1821,10 +2141,11 @@ const calculateTotalReportedRevenue = (data) => {
 
     let oneMonth = 30 * 24 * 60 * 60 * 1000
     let twoMonths = 2 * oneMonth
-    let threeMonths = 3 * oneMonth
 
     let warningLevel = ''
-    if (!item.annualPlanRevenue || item.annualPlanRevenue <= 0) {
+    // 仅“否”（未上报年度计划）的项目参与预警等级计算
+    // “是”（已上报年度计划）的项目预警等级恒为正常（''）
+    if (isReportedAnnualPlan === '否') {
       if (isNewProject && startTimeVal) {
         const elapsed = now.getTime() - startTimeVal.getTime()
         if (elapsed > twoMonths) warningLevel = '橙色预警'
@@ -1836,20 +2157,9 @@ const calculateTotalReportedRevenue = (data) => {
       }
     }
 
-    // 基于营收完成率的预警（针对有计划营收的项目）
-    if (!warningLevel && item.annualPlanRevenue > 0) {
-      const rate = (item.annualAccumulatedRevenue || 0) / item.annualPlanRevenue
-      const monthNow = now.getMonth() + 1
-      const expectedRate = monthNow / 12
-      if (rate < expectedRate * 0.5) {
-        warningLevel = '橙色预警'
-      } else if (rate < expectedRate * 0.75) {
-        warningLevel = '黄色预警'
-      }
-    }
-
     return {
       ...item,
+      isReportedAnnualPlan,
       totalReportedRevenue: total,
       monthReportedRevenue: monthReported,
       warningLevel: warningLevel
@@ -1871,6 +2181,9 @@ const filteredData = computed(() => {
   }
   if (filters.value.isCoManaged) {
     data = data.filter(item => item.isCoManaged === filters.value.isCoManaged)
+  }
+  if (filters.value.isReportedAnnualPlan) {
+    data = data.filter(item => item.isReportedAnnualPlan === filters.value.isReportedAnnualPlan)
   }
   if (filters.value.sector) {
     data = data.filter(item => item.sector === filters.value.sector)
@@ -1928,7 +2241,7 @@ const paginatedData = computed(() => {
 
 // 切换页码时重置到第1页
 watch([() => filters.value.unit, () => filters.value.status, () => filters.value.revenueCaliber,
-      () => filters.value.isCoManaged, () => filters.value.projectName, () => filters.value.projectCode,
+      () => filters.value.isCoManaged, () => filters.value.isReportedAnnualPlan, () => filters.value.projectName, () => filters.value.projectCode,
       () => filters.value.warningLevel, () => filters.value.planAdjustmentRateMin, () => filters.value.planAdjustmentRateMax], () => {
   currentPage.value = 1
 })
@@ -2023,6 +2336,7 @@ const handleReset = () => {
     status: '',
     revenueCaliber: '',
     isCoManaged: '',
+    isReportedAnnualPlan: '',
     projectName: '',
     projectCode: '',
     planAdjustmentRateMin: null,
@@ -2046,6 +2360,7 @@ const exportExcel = () => {
     '业务类型': item.businessType,
     '合同金额(不含税)': item.contractAmount || 0,
     '结转至当年及以后营收': item.carryForwardRevenue || 0,
+    '是否已上报年度计划': (item.annualPlanRevenue && item.annualPlanRevenue > 0) ? '是' : '否',
     '当年计划营收': item.annualPlanRevenue || 0,
     '当年预计完成营收': item.annualEstimatedRevenue || 0,
     '年度累计营收': item.annualAccumulatedRevenue || 0,
@@ -2082,6 +2397,7 @@ const exportExcel = () => {
     '营收统计口径': item.revenueCaliber,
     '是否协管项目': item.isCoManaged,
     '业务类型': item.businessType,
+    '是否已上报年度计划': (item.annualPlanRevenue && item.annualPlanRevenue > 0) ? '是' : '否',
     '合同金额(不含税)': item.contractAmount || 0,
     '结转至当年及以后营收': item.carryForwardRevenue || 0,
     '年度累计营收': item.annualAccumulatedRevenue || 0,
@@ -2109,7 +2425,7 @@ const exportExcel = () => {
   const ws2 = utils.json_to_sheet(sheet2Data)
 
   // 设置列宽
-  ws1['!cols'] = [{ wch: 6 }, { wch: 14 }, { wch: 28 }, { wch: 14 }, { wch: 10 }, { wch: 14 }, { wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 20 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }]
+  ws1['!cols'] = [{ wch: 6 }, { wch: 14 }, { wch: 28 }, { wch: 14 }, { wch: 10 }, { wch: 14 }, { wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 20 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }]
   ws2['!cols'] = ws1['!cols']
 
   const wb = utils.book_new()
@@ -2164,6 +2480,10 @@ onMounted(() => {
 
   if (props.initialFilter.detailMonth !== undefined) {
     filters.value.detailMonth = props.initialFilter.detailMonth
+  }
+
+  if (props.initialFilter.isReportedAnnualPlan !== undefined) {
+    filters.value.isReportedAnnualPlan = props.initialFilter.isReportedAnnualPlan
   }
 
   // 校验：如果筛选后无数据但有原始数据，说明筛选条件可能过期，自动重置

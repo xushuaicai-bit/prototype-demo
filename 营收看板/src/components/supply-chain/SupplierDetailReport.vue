@@ -113,7 +113,7 @@
       </div>
     </div>
 
-    <div class="overflow-x-auto" style="max-width: 100%;">
+    <div style="max-width: 100%;">
       <el-table
         :data="filteredData"
         border

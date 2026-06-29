@@ -54,11 +54,27 @@
         </div>
 
         <div class="flex items-center">
-          <label class="text-sm text-gray-600 mr-2">是否产运管理重点项目：</label>
+          <label class="text-sm text-gray-600 mr-2">产运管控等级：</label>
           <el-select v-model="filters.isKeyProject" placeholder="请选择" class="w-32">
             <el-option label="全部" value="" />
-            <el-option label="是" value="是" />
-            <el-option label="否" value="否" />
+            <el-option label="重点项目" value="重点项目" />
+            <el-option label="一般项目" value="一般项目" />
+          </el-select>
+        </div>
+
+        <div class="flex items-center">
+          <label class="text-sm text-gray-600 mr-2">项目状态：</label>
+          <el-select v-model="filters.status" placeholder="请选择" class="w-32">
+            <el-option label="全部" value="" />
+            <el-option v-for="s in projectStatusOptions" :key="s" :label="s" :value="s" />
+          </el-select>
+        </div>
+
+        <div class="flex items-center">
+          <label class="text-sm text-gray-600 mr-2">纠偏完成情况：</label>
+          <el-select v-model="filters.correctiveStatus" placeholder="请选择" class="w-32">
+            <el-option label="全部" value="" />
+            <el-option v-for="s in correctiveStatusOptions" :key="s" :label="s" :value="s" />
           </el-select>
         </div>
 
@@ -94,13 +110,12 @@
         </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <div>
         <el-table
           :data="monthlyPaginatedData"
           border
           :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
           :row-class-name="getRowClassName"
-          style="width: 100%; min-width: 1800px;"
           :summary-method="getSummaries"
           show-summary
         >
@@ -140,16 +155,16 @@
           />
 
           <el-table-column
-            label="是否产运管理重点项目"
+            label="产运管控等级"
             prop="isKeyProject"
             width="160"
             align="center"
           >
             <template #default="scope">
-              <el-tag v-if="scope.row.isKeyProject === '是'" type="warning" size="small">
-                是
+              <el-tag v-if="scope.row.isKeyProject === '重点项目'" type="warning" size="small">
+                重点项目
               </el-tag>
-              <span v-else class="text-gray-400">否</span>
+              <span v-else class="text-gray-400">一般项目</span>
             </template>
           </el-table-column>
 
@@ -170,6 +185,7 @@
             prop="contractAmount"
             width="140"
             align="right"
+            sortable
           >
             <template #default="scope">
               {{ formatNumber(scope.row.contractAmount) }}
@@ -181,6 +197,7 @@
             prop="carryForwardRevenue"
             width="160"
             align="right"
+            sortable
           >
             <template #default="scope">
               {{ formatNumber(scope.row.carryForwardRevenue) }}
@@ -192,6 +209,7 @@
             prop="annualPlanRevenue"
             width="120"
             align="right"
+            sortable
           >
             <template #default="scope">
               {{ formatNumber(scope.row.annualPlanRevenue) }}
@@ -203,6 +221,7 @@
             prop="annualAccumulatedRevenue"
             width="120"
             align="right"
+            sortable
           >
             <template #default="scope">
               {{ formatNumber(scope.row.annualAccumulatedRevenue) }}
@@ -214,6 +233,7 @@
             prop="totalAccumulatedRevenue"
             width="120"
             align="right"
+            sortable
           >
             <template #default="scope">
               {{ formatNumber(scope.row.totalAccumulatedRevenue) }}
@@ -222,8 +242,10 @@
 
           <el-table-column
             :label="`${deviationMonth}计划营收`"
+            prop="monthPlanRevenue"
             width="130"
             align="right"
+            sortable
           >
             <template #default="scope">
               <span
@@ -244,8 +266,10 @@
 
           <el-table-column
             :label="`${deviationMonth}完成营收`"
+            prop="monthActualRevenue"
             width="130"
             align="right"
+            sortable
           >
             <template #default="scope">
               <span
@@ -266,8 +290,10 @@
 
           <el-table-column
             :label="`${deviationMonth}营收完成率`"
+            prop="completionRate"
             width="140"
             align="center"
+            sortable
           >
             <template #default="scope">
               <div class="flex flex-col items-center">
@@ -287,8 +313,10 @@
 
           <el-table-column
             :label="`${deviationMonth}营收偏差`"
+            prop="deviation"
             width="130"
             align="right"
+            sortable
           >
             <template #default="scope">
               <span :class="{ 'text-red-600 font-medium': scope.row.deviation < 0 }">
@@ -336,21 +364,11 @@
           </el-table-column>
 
           <el-table-column
-            label="当月完成率"
-            width="120"
-            align="center"
-          >
-            <template #default="scope">
-              <span :class="getRateTextClass(scope.row.completionRate)">
-                {{ scope.row.completionRate.toFixed(2) }}%
-              </span>
-            </template>
-          </el-table-column>
-
-          <el-table-column
             label="当月营收负偏差"
+            prop="negativeDeviation"
             width="140"
             align="right"
+            sortable
           >
             <template #default="scope">
               <span :class="{ 'text-red-600 font-medium': scope.row.negativeDeviation < 0, 'text-green-600': scope.row.negativeDeviation > 0 }">
@@ -425,11 +443,11 @@
         </div>
 
         <div class="flex items-center">
-          <label class="text-sm text-gray-600 mr-2">是否产运管理重点项目：</label>
+          <label class="text-sm text-gray-600 mr-2">产运管控等级：</label>
           <el-select v-model="quarterlyFilters.isKeyProject" placeholder="请选择" class="w-32">
             <el-option label="全部" value="" />
-            <el-option label="是" value="是" />
-            <el-option label="否" value="否" />
+            <el-option label="重点项目" value="重点项目" />
+            <el-option label="一般项目" value="一般项目" />
           </el-select>
         </div>
 
@@ -447,12 +465,11 @@
         </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <div>
         <el-table
           :data="quarterlyPaginatedData"
           border
           :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
-          style="width: 100%; min-width: 2200px;"
         >
           <el-table-column
             label="序号"
@@ -486,16 +503,16 @@
           />
 
           <el-table-column
-            label="是否产运管理重点项目"
+            label="产运管控等级"
             prop="isKeyProject"
             width="160"
             align="center"
           >
             <template #default="scope">
-              <el-tag v-if="scope.row.isKeyProject === '是'" type="warning" size="small">
-                是
+              <el-tag v-if="scope.row.isKeyProject === '重点项目'" type="warning" size="small">
+                重点项目
               </el-tag>
-              <span v-else class="text-gray-400">否</span>
+              <span v-else class="text-gray-400">一般项目</span>
             </template>
           </el-table-column>
 
@@ -529,6 +546,7 @@
             prop="contractAmount"
             width="140"
             align="right"
+            sortable
           >
             <template #default="scope">
               {{ formatNumber(scope.row.contractAmount) }}
@@ -540,6 +558,7 @@
             prop="carryForwardRevenue"
             width="160"
             align="right"
+            sortable
           >
             <template #default="scope">
               {{ formatNumber(scope.row.carryForwardRevenue) }}
@@ -551,6 +570,7 @@
             prop="annualPlanRevenue"
             width="120"
             align="right"
+            sortable
           >
             <template #default="scope">
               {{ formatNumber(scope.row.annualPlanRevenue) }}
@@ -562,6 +582,7 @@
             prop="annualAccumulatedRevenue"
             width="120"
             align="right"
+            sortable
           >
             <template #default="scope">
               {{ formatNumber(scope.row.annualAccumulatedRevenue) }}
@@ -573,6 +594,7 @@
             prop="totalAccumulatedRevenue"
             width="120"
             align="right"
+            sortable
           >
             <template #default="scope">
               {{ formatNumber(scope.row.totalAccumulatedRevenue) }}
@@ -584,6 +606,7 @@
             prop="quarterOriginalPlan"
             width="150"
             align="right"
+            sortable
           >
             <template #default="scope">
               <span
@@ -607,6 +630,7 @@
             prop="quarterRevisedPlan"
             width="150"
             align="right"
+            sortable
           >
             <template #default="scope">
               <span
@@ -630,6 +654,7 @@
             prop="planReductionAmount"
             width="160"
             align="right"
+            sortable
           >
             <template #default="scope">
               <span :class="{ 'text-red-600 font-medium': scope.row.planReductionAmount > 0 }">
@@ -751,11 +776,16 @@ const quarterlyYear = ref('2026')
 const quarterlyQuarter = ref('')
 const activeDeviationTab = ref('monthly')
 
+const projectStatusOptions = ['待建', '在建', '停工', '完工', '竣工未送审', '已送审', '审定未销项', '业务销项', '财务销项']
+const correctiveStatusOptions = ['未开始', '纠偏中', '已完成']
+
 const filters = ref({
   projectCode: '',
   projectName: '',
   unit: '',
-  isKeyProject: ''
+  isKeyProject: '',
+  status: '',
+  correctiveStatus: ''
 })
 
 const quarterlyFilters = ref({
@@ -774,7 +804,7 @@ const rawData = [
     projectCode: 'XM-2024-001',
     projectName: '上海市浦东新区污水处理厂扩建工程',
     unit: '生态环境事业部',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     contractAmount: 12500,
     carryForwardRevenue: 5000,
@@ -793,7 +823,7 @@ const rawData = [
     projectCode: 'XM-2024-002',
     projectName: '黄浦区老旧管网改造项目',
     unit: '管网运维事业部',
-    isKeyProject: '否',
+    isKeyProject: '一般项目',
     status: '在建',
     contractAmount: 8600,
     carryForwardRevenue: 3500,
@@ -812,7 +842,7 @@ const rawData = [
     projectCode: 'XM-2024-003',
     projectName: '徐汇区雨水泵站新建工程',
     unit: '市政事业部',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '完工',
     contractAmount: 4500,
     carryForwardRevenue: 1500,
@@ -831,8 +861,8 @@ const rawData = [
     projectCode: 'XM-2024-004',
     projectName: '长宁区二次供水设施改造项目',
     unit: '二次养护',
-    isKeyProject: '否',
-    status: '待结算',
+    isKeyProject: '一般项目',
+    status: '竣工未送审',
     contractAmount: 6200,
     carryForwardRevenue: 2000,
     annualPlanRevenue: 6200,
@@ -850,7 +880,7 @@ const rawData = [
     projectCode: 'XM-2024-005',
     projectName: '闵行区供水管道新建工程',
     unit: '管道工程',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     contractAmount: 9800,
     carryForwardRevenue: 4000,
@@ -869,8 +899,8 @@ const rawData = [
     projectCode: 'XM-2024-006',
     projectName: '浦东新区供水管网维修工程',
     unit: '区域事业部',
-    isKeyProject: '否',
-    status: '已结算',
+    isKeyProject: '一般项目',
+    status: '财务销项',
     contractAmount: 3500,
     carryForwardRevenue: 1000,
     annualPlanRevenue: 3500,
@@ -881,14 +911,14 @@ const rawData = [
     deviationReason: '',
     correctiveMeasures: '',
     correctiveStatus: '已完成',
-    remark: '项目已结算'
+    remark: '项目已销项'
   },
   {
     id: 7,
     projectCode: 'XM-2024-007',
     projectName: '松江区水环境治理项目',
     unit: '环境建设分公司',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     contractAmount: 15600,
     carryForwardRevenue: 6000,
@@ -907,7 +937,7 @@ const rawData = [
     projectCode: 'XM-2024-008',
     projectName: '嘉定区污水提升泵站工程',
     unit: '区域发展事业部',
-    isKeyProject: '否',
+    isKeyProject: '一般项目',
     status: '在建',
     contractAmount: 7800,
     carryForwardRevenue: 3000,
@@ -926,8 +956,8 @@ const rawData = [
     projectCode: 'XM-2024-009',
     projectName: '管网检测及修复工程',
     unit: '管网事业部',
-    isKeyProject: '是',
-    status: '在建',
+    isKeyProject: '重点项目',
+    status: '停工',
     contractAmount: 15000,
     carryForwardRevenue: 6000,
     annualPlanRevenue: 9000,
@@ -945,7 +975,7 @@ const rawData = [
     projectCode: 'XM-2024-010',
     projectName: '生态湿地修复工程',
     unit: '生态事业部',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     contractAmount: 18000,
     carryForwardRevenue: 8000,
@@ -964,7 +994,7 @@ const rawData = [
     projectCode: 'XM-2024-011',
     projectName: '区域管网改造项目',
     unit: '区域事业部',
-    isKeyProject: '否',
+    isKeyProject: '一般项目',
     status: '在建',
     contractAmount: 9200,
     carryForwardRevenue: 4000,
@@ -983,8 +1013,8 @@ const rawData = [
     projectCode: 'XM-2024-012',
     projectName: '市政道路排水工程',
     unit: '市政事业部',
-    isKeyProject: '否',
-    status: '在建',
+    isKeyProject: '一般项目',
+    status: '已送审',
     contractAmount: 11000,
     carryForwardRevenue: 5000,
     annualPlanRevenue: 7000,
@@ -1002,7 +1032,7 @@ const rawData = [
     projectCode: 'XM-2024-013',
     projectName: '环保设施升级改造',
     unit: '环境建设',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     contractAmount: 13500,
     carryForwardRevenue: 5500,
@@ -1021,8 +1051,8 @@ const rawData = [
     projectCode: 'XM-2024-014',
     projectName: '管道防腐工程',
     unit: '管道工程',
-    isKeyProject: '否',
-    status: '在建',
+    isKeyProject: '一般项目',
+    status: '审定未销项',
     contractAmount: 8500,
     carryForwardRevenue: 3500,
     annualPlanRevenue: 5500,
@@ -1040,7 +1070,7 @@ const rawData = [
     projectCode: 'XM-2024-015',
     projectName: '管道安全检测项目',
     unit: '管道分公司',
-    isKeyProject: '否',
+    isKeyProject: '一般项目',
     status: '在建',
     contractAmount: 6500,
     carryForwardRevenue: 2800,
@@ -1059,8 +1089,8 @@ const rawData = [
     projectCode: 'XM-2024-016',
     projectName: '运营设备维护项目',
     unit: '运营养护',
-    isKeyProject: '是',
-    status: '在建',
+    isKeyProject: '重点项目',
+    status: '业务销项',
     contractAmount: 7200,
     carryForwardRevenue: 3000,
     annualPlanRevenue: 4800,
@@ -1070,7 +1100,7 @@ const rawData = [
     monthActualRevenue: 420,
     deviationReason: '设备老化维修频次高',
     correctiveMeasures: '申请设备更新预算',
-    correctiveStatus: '纠偏中',
+    correctiveStatus: '已完成',
     remark: ''
   },
   {
@@ -1078,7 +1108,7 @@ const rawData = [
     projectCode: 'XM-2024-017',
     projectName: '二次供水改造工程',
     unit: '二次养护',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     contractAmount: 9800,
     carryForwardRevenue: 4200,
@@ -1097,8 +1127,8 @@ const rawData = [
     projectCode: 'XM-2024-018',
     projectName: '区域管网新建工程',
     unit: '区域事业部',
-    isKeyProject: '是',
-    status: '在建',
+    isKeyProject: '重点项目',
+    status: '待建',
     contractAmount: 16500,
     carryForwardRevenue: 7000,
     annualPlanRevenue: 10000,
@@ -1119,7 +1149,7 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q001',
     projectName: '浦东新区污水处理厂扩建工程',
     unit: '生态事业部',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     deviationTriggerType: '进度滞后',
     contractAmount: 12500,
@@ -1139,7 +1169,7 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q002',
     projectName: '黄浦区老旧管网改造二期项目',
     unit: '管网事业部',
-    isKeyProject: '否',
+    isKeyProject: '一般项目',
     status: '在建',
     deviationTriggerType: '成本超支',
     contractAmount: 9200,
@@ -1159,7 +1189,7 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q003',
     projectName: '徐汇区雨水泵站升级改造工程',
     unit: '市政事业部',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     deviationTriggerType: '外部因素',
     contractAmount: 6800,
@@ -1179,7 +1209,7 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q004',
     projectName: '长宁区智慧水务平台建设项目',
     unit: '环境建设',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     deviationTriggerType: '资源不足',
     contractAmount: 18500,
@@ -1199,7 +1229,7 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q005',
     projectName: '闵行区供水管网扩容工程',
     unit: '管道工程',
-    isKeyProject: '否',
+    isKeyProject: '一般项目',
     status: '在建',
     deviationTriggerType: '进度滞后',
     contractAmount: 10500,
@@ -1219,7 +1249,7 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q006',
     projectName: '松江区河道综合治理工程',
     unit: '生态事业部',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     deviationTriggerType: '质量缺陷',
     contractAmount: 14200,
@@ -1239,7 +1269,7 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q007',
     projectName: '嘉定区污水处理设施升级项目',
     unit: '区域事业部',
-    isKeyProject: '否',
+    isKeyProject: '一般项目',
     status: '完工',
     deviationTriggerType: '进度滞后',
     contractAmount: 8900,
@@ -1259,7 +1289,7 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q008',
     projectName: '青浦区农村饮水安全工程',
     unit: '市政事业部',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     deviationTriggerType: '外部因素',
     contractAmount: 7600,
@@ -1279,7 +1309,7 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q009',
     projectName: '奉贤区工业废水处理项目',
     unit: '环境建设',
-    isKeyProject: '否',
+    isKeyProject: '一般项目',
     status: '在建',
     deviationTriggerType: '成本超支',
     contractAmount: 11800,
@@ -1299,7 +1329,7 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q010',
     projectName: '金山区供水安全保障工程',
     unit: '管道分公司',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     deviationTriggerType: '资源不足',
     contractAmount: 9500,
@@ -1319,7 +1349,7 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q011',
     projectName: '崇明岛生态修复示范项目',
     unit: '生态事业部',
-    isKeyProject: '是',
+    isKeyProject: '重点项目',
     status: '在建',
     deviationTriggerType: '进度滞后',
     contractAmount: 16800,
@@ -1339,8 +1369,8 @@ const quarterlyRawData = [
     projectCode: 'XM-2024-Q012',
     projectName: '杨浦区老旧小区供水改造工程',
     unit: '二次养护',
-    isKeyProject: '否',
-    status: '待结算',
+    isKeyProject: '一般项目',
+    status: '竣工未送审',
     deviationTriggerType: '外部因素',
     contractAmount: 5800,
     carryForwardRevenue: 2200,
@@ -1395,6 +1425,12 @@ const filteredData = computed(() => {
   if (filters.value.isKeyProject) {
     data = data.filter(item => item.isKeyProject === filters.value.isKeyProject)
   }
+  if (filters.value.status) {
+    data = data.filter(item => item.status === filters.value.status)
+  }
+  if (filters.value.correctiveStatus) {
+    data = data.filter(item => item.correctiveStatus === filters.value.correctiveStatus)
+  }
 
   return data
 })
@@ -1439,10 +1475,15 @@ const formatNumber = (num) => {
 
 const getStatusType = (status) => {
   const types = {
+    '待建': 'info',
     '在建': 'warning',
+    '停工': 'danger',
     '完工': 'success',
-    '待结算': 'info',
-    '已结算': 'primary'
+    '竣工未送审': '',
+    '已送审': 'primary',
+    '审定未销项': 'warning',
+    '业务销项': 'success',
+    '财务销项': 'success'
   }
   return types[status] || 'default'
 }
@@ -1553,7 +1594,9 @@ const handleReset = () => {
     projectCode: '',
     projectName: '',
     unit: '',
-    deviationType: ''
+    isKeyProject: '',
+    status: '',
+    correctiveStatus: ''
   }
   deviationMonth.value = ''
 }
@@ -1566,7 +1609,7 @@ const exportExcel = () => {
       '项目编号': item.projectCode,
       '项目名称': item.projectName,
       '基层单位': item.unit,
-      '是否产运管理重点项目': item.isKeyProject,
+      '产运管控等级': item.isKeyProject,
       '项目状态': item.status,
       '合同价(不含税)': Number((item.contractAmount / 10000).toFixed(2)),
       '结转至当年及以后营收': Number((item.carryForwardRevenue / 10000).toFixed(2)),
@@ -1595,7 +1638,7 @@ const exportExcel = () => {
       '项目编号': item.projectCode,
       '项目名称': item.projectName,
       '基层单位': item.unit,
-      '是否产运管理重点项目': item.isKeyProject,
+      '产运管控等级': item.isKeyProject,
       '项目状态': item.status,
       '偏差触发类型': item.deviationTriggerType,
       '合同价（不含税）': Number((item.contractAmount / 10000).toFixed(2)),

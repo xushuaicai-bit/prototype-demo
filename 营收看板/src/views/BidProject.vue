@@ -132,7 +132,7 @@
         </button>
       </div>
 
-      <div class="overflow-x-auto">
+      <div>
         <el-table
           :data="projectList"
           border
