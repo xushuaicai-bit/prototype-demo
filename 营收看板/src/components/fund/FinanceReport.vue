@@ -32,11 +32,35 @@
         <el-form-item>
           <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
-          <el-button @click="handleRefresh" type="success">手动更新数据</el-button>
+          <el-button @click="triggerImport" type="success">导入数据</el-button>
+          <el-button @click="handleDownloadTemplate" type="default">下载导入模板</el-button>
+          <el-button @click="showVersionDialog = true" type="default">版本记录</el-button>
           <el-button @click="handleExport" type="warning">导出</el-button>
+          <input
+            ref="importInputRef"
+            type="file"
+            accept=".xlsx,.xls"
+            style="display: none"
+            @change="handleImport"
+          />
         </el-form-item>
       </el-form>
     </div>
+
+    <el-alert
+      class="version-banner"
+      type="info"
+      :closable="false"
+      show-icon
+    >
+      <template #title>
+        <span>每月留存版本以当月25号前手动导入的最后一版为准。</span>
+        <span v-if="currentVersionInfo" class="version-current">
+          当前数据：留存版本，导入时间 {{ currentVersionInfo.importTime }}，共 {{ currentVersionInfo.rowCount }} 条。
+        </span>
+        <span v-else class="version-current">当前为系统默认数据，导入后将留存版本。</span>
+      </template>
+    </el-alert>
 
     <div class="table-container">
       <div class="tab-container">
@@ -106,6 +130,45 @@
         <template #footer>
           <el-button @click="showColumnDialog = false">取消</el-button>
           <el-button type="primary" @click="confirmColumns">确定</el-button>
+        </template>
+      </el-dialog>
+
+      <el-dialog
+        v-model="showVersionDialog"
+        title="版本记录"
+        width="760px"
+      >
+        <el-alert
+          type="warning"
+          :closable="false"
+          show-icon
+          style="margin-bottom: 12px"
+        >
+          <template #title>每月留存版本以当月25号前手动导入的最后一版为准。</template>
+        </el-alert>
+        <el-table :data="versions" border stripe size="small">
+          <el-table-column prop="importTime" label="导入时间" width="170" />
+          <el-table-column prop="fileName" label="文件名" min-width="160" show-overflow-tooltip />
+          <el-table-column prop="rowCount" label="数据条数" width="90" />
+          <el-table-column label="留存版本" width="100">
+            <template #default="{ row }">
+              <el-tag v-if="row.id === lockedVersionId" type="success" size="small">留存版本</el-tag>
+              <span v-else class="version-plain">—</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="170">
+            <template #default="{ row }">
+              <el-button
+                v-if="row.id !== currentVersionId"
+                link type="primary" size="small"
+                @click="handleApplyVersion(row)"
+              >恢复为此版本</el-button>
+              <el-tag v-else type="primary" size="small" effect="plain">当前生效</el-tag>
+            </template>
+          </el-table-column>
+        </el-table>
+        <template #footer>
+          <el-button @click="showVersionDialog = false">关闭</el-button>
         </template>
       </el-dialog>
 
@@ -259,8 +322,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { utils, writeFile, read } from 'xlsx'
 
 const basicUnitOptions = [
   { value: '城水管道', label: '城水管道' },
@@ -626,7 +690,193 @@ const searchForm = ref({
 })
 
 const tableHeight = ref(600)
-const financeData = ref(generateMockData())
+const financeData = ref([])
+
+// ===== 导入与版本留存逻辑 =====
+const VERSIONS_KEY = 'financeReport_versions'
+const importInputRef = ref(null)
+const showVersionDialog = ref(false)
+const versions = ref([])
+const currentVersionId = ref(null) // 当前生效版本 id（null 表示系统默认数据）
+
+// 列头 -> prop 映射（排除序号列），用于导入解析与模板生成
+const labelToProp = {}
+allColumnsFlat.forEach(c => {
+  if (c.prop !== 'index') labelToProp[c.label] = c.prop
+})
+const importColumns = allColumnsFlat.filter(c => c.prop !== 'index')
+
+// 当前年月作为周期键，对应「上月25-本月25」区间
+const getPeriodKey = () => {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+}
+
+// 格式化时间
+const formatDateTime = (date) => {
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
+// 读取本地版本列表
+const loadVersions = () => {
+  try {
+    const raw = localStorage.getItem(VERSIONS_KEY)
+    versions.value = raw ? JSON.parse(raw) : []
+  } catch (e) {
+    versions.value = []
+  }
+}
+
+// 持久化版本列表
+const persistVersions = () => {
+  localStorage.setItem(VERSIONS_KEY, JSON.stringify(versions.value))
+}
+
+// 当月留存版本：该周期内导入日期 ≤ 25 号的最后一版
+const lockedVersionId = computed(() => {
+  const period = getPeriodKey()
+  const periodVersions = versions.value
+    .filter(v => v.periodKey === period)
+    .filter(v => Number(v.importTime.slice(8, 10)) <= 25)
+    .sort((a, b) => b.importTime.localeCompare(a.importTime))
+  return periodVersions.length ? periodVersions[0].id : null
+})
+
+// 当前周期是否已有手动导入
+const hasManualImport = () => {
+  const period = getPeriodKey()
+  return versions.value.some(v => v.periodKey === period)
+}
+
+// 留存版本信息（用于横幅展示）
+const currentVersionInfo = computed(() => {
+  if (!currentVersionId.value) return null
+  const v = versions.value.find(item => item.id === currentVersionId.value)
+  return v ? { importTime: v.importTime, rowCount: v.rowCount } : null
+})
+
+// 保存一个新版本
+const saveVersion = (data, fileName) => {
+  const now = new Date()
+  const version = {
+    id: now.getTime(),
+    importTime: formatDateTime(now),
+    periodKey: getPeriodKey(),
+    fileName: fileName || '导入数据.xlsx',
+    rowCount: data.length,
+    data
+  }
+  versions.value.push(version)
+  persistVersions()
+  return version
+}
+
+// 触发文件选择
+const triggerImport = () => {
+  importInputRef.value && importInputRef.value.click()
+}
+
+// 解析 Excel 并导入
+const handleImport = (e) => {
+  const file = e.target.files && e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (evt) => {
+    try {
+      const data = new Uint8Array(evt.target.result)
+      const wb = read(data, { type: 'array' })
+      const sheet = wb.Sheets[wb.SheetNames[0]]
+      const rows = utils.sheet_to_json(sheet, { header: 1, defval: '' })
+      if (rows.length < 2) {
+        ElMessage.warning('文件没有数据行，请按模板填写后再导入')
+        resetInput(e)
+        return
+      }
+      const headerRow = rows[0].map(h => String(h).trim())
+      const colIndexToProps = headerRow.map(label => labelToProp[label] || null)
+      const parsedData = []
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i]
+        if (!row || row.every(c => c === '' || c === null || c === undefined)) continue
+        const obj = {}
+        // 先补全所有列为默认空值
+        allColumnsFlat.forEach(c => { obj[c.prop] = '' })
+        colIndexToProps.forEach((prop, idx) => {
+          if (prop) {
+            const val = row[idx]
+            obj[prop] = val === null || val === undefined ? '' : val
+          }
+        })
+        // 重建必填字段缺失时的默认值
+        obj.index = parsedData.length + 1
+        if (!obj.productionProjectNo) obj.productionProjectNo = `SC${String(parsedData.length + 1).padStart(4, '0')}`
+        if (!obj.accountingProjectNo) obj.accountingProjectNo = `HS${String(parsedData.length + 1).padStart(4, '0')}`
+        if (!obj.projectName) obj.projectName = '未命名项目'
+        parsedData.push(obj)
+      }
+      if (parsedData.length === 0) {
+        ElMessage.warning('未解析到有效数据行，请检查文件内容')
+        resetInput(e)
+        return
+      }
+      const version = saveVersion(parsedData, file.name)
+      financeData.value = parsedData
+      currentVersionId.value = version.id
+      ElMessage.success(`导入成功，共 ${parsedData.length} 条数据，已留存版本`)
+    } catch (err) {
+      ElMessage.error('文件解析失败，请确认使用下载的模板填写')
+    }
+    resetInput(e)
+  }
+  reader.readAsArrayBuffer(file)
+}
+
+const resetInput = (e) => {
+  if (e && e.target) e.target.value = ''
+}
+
+// 恢复为历史版本
+const handleApplyVersion = (row) => {
+  financeData.value = (row.data && row.data.length) ? JSON.parse(JSON.stringify(row.data)) : []
+  currentVersionId.value = row.id
+  ElMessage.success(`已恢复为 ${row.importTime} 的版本`)
+}
+
+// 下载导入模板
+const handleDownloadTemplate = () => {
+  const headers = importColumns.map(c => c.label)
+  const sheet = utils.aoa_to_sheet([headers])
+  const wb = utils.book_new()
+  utils.book_append_sheet(wb, sheet, '业财统计报表')
+  writeFile(wb, '业财统计报表导入模板.xlsx')
+}
+
+// 初始化：若当前周期已有留存版本，则加载留存版本，停止自动更新（不再生成 mock）
+onMounted(() => {
+  loadVersions()
+  const lockedId = lockedVersionId.value
+  if (lockedId) {
+    const locked = versions.value.find(v => v.id === lockedId)
+    financeData.value = locked && locked.data ? JSON.parse(JSON.stringify(locked.data)) : []
+    currentVersionId.value = lockedId
+  } else if (hasManualImport()) {
+    // 当月有导入但无 25 号前的留存版，取当月最新一版
+    const period = getPeriodKey()
+    const periodVersions = versions.value
+      .filter(v => v.periodKey === period)
+      .sort((a, b) => b.importTime.localeCompare(a.importTime))
+    if (periodVersions.length) {
+      const latest = periodVersions[0]
+      financeData.value = latest.data ? JSON.parse(JSON.stringify(latest.data)) : []
+      currentVersionId.value = latest.id
+    } else {
+      financeData.value = generateMockData()
+    }
+  } else {
+    financeData.value = generateMockData()
+  }
+})
 
 localVisibleColumns.value = [...visibleColumns.value]
 
@@ -665,36 +915,24 @@ const handleReset = () => {
   }
 }
 
-const handleRefresh = () => {
-  financeData.value = generateMockData()
-  ElMessage.success('数据已更新')
-}
-
-
-
 const resetColumns = () => {
   visibleColumns.value = allColumnsFlat.map(c => c.prop)
   ElMessage.success('已恢复默认字段')
 }
 
 const handleExport = () => {
-  const headers = allColumnsFlat.map(col => col.label)
-  const props = allColumnsFlat.map(col => col.prop)
-
-  let csv = headers.join(',') + '\n'
-  filteredData.value.forEach((item, index) => {
-    const row = props.map(prop => {
-      if (prop === 'index') return index + 1
-      return item[prop]
+  const exportColumns = allColumnsFlat
+  const rows = filteredData.value.map((item, index) => {
+    const row = {}
+    exportColumns.forEach(col => {
+      row[col.label] = col.prop === 'index' ? index + 1 : item[col.prop]
     })
-    csv += row.join(',') + '\n'
+    return row
   })
-
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob)
-  link.download = '业财统计报表.csv'
-  link.click()
+  const sheet = utils.json_to_sheet(rows, { header: exportColumns.map(c => c.label) })
+  const wb = utils.book_new()
+  utils.book_append_sheet(wb, sheet, '业财统计报表')
+  writeFile(wb, `业财统计报表_${new Date().toISOString().slice(0, 10)}.xlsx`)
   ElMessage.success('导出成功')
 }
 </script>
@@ -702,6 +940,19 @@ const handleExport = () => {
 <style scoped>
 .finance-report {
   padding: 20px;
+}
+
+.version-banner {
+  margin-bottom: 16px;
+}
+
+.version-current {
+  margin-left: 8px;
+  color: #67c23a;
+}
+
+.version-plain {
+  color: #c0c4cc;
 }
 
 .search-panel {

@@ -60,6 +60,12 @@
           width="250"
         />
         <el-table-column
+          label="基层单位"
+          prop="grassrootsUnit"
+          width="120"
+          align="center"
+        />
+        <el-table-column
           label="项目规模（元）"
           prop="projectScale"
           width="140"
@@ -82,7 +88,7 @@
           align="center"
         />
         <el-table-column
-          label="账户单位"
+          label="核算组织"
           prop="accountUnit"
           width="120"
           align="center"
@@ -96,16 +102,16 @@
 import { ref } from 'vue'
 
 const tableData = ref([
-  { region: '华东区', customerName: '上海市政工程局', marketLevel: 'AAA', projectName: '浦东新区供水管道改造工程', projectScale: 85000000, projectStage: '投标中', bidTime: '2026-06-15', accountUnit: '市政事业部' },
-  { region: '华东区', customerName: '上海水务局', marketLevel: 'AAA', projectName: '闵行区污水处理厂扩建项目', projectScale: 62000000, projectStage: '跟踪中', bidTime: '2026-07-20', accountUnit: '环境建设' },
-  { region: '华南区', customerName: '广州市政集团', marketLevel: 'AA', projectName: '广州智慧水务平台建设', projectScale: 45000000, projectStage: '准备投标', bidTime: '2026-06-30', accountUnit: '区域事业部' },
-  { region: '华北区', customerName: '北京水务集团', marketLevel: 'AAA', projectName: '北京城区供水管网升级', projectScale: 98000000, projectStage: '投标中', bidTime: '2026-06-10', accountUnit: '城水管管道' },
-  { region: '华东区', customerName: '苏州工业园区', marketLevel: 'AA', projectName: '苏州工业园区水环境治理', projectScale: 52000000, projectStage: '跟踪中', bidTime: '2026-08-05', accountUnit: '水务管道' },
-  { region: '西南区', customerName: '成都城投集团', marketLevel: 'A', projectName: '成都天府新区供水工程', projectScale: 38000000, projectStage: '准备投标', bidTime: '2026-07-15', accountUnit: '区域事业部' },
-  { region: '华东区', customerName: '杭州西湖景区', marketLevel: 'AA', projectName: '西湖景区水环境提升', projectScale: 28000000, projectStage: '投标中', bidTime: '2026-06-25', accountUnit: '生态环境事业部' },
-  { region: '华中地区', customerName: '武汉水务局', marketLevel: 'AAA', projectName: '武汉长江新区排水系统', projectScale: 72000000, projectStage: '跟踪中', bidTime: '2026-08-20', accountUnit: '市政事业部' },
-  { region: '华南区', customerName: '深圳水务集团', marketLevel: 'AAA', projectName: '深圳前海智慧水务项目', projectScale: 110000000, projectStage: '准备投标', bidTime: '2026-09-01', accountUnit: '设计咨询中心' },
-  { region: '西北区', customerName: '西安城投集团', marketLevel: 'A', projectName: '西安护城河治理工程', projectScale: 35000000, projectStage: '投标中', bidTime: '2026-06-20', accountUnit: '环境建设' }
+  { region: '华东区', customerName: '上海市政工程局', marketLevel: 'AAA', projectName: '浦东新区供水管道改造工程', grassrootsUnit: '市政事业部', projectScale: 85000000, projectStage: '投标中', bidTime: '2026-06-15', accountUnit: '市政事业部' },
+  { region: '华东区', customerName: '上海水务局', marketLevel: 'AAA', projectName: '闵行区污水处理厂扩建项目', grassrootsUnit: '环境建设', projectScale: 62000000, projectStage: '跟踪中', bidTime: '2026-07-20', accountUnit: '环境建设' },
+  { region: '华南区', customerName: '广州市政集团', marketLevel: 'AA', projectName: '广州智慧水务平台建设', grassrootsUnit: '区域事业部', projectScale: 45000000, projectStage: '准备投标', bidTime: '2026-06-30', accountUnit: '区域事业部' },
+  { region: '华北区', customerName: '北京水务集团', marketLevel: 'AAA', projectName: '北京城区供水管网升级', grassrootsUnit: '城水管管道', projectScale: 98000000, projectStage: '投标中', bidTime: '2026-06-10', accountUnit: '城水管管道' },
+  { region: '华东区', customerName: '苏州工业园区', marketLevel: 'AA', projectName: '苏州工业园区水环境治理', grassrootsUnit: '水务管道', projectScale: 52000000, projectStage: '跟踪中', bidTime: '2026-08-05', accountUnit: '水务管道' },
+  { region: '西南区', customerName: '成都城投集团', marketLevel: 'A', projectName: '成都天府新区供水工程', grassrootsUnit: '区域事业部', projectScale: 38000000, projectStage: '准备投标', bidTime: '2026-07-15', accountUnit: '区域事业部' },
+  { region: '华东区', customerName: '杭州西湖景区', marketLevel: 'AA', projectName: '西湖景区水环境提升', grassrootsUnit: '生态环境事业部', projectScale: 28000000, projectStage: '投标中', bidTime: '2026-06-25', accountUnit: '生态环境事业部' },
+  { region: '华中地区', customerName: '武汉水务局', marketLevel: 'AAA', projectName: '武汉长江新区排水系统', grassrootsUnit: '市政事业部', projectScale: 72000000, projectStage: '跟踪中', bidTime: '2026-08-20', accountUnit: '市政事业部' },
+  { region: '华南区', customerName: '深圳水务集团', marketLevel: 'AAA', projectName: '深圳前海智慧水务项目', grassrootsUnit: '设计咨询中心', projectScale: 110000000, projectStage: '准备投标', bidTime: '2026-09-01', accountUnit: '设计咨询中心' },
+  { region: '西北区', customerName: '西安城投集团', marketLevel: 'A', projectName: '西安护城河治理工程', grassrootsUnit: '环境建设', projectScale: 35000000, projectStage: '投标中', bidTime: '2026-06-20', accountUnit: '环境建设' }
 ])
 
 const formatNumber = (num) => {

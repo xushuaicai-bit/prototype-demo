@@ -20,10 +20,12 @@
     </div>
 
     <div class="overflow-x-auto">
-      <table class="w-full border-collapse" style="min-width: 1200px;">
+      <table class="w-full border-collapse" style="min-width: 1400px;">
         <thead>
           <tr>
             <th rowspan="2" class="bg-blue-600 text-white px-4 py-3 text-center border border-blue-700">序号</th>
+            <th rowspan="2" class="bg-blue-600 text-white px-4 py-3 text-center border border-blue-700">基层单位</th>
+            <th rowspan="2" class="bg-blue-600 text-white px-4 py-3 text-center border border-blue-700">年份</th>
             <th rowspan="2" class="bg-blue-600 text-white px-4 py-3 text-center border border-blue-700">年度指标（万元）</th>
             <th rowspan="2" class="bg-blue-600 text-white px-4 py-3 text-center border border-blue-700">指标完成数（万元）</th>
             <th rowspan="2" class="bg-blue-600 text-white px-4 py-3 text-center border border-blue-700">指标完成率（%）</th>
@@ -47,6 +49,8 @@
         <tbody>
           <tr v-for="(row, index) in tableData" :key="index" :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
             <td class="px-4 py-2 text-center border border-gray-200">{{ index + 1 }}</td>
+            <td class="px-4 py-2 text-center border border-gray-200">{{ row.grassrootsUnit }}</td>
+            <td class="px-4 py-2 text-center border border-gray-200">{{ row.year }}</td>
             <td class="px-4 py-2 text-center border border-gray-200">{{ formatNumber(row.target) }}</td>
             <td class="px-4 py-2 text-center border border-gray-200">{{ formatNumber(row.completed) }}</td>
             <td class="px-4 py-2 text-center border border-gray-200">{{ row.rate }}%</td>
@@ -71,16 +75,16 @@
 import { ref } from 'vue'
 
 const tableData = ref([
-  { target: 50000, completed: 32000, rate: 64, winningTotal: 18000, winningCount: 8, aaaBidAmount: 15000, aaaBidCount: 5, aaBidAmount: 12000, aaBidCount: 6, aBidAmount: 8000, aBidCount: 4, totalBidAmount: 35000, totalBidCount: 15 },
-  { target: 60000, completed: 45000, rate: 75, winningTotal: 25000, winningCount: 10, aaaBidAmount: 18000, aaaBidCount: 6, aaBidAmount: 15000, aaBidCount: 7, aBidAmount: 10000, aBidCount: 5, totalBidAmount: 43000, totalBidCount: 18 },
-  { target: 55000, completed: 38500, rate: 70, winningTotal: 22000, winningCount: 9, aaaBidAmount: 16000, aaaBidCount: 5, aaBidAmount: 14000, aaBidCount: 7, aBidAmount: 9000, aBidCount: 5, totalBidAmount: 39000, totalBidCount: 17 },
-  { target: 70000, completed: 52500, rate: 75, winningTotal: 30000, winningCount: 12, aaaBidAmount: 20000, aaaBidCount: 7, aaBidAmount: 18000, aaBidCount: 8, aBidAmount: 12000, aBidCount: 6, totalBidAmount: 50000, totalBidCount: 21 },
-  { target: 65000, completed: 45500, rate: 70, winningTotal: 26000, winningCount: 11, aaaBidAmount: 17000, aaaBidCount: 6, aaBidAmount: 15000, aaBidCount: 7, aBidAmount: 11000, aBidCount: 5, totalBidAmount: 43000, totalBidCount: 18 },
-  { target: 80000, completed: 60000, rate: 75, winningTotal: 35000, winningCount: 14, aaaBidAmount: 22000, aaaBidCount: 8, aaBidAmount: 20000, aaBidCount: 9, aBidAmount: 13000, aBidCount: 6, totalBidAmount: 55000, totalBidCount: 23 },
-  { target: 75000, completed: 52500, rate: 70, winningTotal: 32000, winningCount: 13, aaaBidAmount: 19000, aaaBidCount: 7, aaBidAmount: 17000, aaBidCount: 8, aBidAmount: 12000, aBidCount: 6, totalBidAmount: 48000, totalBidCount: 21 },
-  { target: 90000, completed: 67500, rate: 75, winningTotal: 38000, winningCount: 15, aaaBidAmount: 24000, aaaBidCount: 8, aaBidAmount: 22000, aaBidCount: 10, aBidAmount: 14000, aBidCount: 7, totalBidAmount: 60000, totalBidCount: 25 },
-  { target: 85000, completed: 59500, rate: 70, winningTotal: 36000, winningCount: 14, aaaBidAmount: 21000, aaaBidCount: 7, aaBidAmount: 19000, aaBidCount: 9, aBidAmount: 13000, aBidCount: 6, totalBidAmount: 53000, totalBidCount: 22 },
-  { target: 95000, completed: 71250, rate: 75, winningTotal: 42000, winningCount: 16, aaaBidAmount: 26000, aaaBidCount: 9, aaBidAmount: 24000, aaBidCount: 10, aBidAmount: 15000, aBidCount: 7, totalBidAmount: 65000, totalBidCount: 26 }
+  { grassrootsUnit: '市政事业部', year: '2026', target: 50000, completed: 32000, rate: 64, winningTotal: 18000, winningCount: 8, aaaBidAmount: 15000, aaaBidCount: 5, aaBidAmount: 12000, aaBidCount: 6, aBidAmount: 8000, aBidCount: 4, totalBidAmount: 35000, totalBidCount: 15 },
+  { grassrootsUnit: '环境建设', year: '2026', target: 60000, completed: 45000, rate: 75, winningTotal: 25000, winningCount: 10, aaaBidAmount: 18000, aaaBidCount: 6, aaBidAmount: 15000, aaBidCount: 7, aBidAmount: 10000, aBidCount: 5, totalBidAmount: 43000, totalBidCount: 18 },
+  { grassrootsUnit: '区域事业部', year: '2026', target: 55000, completed: 38500, rate: 70, winningTotal: 22000, winningCount: 9, aaaBidAmount: 16000, aaaBidCount: 5, aaBidAmount: 14000, aaBidCount: 7, aBidAmount: 9000, aBidCount: 5, totalBidAmount: 39000, totalBidCount: 17 },
+  { grassrootsUnit: '城水管管道', year: '2026', target: 70000, completed: 52500, rate: 75, winningTotal: 30000, winningCount: 12, aaaBidAmount: 20000, aaaBidCount: 7, aaBidAmount: 18000, aaBidCount: 8, aBidAmount: 12000, aBidCount: 6, totalBidAmount: 50000, totalBidCount: 21 },
+  { grassrootsUnit: '水务管道', year: '2026', target: 65000, completed: 45500, rate: 70, winningTotal: 26000, winningCount: 11, aaaBidAmount: 17000, aaaBidCount: 6, aaBidAmount: 15000, aaBidCount: 7, aBidAmount: 11000, aBidCount: 5, totalBidAmount: 43000, totalBidCount: 18 },
+  { grassrootsUnit: '运营养护', year: '2026', target: 80000, completed: 60000, rate: 75, winningTotal: 35000, winningCount: 14, aaaBidAmount: 22000, aaaBidCount: 8, aaBidAmount: 20000, aaBidCount: 9, aBidAmount: 13000, aBidCount: 6, totalBidAmount: 55000, totalBidCount: 23 },
+  { grassrootsUnit: '浦东供排水', year: '2026', target: 75000, completed: 52500, rate: 70, winningTotal: 32000, winningCount: 13, aaaBidAmount: 19000, aaaBidCount: 7, aaBidAmount: 17000, aaBidCount: 8, aBidAmount: 12000, aBidCount: 6, totalBidAmount: 48000, totalBidCount: 21 },
+  { grassrootsUnit: '生态环境事业部', year: '2026', target: 90000, completed: 67500, rate: 75, winningTotal: 38000, winningCount: 15, aaaBidAmount: 24000, aaaBidCount: 8, aaBidAmount: 22000, aaBidCount: 10, aBidAmount: 14000, aBidCount: 7, totalBidAmount: 60000, totalBidCount: 25 },
+  { grassrootsUnit: '管网运维事业部', year: '2026', target: 85000, completed: 59500, rate: 70, winningTotal: 36000, winningCount: 14, aaaBidAmount: 21000, aaaBidCount: 7, aaBidAmount: 19000, aaBidCount: 9, aBidAmount: 13000, aBidCount: 6, totalBidAmount: 53000, totalBidCount: 22 },
+  { grassrootsUnit: '设计咨询中心', year: '2026', target: 95000, completed: 71250, rate: 75, winningTotal: 42000, winningCount: 16, aaaBidAmount: 26000, aaaBidCount: 9, aaBidAmount: 24000, aaBidCount: 10, aBidAmount: 15000, aBidCount: 7, totalBidAmount: 65000, totalBidCount: 26 }
 ])
 
 const formatNumber = (num) => {

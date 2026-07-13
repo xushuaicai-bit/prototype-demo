@@ -498,7 +498,7 @@
               :value="stat.value"
               :unit="stat.unit"
               :drillable="true"
-              :link="'https://www.smart-worksite.com/hj/#/micro/market/biz/ent/market/prod-project/index'"
+              :link="externalUrls.marketProdProject"
             />
           </div>
           
@@ -601,6 +601,7 @@ import {
   keyProjectOnlyRiskByLevel,
   keyProjectOnlyKeyProjectProgress
 } from '../data/mockData.js'
+import { externalUrls, openExternal } from '@/config/externalUrls'
 
 const emit = defineEmits(['navigate', 'drill-down', 'menu-change'])
 
@@ -1181,31 +1182,31 @@ const handleCategoryChange = (name) => {
 }
 
 const handleProjectTotalClick = () => {
-  window.open('https://www.smart-worksite.com/hj/#/micro/market/biz/ent/market/prod-project/index', '_blank')
+  openExternal(externalUrls.marketProdProject)
 }
 
 const handleTimelinessReportClick = () => {
-  window.open('https://www.smart-worksite.com/hj/#/micro/market/biz/ent/market/general/contract', '_blank')
+  openExternal(externalUrls.marketContract)
 }
 
 const handleManagementTimelinessClick = () => {
-  window.open('https://www.smart-worksite.com/hj/#/micro/project/biz/ent/production/schedule/milestone', '_blank')
+  openExternal(externalUrls.productionMilestone)
 }
 
 const handleRiskTimelinessClick = () => {
-  window.open('https://www.smart-worksite.com/hj/#/micro/project/biz/ent/production/risk/list', '_blank')
+  openExternal(externalUrls.productionRisk)
 }
 
 const handleProductionRiskClick = () => {
-  window.open('https://www.smart-worksite.com/hj/#/micro/project/biz/ent/production/risk/list', '_blank')
+  openExternal(externalUrls.productionRisk)
 }
 
 const handleProductionProgressClick = () => {
-  window.open('https://www.smart-worksite.com/hj/#/micro/project/biz/ent/production/schedule/milestone', '_blank')
+  openExternal(externalUrls.productionMilestone)
 }
 
 const handleInspectionClick = () => {
-  window.open('https://www.smart-worksite.com/hj/#/micro/project/biz/ent/production/quality/inspection/list', '_blank')
+  openExternal(externalUrls.productionInspection)
 }
 
 onMounted(() => {

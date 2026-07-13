@@ -10,7 +10,8 @@
     </div>
     
     <div class="flex-1 bg-white rounded-xl shadow-sm overflow-hidden relative" style="min-height: calc(100vh - 200px);">
-      <iframe 
+      <iframe
+        v-if="iframeUrl"
         ref="iframeRef"
         :src="iframeUrl"
         class="w-full border-0"
@@ -19,7 +20,16 @@
         allowfullscreen
         @load="onIframeLoad"
       ></iframe>
-      
+
+      <div v-if="!iframeUrl" class="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+        <div class="text-center p-8">
+          <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 001-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 001 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-800">跳转至环境项管系统对应模块</h3>
+        </div>
+      </div>
+
       <div v-if="loading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-10">
         <div class="text-center">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-3"></div>
@@ -48,12 +58,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { externalUrls } from '@/config/externalUrls'
 
 const iframeRef = ref(null)
-const loading = ref(true)
+const iframeUrl = externalUrls.economyDashboard
+const loading = ref(!!iframeUrl)
 const error = ref('')
-
-const iframeUrl = 'https://www.smart-worksite.com/hj/#/micro/economic/biz/ent/economy/dashboard'
 
 const onIframeLoad = () => {
   loading.value = false

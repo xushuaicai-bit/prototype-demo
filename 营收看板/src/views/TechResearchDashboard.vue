@@ -29,7 +29,7 @@
       <div class="bg-white rounded-xl p-4 shadow-sm">
         <div class="flex flex-col h-full">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="font-semibold text-gray-800">技术子模块</h3>
+            <h3 class="font-semibold text-gray-800">施工方案</h3>
             <div class="flex gap-2">
               <button
                 v-for="tab in techTabs"
@@ -100,7 +100,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div class="bg-white rounded-xl p-4 shadow-sm">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-gray-800">基层单位科研项目数量</h3>
@@ -151,60 +151,39 @@
         <div ref="achievementChartRef" class="h-[220px]"></div>
       </div>
 
-      <div class="bg-white rounded-xl p-4 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-semibold text-gray-800">科研费用管控</h3>
-          <select 
-            v-model="selectedQuarter"
-            class="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option v-for="q in researchData.expenses.quarters" :key="q" :value="q">
-              {{ q }}
-            </option>
-          </select>
+    </div>
+
+    <div class="bg-white rounded-xl p-4 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold text-gray-800">科研费用管控</h3>
+        <select
+          v-model="selectedQuarter"
+          class="border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option v-for="q in researchData.expenses.quarters" :key="q" :value="q">
+            {{ q }}
+          </option>
+        </select>
+      </div>
+      <div class="flex flex-wrap gap-4 mb-3 text-sm">
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-sm" style="background:#3b82f6"></span>
+          <span class="text-gray-600">专项实际</span>
         </div>
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-600">目标金额</span>
-            <span class="text-lg font-semibold text-gray-800">{{ currentExpense.target }}万</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-600">实际金额</span>
-            <span class="text-lg font-semibold text-blue-600">{{ currentExpense.actual }}万</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-600">偏差</span>
-            <span :class="[
-              'text-lg font-semibold',
-              currentExpense.deviation < 0 ? 'text-red-600' : 'text-green-600'
-            ]">
-              {{ currentExpense.deviation > 0 ? '+' : '' }}{{ currentExpense.deviation }}万
-            </span>
-          </div>
-          <div class="mt-2">
-            <div class="flex items-center justify-between text-sm mb-1">
-              <span class="text-gray-600">完成率</span>
-              <span :class="[
-                'font-semibold',
-                currentExpense.completion >= 80 ? 'text-green-600' :
-                currentExpense.completion >= 50 ? 'text-yellow-600' : 'text-red-600'
-              ]">
-                {{ currentExpense.completion }}%
-              </span>
-            </div>
-            <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div 
-                :class="[
-                  'h-full transition-all duration-500',
-                  currentExpense.completion >= 80 ? 'bg-green-500' :
-                  currentExpense.completion >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-                ]"
-                :style="{ width: currentExpense.completion + '%' }"
-              ></div>
-            </div>
-          </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-sm" style="background:#10b981"></span>
+          <span class="text-gray-600">配套实际</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-4 h-[2px]" style="background:#f59e0b"></span>
+          <span class="text-gray-600">计划指标线</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-sm" style="background:#bfdbfe"></span>
+          <span class="text-gray-600">未达标(弱化)</span>
         </div>
       </div>
+      <div ref="expenseChartRef" class="w-full h-[380px]"></div>
     </div>
   </div>
 </template>
@@ -213,6 +192,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 import { techDashboardData, researchDashboardData } from '../data/mockData.js'
+import { externalUrls, openExternal } from '@/config/externalUrls'
 
 const selectedFilter = ref('全部')
 
@@ -247,11 +227,13 @@ const techChartRef = ref(null)
 const knowledgeChartRef = ref(null)
 const projectChartRef = ref(null)
 const achievementChartRef = ref(null)
+const expenseChartRef = ref(null)
 
 let techChart = null
 let knowledgeChart = null
 let projectChart = null
 let achievementChart = null
+let expenseChart = null
 
 const currentTechData = computed(() => {
   const dataMap = {
@@ -275,7 +257,7 @@ const currentTechSummary = computed(() => {
   const summaries = {
     approval: `审批完成总数${currentTechData.value.summary.total}个，平均完成率${currentTechData.value.summary.avgRate}`,
     scheme: `方案退回次数${currentTechData.value.summary.total}次，平均退回率${currentTechData.value.summary.avgRate}`,
-    disclosure: `方案交底总数${currentTechData.value.summary.total}个，平均交底${currentTechData.value.summary.avgCount}`
+    disclosure: `方案交底总数${currentTechData.value.summary.total}个，平均交底率${currentTechData.value.summary.avgCount}`
   }
   return summaries[activeTechTab.value]
 })
@@ -289,19 +271,11 @@ const handleFilterChange = (name) => {
 }
 
 const openResearchProjectList = (company = '') => {
-  let url = 'https://www.smart-worksite.com/hj/#/micro/project/biz/scientific-research/project'
-  if (company) {
-    url += `?company=${encodeURIComponent(company)}`
-  }
-  window.open(url, '_blank')
+  openExternal(externalUrls.researchProject(company))
 }
 
 const openAchievementList = (type = '') => {
-  let url = 'https://www.smart-worksite.com/hj/#/micro/project/biz/scientific-research/achievement'
-  if (type) {
-    url += `?type=${encodeURIComponent(type)}`
-  }
-  window.open(url, '_blank')
+  openExternal(externalUrls.researchAchievement(type))
 }
 
 const initTechChart = () => {
@@ -313,12 +287,12 @@ const initTechChart = () => {
     const category = params.name
     let url = ''
     if (activeTechTab.value === 'approval') {
-      url = `https://www.smart-worksite.com/hj/#/micro/project/biz/technology/scheme/plan?company=${encodeURIComponent(category)}`
+      url = externalUrls.techSchemePlan(category)
     } else if (activeTechTab.value === 'disclosure') {
-      url = `https://www.smart-worksite.com/hj/#/micro/project/biz/technology/scheme/special?company=${encodeURIComponent(category)}`
+      url = externalUrls.techSchemeSpecial(category)
     }
     if (url) {
-      window.open(url, '_blank')
+      openExternal(url)
     }
   })
 }
@@ -332,6 +306,21 @@ const updateTechChart = () => {
     scheme: ['#f59e0b', '#fbbf24'],
     disclosure: ['#10b981', '#6ee7b7']
   }
+
+  // 右侧纵轴名称及折线名称配置
+  const rateConfig = {
+    approval: { name: '审批完成率', color: '#ef4444' },
+    scheme: { name: '退回率', color: '#8b5cf6' },
+    disclosure: { name: '交底率', color: '#f59e0b' }
+  }
+
+  // 根据当前 tab 计算比率数据（折线数据）
+  const rateData = data.series[0].data.map((val, i) => {
+    const total = val + data.series[1].data[i]
+    return total > 0 ? Number(((val / total) * 100).toFixed(1)) : 0
+  })
+
+  const currentRate = rateConfig[activeTechTab.value]
   
   const option = {
     tooltip: {
@@ -340,11 +329,14 @@ const updateTechChart = () => {
         type: 'shadow'
       }
     },
+    legend: {
+      data: [...data.series.map(s => s.name), currentRate.name]
+    },
     grid: {
       left: '3%',
-      right: '4%',
+      right: '6%',
       bottom: '3%',
-      top: '10%',
+      top: '15%',
       containLabel: true
     },
     xAxis: {
@@ -356,20 +348,48 @@ const updateTechChart = () => {
         fontSize: 10
       }
     },
-    yAxis: {
-      type: 'value'
-    },
-    series: data.series.map((s, i) => ({
-      name: s.name,
-      type: 'bar',
-      data: s.data,
-      itemStyle: {
-        color: colors[activeTechTab.value][i]
+    yAxis: [
+      {
+        type: 'value',
+        name: '数量'
+      },
+      {
+        type: 'value',
+        name: currentRate.name,
+        axisLabel: {
+          formatter: '{value}%'
+        },
+        max: 100,
+        min: 0
       }
-    }))
+    ],
+    series: [
+      ...data.series.map((s, i) => ({
+        name: s.name,
+        type: 'bar',
+        data: s.data,
+        itemStyle: {
+          color: colors[activeTechTab.value][i]
+        }
+      })),
+      {
+        name: currentRate.name,
+        type: 'line',
+        yAxisIndex: 1,
+        data: rateData,
+        itemStyle: {
+          color: currentRate.color
+        },
+        line: {
+          width: 2
+        },
+        symbol: 'circle',
+        symbolSize: 6
+      }
+    ]
   }
   
-  techChart.setOption(option)
+  techChart.setOption(option, true)
 }
 
 const initKnowledgeChart = () => {
@@ -422,7 +442,7 @@ const initKnowledgeChart = () => {
   knowledgeChart.setOption(option)
   
   knowledgeChart.on('click', () => {
-    window.open('https://www.smart-worksite.com/hj/#/micro/project/biz/technology/knowledge/enterprise-procedure', '_blank')
+    openExternal(externalUrls.techProcedure)
   })
 }
 
@@ -580,11 +600,190 @@ const updateAchievementChart = () => {
   achievementChart.setOption(option)
 }
 
+const EXP_COLOR = {
+  special: '#3b82f6',
+  support: '#10b981',
+  mutedSpecial: '#bfdbfe',
+  mutedSupport: '#a7f3d0',
+  planLine: '#f59e0b',
+  risk: '#ef4444',
+  ok: '#10b981'
+}
+
+const buildExpenseData = (quarter) => {
+  const list = researchData.expenses.byCompany[quarter] || []
+  const categories = list.map(item => item.name)
+  return { categories, list }
+}
+
+const initExpenseChart = () => {
+  if (!expenseChartRef.value) return
+  expenseChart = echarts.init(expenseChartRef.value)
+  updateExpenseChart()
+  expenseChart.on('click', (params) => {
+    if (params.componentSubType !== 'bar') return
+    const d = buildExpenseData(selectedQuarter.value)
+    const idx = d.categories.indexOf(params.name)
+    if (idx < 0) return
+    const type = params.seriesName === '专项' ? 'special' : 'supporting'
+    const item = d.list[idx][type]
+    const plan = item.plan
+    const actual = item.actual
+    const rate = plan ? Math.round(actual / plan * 100) : 0
+    const dev = actual - plan
+    const NL = '\n'
+    window.alert(
+      '基层单位：' + params.name + NL +
+      '类型：' + params.seriesName + NL +
+      '计划值：' + plan + '万' + NL +
+      '实际值：' + actual + '万' + NL +
+      '完成率：' + rate + '%' + NL +
+      '偏差：' + dev + '万'
+    )
+  })
+}
+
+const updateExpenseChart = () => {
+  if (!expenseChart) return
+  const d = buildExpenseData(selectedQuarter.value)
+  const list = d.list
+  const categories = d.categories
+
+  const specialData = list.map(item => {
+    const plan = item.special.plan
+    const actual = item.special.actual
+    const rate = plan ? actual / plan : 0
+    return {
+      value: actual,
+      itemStyle: { color: rate >= 1 ? EXP_COLOR.special : EXP_COLOR.mutedSpecial }
+    }
+  })
+
+  const supportData = list.map(item => {
+    const plan = item.supporting.plan
+    const actual = item.supporting.actual
+    const rate = plan ? actual / plan : 0
+    return {
+      value: actual,
+      itemStyle: { color: rate >= 1 ? EXP_COLOR.support : EXP_COLOR.mutedSupport }
+    }
+  })
+
+  const customData = []
+  list.forEach((item, i) => {
+    customData.push([i, item.special.plan, -1])
+    customData.push([i, item.supporting.plan, 1])
+  })
+
+  const labelFormatter = (params) => {
+    const idx = params.dataIndex
+    const type = params.seriesName === '专项' ? 'special' : 'supporting'
+    const item = list[idx][type]
+    const plan = item.plan
+    const actual = item.actual
+    const rate = plan ? Math.round(actual / plan * 100) : 0
+    const dev = actual - plan
+    const rateKey = rate >= 100 ? 'rateOk' : 'rateRisk'
+    const devKey = dev < 0 ? 'devRisk' : 'devOk'
+    const devSign = dev >= 0 ? '+' : ''
+    return '{' + rateKey + '|' + rate + '%}\n{val|' + actual + '万}\n{' + devKey + '|' + devSign + dev + '万}'
+  }
+
+  const richConfig = {
+    rateOk: { color: EXP_COLOR.ok, fontSize: 12, fontWeight: 'bold', lineHeight: 16 },
+    rateRisk: { color: EXP_COLOR.risk, fontSize: 12, fontWeight: 'bold', lineHeight: 16 },
+    val: { color: '#374151', fontSize: 11, lineHeight: 14 },
+    devOk: { color: EXP_COLOR.ok, fontSize: 10, lineHeight: 12 },
+    devRisk: { color: EXP_COLOR.risk, fontSize: 10, lineHeight: 12 }
+  }
+
+  const tooltipFormatter = (params) => {
+    const idx = params.dataIndex
+    const type = params.seriesName === '专项' ? 'special' : 'supporting'
+    const item = list[idx][type]
+    const plan = item.plan
+    const actual = item.actual
+    const rate = plan ? Math.round(actual / plan * 100) : 0
+    const dev = actual - plan
+    return '<b>' + params.name + ' - ' + params.seriesName + '</b><br/>' +
+      '计划值：' + plan + '万<br/>' +
+      '实际值：' + actual + '万<br/>' +
+      '完成率：' + rate + '%<br/>' +
+      '偏差：' + dev + '万'
+  }
+
+  const option = {
+    tooltip: { trigger: 'item', formatter: tooltipFormatter },
+    grid: { left: '4%', right: '4%', bottom: '8%', top: '18%', containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: categories,
+      axisLabel: { interval: 0, rotate: 25, fontSize: 10 },
+      axisTick: { show: false },
+      axisLine: { lineStyle: { color: '#e5e7eb' } }
+    },
+    yAxis: {
+      type: 'value',
+      name: '万元',
+      nameTextStyle: { fontSize: 10, color: '#9ca3af' },
+      axisLabel: { fontSize: 10, color: '#9ca3af' },
+      splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } },
+      axisLine: { show: false },
+      axisTick: { show: false }
+    },
+    series: [
+      {
+        name: '专项',
+        type: 'bar',
+        data: specialData,
+        barWidth: 20,
+        barGap: '30%',
+        label: { show: true, position: 'top', formatter: labelFormatter, rich: richConfig }
+      },
+      {
+        name: '配套',
+        type: 'bar',
+        data: supportData,
+        barWidth: 20,
+        label: { show: true, position: 'top', formatter: labelFormatter, rich: richConfig }
+      },
+      {
+        name: '计划线',
+        type: 'custom',
+        data: customData,
+        z: 10,
+        renderItem: (params, api) => {
+          const catIdx = api.value(0)
+          const planVal = api.value(1)
+          const side = api.value(2)
+          const point = api.coord([catIdx, planVal])
+          const halfWidth = 10
+          const offset = 13 * side
+          return {
+            type: 'line',
+            shape: {
+              x1: point[0] - halfWidth + offset,
+              y1: point[1],
+              x2: point[0] + halfWidth + offset,
+              y2: point[1]
+            },
+            style: { stroke: EXP_COLOR.planLine, lineWidth: 2 }
+          }
+        }
+      }
+    ]
+  }
+
+  expenseChart.setOption(option, true)
+}
+
+
 const handleResize = () => {
   techChart?.resize()
   knowledgeChart?.resize()
   projectChart?.resize()
   achievementChart?.resize()
+  expenseChart?.resize()
 }
 
 watch([activeTechTab, techChartType], () => {
@@ -595,12 +794,15 @@ watch(achievementTab, () => {
   updateAchievementChart()
 })
 
+watch(selectedQuarter, () => updateExpenseChart())
+
 onMounted(() => {
   setTimeout(() => {
     initTechChart()
     initKnowledgeChart()
     initProjectChart()
     initAchievementChart()
+    initExpenseChart()
     window.addEventListener('resize', handleResize)
   }, 100)
 })
@@ -610,6 +812,7 @@ onUnmounted(() => {
   knowledgeChart?.dispose()
   projectChart?.dispose()
   achievementChart?.dispose()
+  expenseChart?.dispose()
   window.removeEventListener('resize', handleResize)
 })
 </script>

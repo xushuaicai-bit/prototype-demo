@@ -23,6 +23,8 @@
 </template>
 
 <script setup>
+import { openExternal } from '@/config/externalUrls'
+
 const props = defineProps({
   title: String,
   value: String,
@@ -35,8 +37,8 @@ const props = defineProps({
 })
 
 const handleClick = () => {
-  if (props.drillable && props.link) {
-    window.open(props.link, '_blank')
+  if (props.drillable) {
+    openExternal(props.link)
   }
 }
 </script>

@@ -68,6 +68,7 @@
 <script setup>
 import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
+import { externalUrls, openExternal } from '@/config/externalUrls'
 
 const props = defineProps({
   title: String,
@@ -129,7 +130,7 @@ const switchGroup = (key) => {
 }
 
 const openExternalLink = () => {
-  window.open('https://www.smart-worksite.com/hj/#/micro/supplies/biz/enterprise/supplies/frame-contract/index', '_blank')
+  openExternal(externalUrls.suppliesFrameContract)
 }
 
 const initChart = () => {
@@ -226,7 +227,7 @@ const initChart = () => {
   chart.setOption(option)
 
   chart.on('click', () => {
-    window.open('https://www.smart-worksite.com/hj/#/micro/supplies/biz/enterprise/supplies/frame-contract/index', '_blank')
+    openExternal(externalUrls.suppliesFrameContract)
   })
 }
 

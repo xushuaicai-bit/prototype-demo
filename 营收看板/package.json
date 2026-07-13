@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "china-map-echarts": "^1.0.5",
     "echarts": "^5.5.0",
     "element-plus": "^2.6.1",
     "vue": "^3.4.21",

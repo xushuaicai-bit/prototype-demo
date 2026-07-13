@@ -72,11 +72,6 @@
       </div>
 
       <div class="bg-white rounded-xl p-4 shadow-sm">
-        <h3 class="text-base font-semibold text-gray-800 mb-3">重点跟踪项目</h3>
-        <div ref="keyProjectChartRef" class="h-64"></div>
-      </div>
-
-      <div class="bg-white rounded-xl p-4 shadow-sm">
         <!-- 预警指标 -->
         <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3 cursor-pointer hover:bg-orange-100 transition-colors" @click="drillDownToPotential">
           <div class="flex items-center justify-between">
@@ -111,9 +106,67 @@
         </div>
         <div ref="projectChartRef" class="h-64"></div>
       </div>
+
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <h3 class="text-base font-semibold text-gray-800 mb-3">重点跟踪项目</h3>
+        <div ref="keyProjectChartRef" class="h-64"></div>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <!-- 预警指标 -->
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3 cursor-pointer hover:bg-red-100 transition-colors" @click="drillDownToBid">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+              <span class="text-sm font-medium text-red-700">{{ activeBidModule === 'bid' ? '应开标数量' : '已中标数量' }}</span>
+            </div>
+            <span class="text-lg font-bold text-red-600">{{ activeBidModule === 'bid' ? shouldOpenBidCount : wonBidCount }}</span>
+          </div>
+          <div class="text-xs text-red-500 mt-1">按天更新 · 点击查看详情</div>
+        </div>
+
+        <!-- 大模块切换 -->
+        <div class="flex space-x-2 mb-3">
+          <button
+            v-for="mode in bidModules"
+            :key="mode.key"
+            :class="[
+              'px-4 py-1.5 rounded-lg text-sm font-medium transition-all',
+              activeBidModule === mode.key
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+            ]"
+            @click="switchBidModule(mode.key)"
+          >
+            {{ mode.label }}
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-semibold text-gray-800">项目{{ activeBidModule === 'bid' ? '投标' : '中标' }}（数量+金额）</h3>
+          <div class="flex space-x-4">
+            <button
+              v-for="tab in bidTabs"
+              :key="tab.key"
+              :class="[
+                'text-xs px-3 py-1 rounded-full transition-all',
+                activeBidTab === tab.key
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ]"
+              @click="activeBidTab = tab.key; updateBidChart()"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+        </div>
+        <div ref="bidChartRef" class="h-64"></div>
+      </div>
+
       <div class="bg-white rounded-xl p-4 shadow-sm">
         <!-- 预警指标 -->
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
@@ -165,42 +218,6 @@
       </div>
 
       <div class="bg-white rounded-xl p-4 shadow-sm">
-        <!-- 预警指标 -->
-        <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3 cursor-pointer hover:bg-red-100 transition-colors" @click="drillDownToBid">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-              </svg>
-              <span class="text-sm font-medium text-red-700">应开标数量</span>
-            </div>
-            <span class="text-lg font-bold text-red-600">{{ shouldOpenBidCount }}</span>
-          </div>
-          <div class="text-xs text-red-500 mt-1">按天更新 · 点击查看详情</div>
-        </div>
-        
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-base font-semibold text-gray-800">项目投标（数量+金额）</h3>
-          <div class="flex space-x-4">
-            <button
-              v-for="tab in bidTabs"
-              :key="tab.key"
-              :class="[
-                'text-xs px-3 py-1 rounded-full transition-all',
-                activeBidTab === tab.key
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              ]"
-              @click="activeBidTab = tab.key; updateBidChart()"
-            >
-              {{ tab.label }}
-            </button>
-          </div>
-        </div>
-        <div ref="bidChartRef" class="h-64"></div>
-      </div>
-
-      <div class="bg-white rounded-xl p-4 shadow-sm">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-base font-semibold text-gray-800">总包合同（数量+金额）</h3>
           <div class="flex space-x-4">
@@ -231,24 +248,27 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import { externalUrls, openExternal } from '@/config/externalUrls'
 
 const selectedFilter = ref('全部')
 const activeProjectTab = ref('company')
 const activeBidTab = ref('company')
+const activeBidModule = ref('bid')
 const activeContractTab = ref('company')
 
 // 预警指标数据
 const monthlyBidCount = ref(25)
 const shouldOpenBidCount = ref(12)
+const wonBidCount = ref(18)
 const unsignedContractCount = ref(8)
 
 // 下钻函数
 const drillDownToPotential = () => {
-  window.open('https://www.smart-worksite.com/hj/#/micro/market/biz/ent/market/project/potential', '_blank')
+  openExternal(externalUrls.marketPotential)
 }
 
 const drillDownToBid = () => {
-  window.open('https://www.smart-worksite.com/hj/#/micro/market/biz/ent/market/project/bid', '_blank')
+  openExternal(externalUrls.marketBid)
 }
 
 const filterTabs = [
@@ -274,6 +294,11 @@ const bidTabs = [
   { key: 'company', label: '分公司' },
   { key: 'region', label: '按区域' },
   { key: 'type', label: '按项目类型' }
+]
+
+const bidModules = [
+  { key: 'bid', label: '投标' },
+  { key: 'winning', label: '中标' }
 ]
 
 const contractTabs = [
@@ -602,35 +627,61 @@ const updateMarketTrackingChart = () => {
   }
 }
 
+const switchBidModule = (key) => {
+  activeBidModule.value = key
+  updateBidChart()
+}
+
 const updateBidChart = () => {
   const categories = getCategories(activeBidTab.value)
+  const isWinning = activeBidModule.value === 'winning'
+  const label = isWinning ? '中标' : '投标'
 
   let aData, aaData, aaaData, amountData
-  if (activeBidTab.value === 'region') {
-    aData = [30, 26, 28, 24, 20, 22]
-    aaData = [14, 12, 13, 11, 9, 10]
-    aaaData = [8, 7, 7, 7, 6, 6]
-    amountData = [15.8, 12.5, 14.2, 11.8, 9.2, 10.5]
-  } else if (activeBidTab.value === 'type') {
-    aData = [50, 42, 36, 28, 22, 30, 46, 26]
-    aaData = [28, 22, 20, 15, 12, 17, 25, 14]
-    aaaData = [14, 14, 12, 9, 8, 11, 14, 8]
-    amountData = [28.5, 20.8, 17.2, 14.5, 11.2, 16.2, 25.8, 12.5]
+  if (isWinning) {
+    if (activeBidTab.value === 'region') {
+      aData = [18, 15, 17, 14, 12, 13]
+      aaData = [8, 7, 8, 6, 5, 6]
+      aaaData = [5, 4, 4, 4, 4, 4]
+      amountData = [9.8, 7.5, 8.5, 7.1, 5.5, 6.3]
+    } else if (activeBidTab.value === 'type') {
+      aData = [30, 25, 22, 17, 13, 18, 28, 16]
+      aaData = [17, 13, 12, 9, 7, 10, 15, 8]
+      aaaData = [8, 8, 7, 5, 5, 7, 8, 5]
+      amountData = [17.1, 12.5, 10.3, 8.7, 6.7, 9.7, 15.5, 7.5]
+    } else {
+      aData = [108, 90, 84, 96, 90, 99, 108, 87, 93]
+      aaData = [60, 54, 51, 60, 57, 60, 69, 54, 57]
+      aaaData = [42, 36, 33, 36, 33, 39, 39, 33, 36]
+      amountData = [55.5, 46.9, 43.7, 51.3, 43.5, 49.5, 55.7, 45.1, 48.3]
+    }
   } else {
-    aData = [180, 150, 140, 160, 150, 165, 180, 145, 155]
-    aaData = [100, 90, 85, 100, 95, 100, 115, 90, 95]
-    aaaData = [70, 60, 55, 60, 55, 65, 65, 55, 60]
-    amountData = [92.5, 78.2, 72.8, 85.5, 72.5, 82.5, 92.8, 75.2, 80.5]
+    if (activeBidTab.value === 'region') {
+      aData = [30, 26, 28, 24, 20, 22]
+      aaData = [14, 12, 13, 11, 9, 10]
+      aaaData = [8, 7, 7, 7, 6, 6]
+      amountData = [15.8, 12.5, 14.2, 11.8, 9.2, 10.5]
+    } else if (activeBidTab.value === 'type') {
+      aData = [50, 42, 36, 28, 22, 30, 46, 26]
+      aaData = [28, 22, 20, 15, 12, 17, 25, 14]
+      aaaData = [14, 14, 12, 9, 8, 11, 14, 8]
+      amountData = [28.5, 20.8, 17.2, 14.5, 11.2, 16.2, 25.8, 12.5]
+    } else {
+      aData = [180, 150, 140, 160, 150, 165, 180, 145, 155]
+      aaData = [100, 90, 85, 100, 95, 100, 115, 90, 95]
+      aaaData = [70, 60, 55, 60, 55, 65, 65, 55, 60]
+      amountData = [92.5, 78.2, 72.8, 85.5, 72.5, 82.5, 92.8, 75.2, 80.5]
+    }
   }
 
   const chartData = {
-    legend: ['A级投标', 'AA级投标', 'AAA级投标', '投标金额'],
+    legend: [`A级${label}`, `AA级${label}`, `AAA级${label}`, `${label}金额`],
     categories: categories,
     series: [
-      { name: 'A级投标', data: aData, yAxisIndex: 0, color: '#3b82f6' },
-      { name: 'AA级投标', data: aaData, yAxisIndex: 0, color: '#10b981' },
-      { name: 'AAA级投标', data: aaaData, yAxisIndex: 0, color: '#f59e0b' },
-      { name: '投标金额', data: amountData, yAxisIndex: 1, color: '#8b5cf6' }
+      { name: `A级${label}`, data: aData, yAxisIndex: 0, color: '#3b82f6' },
+      { name: `AA级${label}`, data: aaData, yAxisIndex: 0, color: '#10b981' },
+      { name: `AAA级${label}`, data: aaaData, yAxisIndex: 0, color: '#f59e0b' },
+      { name: `${label}金额`, data: amountData, yAxisIndex: 1, color: '#8b5cf6' }
     ]
   }
 

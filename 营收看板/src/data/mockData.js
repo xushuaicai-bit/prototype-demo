@@ -462,6 +462,412 @@ export const researchDashboardData = {
       Q2: { target: 600, actual: 520, deviation: -80, completion: 87 },
       Q3: { target: 550, actual: 480, deviation: -70, completion: 87 },
       Q4: { target: 650, actual: 0, deviation: -650, completion: 0 }
+    },
+    byCompany: {
+  "Q1": [
+    {
+      "name": "管网事业部",
+      "special": {
+        "plan": 60,
+        "actual": 54
+      },
+      "supporting": {
+        "plan": 40,
+        "actual": 44
+      }
+    },
+    {
+      "name": "生态事业部",
+      "special": {
+        "plan": 50,
+        "actual": 52
+      },
+      "supporting": {
+        "plan": 35,
+        "actual": 30
+      }
+    },
+    {
+      "name": "区域事业部",
+      "special": {
+        "plan": 70,
+        "actual": 63
+      },
+      "supporting": {
+        "plan": 45,
+        "actual": 41
+      }
+    },
+    {
+      "name": "市政事业部",
+      "special": {
+        "plan": 55,
+        "actual": 58
+      },
+      "supporting": {
+        "plan": 38,
+        "actual": 33
+      }
+    },
+    {
+      "name": "环境建设",
+      "special": {
+        "plan": 45,
+        "actual": 38
+      },
+      "supporting": {
+        "plan": 30,
+        "actual": 27
+      }
+    },
+    {
+      "name": "管道工程",
+      "special": {
+        "plan": 65,
+        "actual": 60
+      },
+      "supporting": {
+        "plan": 42,
+        "actual": 39
+      }
+    },
+    {
+      "name": "管道分公司",
+      "special": {
+        "plan": 48,
+        "actual": 50
+      },
+      "supporting": {
+        "plan": 32,
+        "actual": 28
+      }
+    },
+    {
+      "name": "运营养护",
+      "special": {
+        "plan": 52,
+        "actual": 41
+      },
+      "supporting": {
+        "plan": 36,
+        "actual": 30
+      }
+    },
+    {
+      "name": "二次养护",
+      "special": {
+        "plan": 40,
+        "actual": 34
+      },
+      "supporting": {
+        "plan": 28,
+        "actual": 25
+      }
     }
+  ],
+  "Q2": [
+    {
+      "name": "管网事业部",
+      "special": {
+        "plan": 65,
+        "actual": 58
+      },
+      "supporting": {
+        "plan": 42,
+        "actual": 38
+      }
+    },
+    {
+      "name": "生态事业部",
+      "special": {
+        "plan": 55,
+        "actual": 49
+      },
+      "supporting": {
+        "plan": 38,
+        "actual": 41
+      }
+    },
+    {
+      "name": "区域事业部",
+      "special": {
+        "plan": 75,
+        "actual": 78
+      },
+      "supporting": {
+        "plan": 48,
+        "actual": 40
+      }
+    },
+    {
+      "name": "市政事业部",
+      "special": {
+        "plan": 60,
+        "actual": 53
+      },
+      "supporting": {
+        "plan": 40,
+        "actual": 36
+      }
+    },
+    {
+      "name": "环境建设",
+      "special": {
+        "plan": 50,
+        "actual": 42
+      },
+      "supporting": {
+        "plan": 32,
+        "actual": 29
+      }
+    },
+    {
+      "name": "管道工程",
+      "special": {
+        "plan": 70,
+        "actual": 64
+      },
+      "supporting": {
+        "plan": 45,
+        "actual": 47
+      }
+    },
+    {
+      "name": "管道分公司",
+      "special": {
+        "plan": 52,
+        "actual": 44
+      },
+      "supporting": {
+        "plan": 35,
+        "actual": 31
+      }
+    },
+    {
+      "name": "运营养护",
+      "special": {
+        "plan": 56,
+        "actual": 50
+      },
+      "supporting": {
+        "plan": 38,
+        "actual": 34
+      }
+    },
+    {
+      "name": "二次养护",
+      "special": {
+        "plan": 44,
+        "actual": 47
+      },
+      "supporting": {
+        "plan": 30,
+        "actual": 26
+      }
+    }
+  ],
+  "Q3": [
+    {
+      "name": "管网事业部",
+      "special": {
+        "plan": 62,
+        "actual": 55
+      },
+      "supporting": {
+        "plan": 41,
+        "actual": 43
+      }
+    },
+    {
+      "name": "生态事业部",
+      "special": {
+        "plan": 52,
+        "actual": 46
+      },
+      "supporting": {
+        "plan": 36,
+        "actual": 32
+      }
+    },
+    {
+      "name": "区域事业部",
+      "special": {
+        "plan": 72,
+        "actual": 66
+      },
+      "supporting": {
+        "plan": 46,
+        "actual": 49
+      }
+    },
+    {
+      "name": "市政事业部",
+      "special": {
+        "plan": 58,
+        "actual": 61
+      },
+      "supporting": {
+        "plan": 39,
+        "actual": 34
+      }
+    },
+    {
+      "name": "环境建设",
+      "special": {
+        "plan": 48,
+        "actual": 40
+      },
+      "supporting": {
+        "plan": 31,
+        "actual": 28
+      }
+    },
+    {
+      "name": "管道工程",
+      "special": {
+        "plan": 68,
+        "actual": 62
+      },
+      "supporting": {
+        "plan": 44,
+        "actual": 39
+      }
+    },
+    {
+      "name": "管道分公司",
+      "special": {
+        "plan": 50,
+        "actual": 53
+      },
+      "supporting": {
+        "plan": 34,
+        "actual": 30
+      }
+    },
+    {
+      "name": "运营养护",
+      "special": {
+        "plan": 54,
+        "actual": 43
+      },
+      "supporting": {
+        "plan": 37,
+        "actual": 31
+      }
+    },
+    {
+      "name": "二次养护",
+      "special": {
+        "plan": 42,
+        "actual": 36
+      },
+      "supporting": {
+        "plan": 29,
+        "actual": 26
+      }
+    }
+  ],
+  "Q4": [
+    {
+      "name": "管网事业部",
+      "special": {
+        "plan": 68,
+        "actual": 0
+      },
+      "supporting": {
+        "plan": 44,
+        "actual": 0
+      }
+    },
+    {
+      "name": "生态事业部",
+      "special": {
+        "plan": 58,
+        "actual": 0
+      },
+      "supporting": {
+        "plan": 40,
+        "actual": 0
+      }
+    },
+    {
+      "name": "区域事业部",
+      "special": {
+        "plan": 78,
+        "actual": 0
+      },
+      "supporting": {
+        "plan": 50,
+        "actual": 0
+      }
+    },
+    {
+      "name": "市政事业部",
+      "special": {
+        "plan": 62,
+        "actual": 0
+      },
+      "supporting": {
+        "plan": 42,
+        "actual": 0
+      }
+    },
+    {
+      "name": "环境建设",
+      "special": {
+        "plan": 52,
+        "actual": 0
+      },
+      "supporting": {
+        "plan": 34,
+        "actual": 0
+      }
+    },
+    {
+      "name": "管道工程",
+      "special": {
+        "plan": 72,
+        "actual": 0
+      },
+      "supporting": {
+        "plan": 46,
+        "actual": 0
+      }
+    },
+    {
+      "name": "管道分公司",
+      "special": {
+        "plan": 54,
+        "actual": 0
+      },
+      "supporting": {
+        "plan": 36,
+        "actual": 0
+      }
+    },
+    {
+      "name": "运营养护",
+      "special": {
+        "plan": 58,
+        "actual": 0
+      },
+      "supporting": {
+        "plan": 40,
+        "actual": 0
+      }
+    },
+    {
+      "name": "二次养护",
+      "special": {
+        "plan": 46,
+        "actual": 0
+      },
+      "supporting": {
+        "plan": 32,
+        "actual": 0
+      }
+    }
+  ]
+}
   }
 }
