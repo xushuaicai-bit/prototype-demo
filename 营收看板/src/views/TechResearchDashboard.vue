@@ -25,7 +25,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <div class="bg-white rounded-xl p-4 shadow-sm">
         <div class="flex flex-col h-full">
           <div class="flex items-center justify-between mb-4">
@@ -98,13 +98,11 @@
         </div>
         <div ref="knowledgeChartRef" class="h-[180px]"></div>
       </div>
-    </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div class="bg-white rounded-xl p-4 shadow-sm">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-gray-800">基层单位科研项目数量</h3>
-          <button 
+          <button
             class="text-xs text-blue-500 hover:text-blue-600"
             @click="openResearchProjectList()"
           >
@@ -113,6 +111,9 @@
         </div>
         <div ref="projectChartRef" class="h-[280px]"></div>
       </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
       <div class="bg-white rounded-xl p-4 shadow-sm">
         <div class="flex items-center justify-between mb-4">
@@ -151,9 +152,7 @@
         <div ref="achievementChartRef" class="h-[220px]"></div>
       </div>
 
-    </div>
-
-    <div class="bg-white rounded-xl p-4 shadow-sm">
+      <div class="bg-white rounded-xl p-4 shadow-sm">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-semibold text-gray-800">科研费用管控</h3>
         <select
@@ -184,6 +183,7 @@
         </div>
       </div>
       <div ref="expenseChartRef" class="w-full h-[380px]"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -675,45 +675,31 @@ const updateExpenseChart = () => {
     customData.push([i, item.supporting.plan, 1])
   })
 
-  const labelFormatter = (params) => {
-    const idx = params.dataIndex
-    const type = params.seriesName === '专项' ? 'special' : 'supporting'
-    const item = list[idx][type]
-    const plan = item.plan
-    const actual = item.actual
-    const rate = plan ? Math.round(actual / plan * 100) : 0
-    const dev = actual - plan
-    const rateKey = rate >= 100 ? 'rateOk' : 'rateRisk'
-    const devKey = dev < 0 ? 'devRisk' : 'devOk'
-    const devSign = dev >= 0 ? '+' : ''
-    return '{' + rateKey + '|' + rate + '%}\n{val|' + actual + '万}\n{' + devKey + '|' + devSign + dev + '万}'
-  }
-
-  const richConfig = {
-    rateOk: { color: EXP_COLOR.ok, fontSize: 12, fontWeight: 'bold', lineHeight: 16 },
-    rateRisk: { color: EXP_COLOR.risk, fontSize: 12, fontWeight: 'bold', lineHeight: 16 },
-    val: { color: '#374151', fontSize: 11, lineHeight: 14 },
-    devOk: { color: EXP_COLOR.ok, fontSize: 10, lineHeight: 12 },
-    devRisk: { color: EXP_COLOR.risk, fontSize: 10, lineHeight: 12 }
-  }
-
   const tooltipFormatter = (params) => {
-    const idx = params.dataIndex
-    const type = params.seriesName === '专项' ? 'special' : 'supporting'
-    const item = list[idx][type]
-    const plan = item.plan
-    const actual = item.actual
-    const rate = plan ? Math.round(actual / plan * 100) : 0
-    const dev = actual - plan
-    return '<b>' + params.name + ' - ' + params.seriesName + '</b><br/>' +
-      '计划值：' + plan + '万<br/>' +
-      '实际值：' + actual + '万<br/>' +
-      '完成率：' + rate + '%<br/>' +
-      '偏差：' + dev + '万'
+    const idx = params[0].dataIndex
+    let result = '<b>' + params[0].name + '</b>'
+    params.forEach(p => {
+      if (p.seriesName === '计划线') return
+      const type = p.seriesName === '专项' ? 'special' : 'supporting'
+      const item = list[idx][type]
+      const plan = item.plan
+      const actual = item.actual
+      const rate = plan ? Math.round(actual / plan * 100) : 0
+      const dev = actual - plan
+      const devSign = dev >= 0 ? '+' : ''
+      const rateColor = rate >= 100 ? '#10b981' : '#ef4444'
+      const devColor = dev >= 0 ? '#10b981' : '#ef4444'
+      result += '<br/>--- ' + p.seriesName + ' ---<br/>' +
+        '计划值：' + plan + '万<br/>' +
+        '实际值：' + actual + '万<br/>' +
+        '完成率：<span style="color:' + rateColor + '">' + rate + '%</span><br/>' +
+        '偏差：<span style="color:' + devColor + '">' + devSign + dev + '万</span>'
+    })
+    return result
   }
 
   const option = {
-    tooltip: { trigger: 'item', formatter: tooltipFormatter },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: tooltipFormatter },
     grid: { left: '4%', right: '4%', bottom: '8%', top: '18%', containLabel: true },
     xAxis: {
       type: 'category',
@@ -738,14 +724,14 @@ const updateExpenseChart = () => {
         data: specialData,
         barWidth: 20,
         barGap: '30%',
-        label: { show: true, position: 'top', formatter: labelFormatter, rich: richConfig }
+        label: { show: false }
       },
       {
         name: '配套',
         type: 'bar',
         data: supportData,
         barWidth: 20,
-        label: { show: true, position: 'top', formatter: labelFormatter, rich: richConfig }
+        label: { show: false }
       },
       {
         name: '计划线',

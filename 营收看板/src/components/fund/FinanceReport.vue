@@ -62,6 +62,43 @@
       </template>
     </el-alert>
 
+    <div class="warning-boxes">
+      <div
+        class="warning-box warning-blue"
+        :class="{ active: activeWarningFilter === 'blue' }"
+        @click="toggleWarningFilter('blue')"
+      >
+        <span class="warning-label">蓝色预警</span>
+        <span class="warning-count">{{ blueWarningCount }}</span>
+        <span class="warning-desc">预警项目数量</span>
+      </div>
+      <div
+        class="warning-box warning-yellow"
+        :class="{ active: activeWarningFilter === 'yellow' }"
+        @click="toggleWarningFilter('yellow')"
+      >
+        <span class="warning-label">黄色预警</span>
+        <span class="warning-count">{{ yellowWarningCount }}</span>
+        <span class="warning-desc">预警项目数量</span>
+      </div>
+      <div
+        class="warning-box warning-red"
+        :class="{ active: activeWarningFilter === 'red' }"
+        @click="toggleWarningFilter('red')"
+      >
+        <span class="warning-label">红色预警</span>
+        <span class="warning-count">{{ redWarningCount }}</span>
+        <span class="warning-desc">预警项目数量</span>
+      </div>
+      <el-button
+        v-if="activeWarningFilter"
+        link
+        type="info"
+        size="small"
+        @click="activeWarningFilter = null"
+      >清除筛选</el-button>
+    </div>
+
     <div class="table-container">
       <div class="tab-container">
         <el-tabs v-model="activeTab" class="finance-tabs">
@@ -174,7 +211,7 @@
 
       <div class="table-scroll-wrapper">
         <el-table
-          :data="tabFilteredData"
+          :data="paginatedData"
           border
           stripe
           :height="tableHeight"
@@ -317,12 +354,23 @@
           </el-table-column>
         </el-table>
       </div>
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="tabFilteredData.length"
+          layout="total, sizes, prev, pager, next"
+          background
+          small
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { utils, writeFile, read } from 'xlsx'
 
@@ -518,6 +566,27 @@ const completedCount = computed(() => {
   return financeData.value.filter(item => ['业务销项', '财务销项'].includes(item.projectStatus)).length
 })
 
+// ===== 预警等级判定 =====
+// 红色：已竣工（projectStatus === '竣工未送审'），优先级最高
+// 蓝色：专项储备结存数为负 或 开累总包营收（内部）为零
+// 黄色：开累总包营收（内部）大于零（非红非蓝）
+const getWarningLevel = (item) => {
+  if (item.projectStatus === '竣工未送审') return 'red'
+  const reserve = Number(item.specialReserveBalance) || 0
+  const revenue = Number(item.cumulativeRevenue) || 0
+  if (reserve < 0 || revenue === 0) return 'blue'
+  return 'yellow'
+}
+
+const activeWarningFilter = ref(null)
+const toggleWarningFilter = (level) => {
+  activeWarningFilter.value = activeWarningFilter.value === level ? null : level
+}
+
+const blueWarningCount = computed(() => financeData.value.filter(item => getWarningLevel(item) === 'blue').length)
+const yellowWarningCount = computed(() => financeData.value.filter(item => getWarningLevel(item) === 'yellow').length)
+const redWarningCount = computed(() => financeData.value.filter(item => getWarningLevel(item) === 'red').length)
+
 const tabFilteredData = computed(() => {
   const baseData = financeData.value.filter(item => {
     const matchProductionNo = !searchForm.value.productionProjectNo ||
@@ -538,16 +607,23 @@ const tabFilteredData = computed(() => {
            matchBasicUnit && matchAccountingOrg && matchContractAmount && matchProjectStatus
   })
 
-  switch (activeTab.value) {
-    case 'transfer':
-      return baseData.filter(item => item.projectStatus === '在建')
-    case 'new':
-      return baseData.filter(item => item.projectStatus === '待建')
-    case 'completed':
-      return baseData.filter(item => ['业务销项', '财务销项'].includes(item.projectStatus))
-    default:
-      return baseData
+  const filteredByTab = (() => {
+    switch (activeTab.value) {
+      case 'transfer':
+        return baseData.filter(item => item.projectStatus === '在建')
+      case 'new':
+        return baseData.filter(item => item.projectStatus === '待建')
+      case 'completed':
+        return baseData.filter(item => ['业务销项', '财务销项'].includes(item.projectStatus))
+      default:
+        return baseData
+    }
+  })()
+
+  if (activeWarningFilter.value) {
+    return filteredByTab.filter(item => getWarningLevel(item) === activeWarningFilter.value)
   }
+  return filteredByTab
 })
 
 const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)]
@@ -602,7 +678,7 @@ const generateMockData = () => {
       completionDate: i % 3 === 0 ? randomDate('2025-01-01', '2026-05-01') : '',
       planRevenue2027: randomNumber(0, 30000),
       completedRevenue2026: randomNumber(0, contractPriceNoTax * 0.8),
-      cumulativeRevenue: randomNumber(0, contractPriceNoTax),
+      cumulativeRevenue: i % 8 === 0 ? 0 : randomNumber(1, contractPriceNoTax),
       completedOutput2026: randomNumber(0, contractPriceNoTax * 0.7),
       cumulativeOutput: randomNumber(0, contractPriceNoTax),
       lastOutput: randomNumber(0, 5000),
@@ -667,7 +743,7 @@ const generateMockData = () => {
       cumulativeSafetyFee提取: randomNumber(0, 1500),
       specialReserveJan使用: randomNumber(0, 150),
       cumulativeSpecialReserve使用: randomNumber(0, 1200),
-      specialReserveBalance: randomNumber(0, 800),
+      specialReserveBalance: i % 7 === 0 ? randomNumber(-300, -10) : randomNumber(0, 800),
       invoicedThisYear: randomNumber(0, 15000),
       cumulativeInvoiced: randomNumber(0, contractPriceTax),
       lastInvoiceDate: randomDate('2026-01-01', '2026-05-21'),
@@ -691,6 +767,18 @@ const searchForm = ref({
 
 const tableHeight = ref(600)
 const financeData = ref([])
+
+// 分页
+const currentPage = ref(1)
+const pageSize = ref(10)
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return tabFilteredData.value.slice(start, end)
+})
+watch(tabFilteredData, () => {
+  currentPage.value = 1
+})
 
 // ===== 导入与版本留存逻辑 =====
 const VERSIONS_KEY = 'financeReport_versions'
@@ -955,6 +1043,84 @@ const handleExport = () => {
   color: #c0c4cc;
 }
 
+.warning-boxes {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.warning-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.warning-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.warning-label {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.warning-count {
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.warning-desc {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
+}
+
+.warning-blue {
+  background: #ecf5ff;
+  color: #409eff;
+  border-color: #d9ecff;
+}
+
+.warning-blue.active {
+  border-color: #409eff;
+  background: #d9ecff;
+}
+
+.warning-yellow {
+  background: #fdf6ec;
+  color: #e6a23c;
+  border-color: #faecd8;
+}
+
+.warning-yellow.active {
+  border-color: #e6a23c;
+  background: #faecd8;
+}
+
+.warning-red {
+  background: #fef0f0;
+  color: #f56c6c;
+  border-color: #fde2e2;
+}
+
+.warning-red.active {
+  border-color: #f56c6c;
+  background: #fde2e2;
+}
+
 .search-panel {
   margin-bottom: 20px;
   padding: 16px;
@@ -1101,5 +1267,11 @@ const handleExport = () => {
   margin-left: 8px;
   background-color: rgba(255, 255, 255, 0.3);
   color: #fff;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px;
 }
 </style>

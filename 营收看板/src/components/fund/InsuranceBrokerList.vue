@@ -18,7 +18,7 @@
     </div>
 
     <el-table
-      :data="filteredData"
+      :data="paginatedData"
       border
       stripe
       :height="tableHeight"
@@ -38,11 +38,22 @@
       <el-table-column prop="finalReport" label="项目终期保险服务报告" width="160" />
       <el-table-column prop="otherDocuments" label="其他文件" width="100" />
     </el-table>
+    <div class="pagination-wrapper">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50]"
+        :total="filteredData.length"
+        layout="total, sizes, prev, pager, next"
+        background
+        small
+      />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const searchForm = ref({
   projectName: '',
@@ -114,6 +125,18 @@ const filteredData = computed(() => {
     return matchProjectName && matchBranch && matchSubsidiary && matchBroker
   })
 })
+
+// 分页
+const currentPage = ref(1)
+const pageSize = ref(10)
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return filteredData.value.slice(start, end)
+})
+watch(searchForm, () => {
+  currentPage.value = 1
+})
 </script>
 
 <style scoped>
@@ -145,5 +168,11 @@ const filteredData = computed(() => {
   max-width: 160px;
   white-space: pre-wrap;
   word-break: break-all;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px;
 }
 </style>

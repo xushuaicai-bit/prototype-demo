@@ -19,6 +19,43 @@
       </button>
     </div>
 
+    <div class="flex flex-wrap gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">基层单位：</label>
+        <el-select v-model="filters.grassrootsUnit" placeholder="请选择" class="w-40">
+          <el-option label="全部" value="" />
+          <el-option label="市政事业部" value="市政事业部" />
+          <el-option label="环境建设" value="环境建设" />
+          <el-option label="区域事业部" value="区域事业部" />
+          <el-option label="城水管管道" value="城水管管道" />
+          <el-option label="水务管道" value="水务管道" />
+          <el-option label="运营养护" value="运营养护" />
+          <el-option label="浦东供排水" value="浦东供排水" />
+          <el-option label="生态环境事业部" value="生态环境事业部" />
+          <el-option label="管网运维事业部" value="管网运维事业部" />
+          <el-option label="设计咨询中心" value="设计咨询中心" />
+        </el-select>
+      </div>
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">年份：</label>
+        <el-select v-model="filters.year" placeholder="请选择" class="w-28">
+          <el-option label="全部" value="" />
+          <el-option label="2026年" value="2026" />
+        </el-select>
+      </div>
+      <div class="flex items-center gap-2 ml-auto">
+        <button
+          class="flex items-center px-4 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50 transition-colors"
+          @click="resetFilters"
+        >
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          重置
+        </button>
+      </div>
+    </div>
+
     <div class="overflow-x-auto">
       <table class="w-full border-collapse" style="min-width: 1400px;">
         <thead>
@@ -47,7 +84,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(row, index) in tableData" :key="index" :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+          <tr v-for="(row, index) in filteredData" :key="index" :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
             <td class="px-4 py-2 text-center border border-gray-200">{{ index + 1 }}</td>
             <td class="px-4 py-2 text-center border border-gray-200">{{ row.grassrootsUnit }}</td>
             <td class="px-4 py-2 text-center border border-gray-200">{{ row.year }}</td>
@@ -72,7 +109,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+
+const filters = ref({
+  grassrootsUnit: '',
+  year: ''
+})
 
 const tableData = ref([
   { grassrootsUnit: '市政事业部', year: '2026', target: 50000, completed: 32000, rate: 64, winningTotal: 18000, winningCount: 8, aaaBidAmount: 15000, aaaBidCount: 5, aaBidAmount: 12000, aaBidCount: 6, aBidAmount: 8000, aBidCount: 4, totalBidAmount: 35000, totalBidCount: 15 },
@@ -86,6 +128,21 @@ const tableData = ref([
   { grassrootsUnit: '管网运维事业部', year: '2026', target: 85000, completed: 59500, rate: 70, winningTotal: 36000, winningCount: 14, aaaBidAmount: 21000, aaaBidCount: 7, aaBidAmount: 19000, aaBidCount: 9, aBidAmount: 13000, aBidCount: 6, totalBidAmount: 53000, totalBidCount: 22 },
   { grassrootsUnit: '设计咨询中心', year: '2026', target: 95000, completed: 71250, rate: 75, winningTotal: 42000, winningCount: 16, aaaBidAmount: 26000, aaaBidCount: 9, aaBidAmount: 24000, aaBidCount: 10, aBidAmount: 15000, aBidCount: 7, totalBidAmount: 65000, totalBidCount: 26 }
 ])
+
+const filteredData = computed(() => {
+  return tableData.value.filter(item => {
+    if (filters.value.grassrootsUnit && item.grassrootsUnit !== filters.value.grassrootsUnit) return false
+    if (filters.value.year && item.year !== filters.value.year) return false
+    return true
+  })
+})
+
+const resetFilters = () => {
+  filters.value = {
+    grassrootsUnit: '',
+    year: ''
+  }
+}
 
 const formatNumber = (num) => {
   if (num === undefined || num === null) return '-'

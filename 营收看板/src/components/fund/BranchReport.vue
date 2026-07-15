@@ -25,7 +25,7 @@
     <div class="table-container">
       <div class="table-scroll-wrapper">
         <el-table
-          :data="displayData"
+          :data="paginatedData"
           border
           stripe
           :height="tableHeight"
@@ -56,12 +56,23 @@
           <el-table-column prop="unreceivedAmount" label="未收款（含税）" width="120" align="right" />
         </el-table>
       </div>
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="displayData.length"
+          layout="total, sizes, prev, pager, next"
+          background
+          small
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const basicUnitOptions = [
@@ -196,11 +207,24 @@ const displayData = computed(() => {
   return result
 })
 
+// 分页
+const currentPage = ref(1)
+const pageSize = ref(10)
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return displayData.value.slice(start, end)
+})
+watch(searchForm, () => {
+  currentPage.value = 1
+})
+
 const getSummaries = (param) => {
-  const { data } = param
+  const { columns } = param
+  const data = filteredData.value
   const sums = []
 
-  data.forEach((column, index) => {
+  columns.forEach((column, index) => {
     if (index === 0) {
       sums.push('总计')
       return
@@ -217,8 +241,9 @@ const getSummaries = (param) => {
       return
     }
 
+    const prop = column.property || column.prop
     const values = data.map((item) => {
-      const value = item[column.prop]
+      const value = item[prop]
       return typeof value === 'number' ? value : 0
     })
     const sum = values.reduce((prev, curr) => prev + curr, 0)
@@ -333,5 +358,11 @@ const handleExport = () => {
 :deep(.el-table .el-table__summary-row td) {
   background-color: #e8f4fc;
   font-weight: bold;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px;
 }
 </style>

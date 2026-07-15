@@ -1,35 +1,84 @@
+<!-- 安全子看板：单点登录数智施工-安全在线、过程管控模块。 -->
 <template>
-  <div class="h-full relative">
-    <template v-if="boardUrl">
-      <div v-if="loading" class="absolute inset-0 flex items-center justify-center bg-white rounded-xl">
-        <div class="text-center">
-          <div class="animate-spin w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-3"></div>
-          <p class="text-gray-500 text-sm">正在加载安全在线管控平台...</p>
-        </div>
+  <div class="h-full flex flex-col">
+    <div class="flex items-center gap-1 bg-blue-600 px-4 py-1.5 rounded-t-xl">
+      <button
+        v-for="tab in tabs"
+        :key="tab.key"
+        @click="switchTab(tab.key)"
+        :class="[
+          'px-4 py-1 text-sm rounded-t transition-colors',
+          activeTab === tab.key
+            ? 'bg-white text-blue-600 font-semibold'
+            : 'text-white hover:bg-blue-500'
+        ]"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+    <div class="flex-1 bg-white rounded-b-xl overflow-hidden flex items-center justify-center">
+      <!-- 安全在线 - 主图 -->
+      <div v-if="activeTab === 'online' && view === 'main'" class="relative inline-block">
+        <img src="/safe-board.png" alt="安全在线" class="w-full h-auto block" />
+        <button
+          v-for="btn in enterButtons"
+          :key="btn.key"
+          @click="view = btn.key"
+          class="absolute bg-blue-600/80 text-white text-xs px-3 py-1 rounded hover:bg-blue-600 transition-colors -translate-x-1/2"
+          :style="btn.style"
+        >
+          进入专版
+        </button>
       </div>
-      <iframe
-        :src="boardUrl"
-        class="w-full h-full border-0 rounded-xl bg-white"
-        allowfullscreen
-        @load="loading = false"
-      />
-    </template>
-    <div v-else class="absolute inset-0 flex items-center justify-center bg-white rounded-xl">
-      <div class="text-center">
-        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 001-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 001 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-        </svg>
-        <h3 class="text-lg font-medium text-gray-800 mb-2">演示环境</h3>
-        <p class="text-gray-600">安全看板外部系统未配置</p>
+
+      <!-- 安全在线 - 子专版 -->
+      <div v-else-if="activeTab === 'online' && view !== 'main'" class="relative inline-block">
+        <img :src="subViewImage" :alt="viewLabel" class="w-full h-auto block" />
+        <button
+          @click="view = 'main'"
+          class="absolute top-3 left-3 bg-blue-600 text-white text-sm px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors shadow"
+        >
+          返回
+        </button>
+      </div>
+
+      <!-- 过程管控 -->
+      <div v-else class="relative inline-block">
+        <img src="/safe-daily.png" alt="过程管控" class="w-full h-auto block" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { externalUrls } from '@/config/externalUrls'
+import { ref, computed } from 'vue'
 
-const boardUrl = externalUrls.safetyBoard
-const loading = ref(!!boardUrl)
+const activeTab = ref('online')
+const view = ref('main')
+
+const tabs = [
+  { key: 'online', label: '安全在线' },
+  { key: 'process', label: '过程管控' }
+]
+
+const enterButtons = [
+  { key: 'realname', style: { left: '25%', top: '19%' } },
+  { key: 'hazard', style: { left: '50%', top: '19%' } },
+  { key: 'video', style: { left: '75%', top: '19%' } }
+]
+
+const subViewImage = computed(() => {
+  const map = { realname: '/safe-1.png', hazard: '/safe-2.png', video: '/safe-3.png' }
+  return map[view.value] || '/safe-board.png'
+})
+
+const viewLabel = computed(() => {
+  const map = { realname: '实名制', hazard: '隐患排查', video: '视频监控' }
+  return map[view.value] || ''
+})
+
+const switchTab = (key) => {
+  activeTab.value = key
+  view.value = 'main'
+}
 </script>

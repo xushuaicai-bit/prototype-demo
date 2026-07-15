@@ -8,7 +8,7 @@
 
       <div class="table-scroll-wrapper">
         <el-table
-          :data="summaryData"
+          :data="paginatedData"
           border
           stripe
           :height="tableHeight"
@@ -105,6 +105,17 @@
             </template>
           </el-table-column>
         </el-table>
+      </div>
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="summaryData.length"
+          layout="total, sizes, prev, pager, next"
+          background
+          small
+        />
       </div>
 
       <div class="unit-note">
@@ -296,6 +307,15 @@ const summaryData = computed(() => {
   return result
 })
 
+// 分页
+const currentPage = ref(1)
+const pageSize = ref(10)
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return summaryData.value.slice(start, end)
+})
+
 const formatNumber = (num) => {
   if (num === 0) return '0.00'
   return num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -416,5 +436,11 @@ const handleExport = () => {
   font-size: 12px;
   color: #666;
   text-align: right;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px;
 }
 </style>

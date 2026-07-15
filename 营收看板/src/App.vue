@@ -77,6 +77,7 @@ import FinanceReport from './components/fund/FinanceReport.vue'
 import ProjectStatusSummary from './components/fund/ProjectStatusSummary.vue'
 import BranchReport from './components/fund/BranchReport.vue'
 import OutputProjectSummary from './components/fund/OutputProjectSummary.vue'
+import SectorBusinessFinanceSummary from './components/fund/SectorBusinessFinanceSummary.vue'
 
 const currentNav = ref('市场管理')
 const currentMenu = ref('')
@@ -95,7 +96,8 @@ const viewMap = {
   '业财统计报表': markRaw(FinanceReport),
   '按项目状态分类汇总表': markRaw(ProjectStatusSummary),
   '按分公司分类报表': markRaw(BranchReport),
-  '销项项目汇总': markRaw(OutputProjectSummary)
+  '销项项目汇总': markRaw(OutputProjectSummary),
+  '项目板块业务财务信息汇总': markRaw(SectorBusinessFinanceSummary)
 }
 
 const currentViewComponent = computed(() => {
@@ -103,6 +105,7 @@ const currentViewComponent = computed(() => {
 })
 
 const handleNavChange = (navName) => {
+  if (currentNav.value === navName) return
   currentNav.value = navName
   currentMenu.value = ''
   currentSubMenu.value = ''

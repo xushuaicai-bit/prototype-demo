@@ -21,7 +21,7 @@
     <!-- 顶部筛选区 -->
     <div class="filter-panel">
       <el-form :inline="true" :model="filters" class="filter-form">
-        <el-form-item label="分公司：">
+        <el-form-item label="基层单位：">
           <el-select v-model="filters.branches" multiple collapse-tags placeholder="请选择" class="w-52">
             <el-option label="全选" value="__all__" @click.prevent="selectAll('branches')" />
             <el-option v-for="b in branchOptions" :key="b" :label="b" :value="b" />
@@ -124,33 +124,8 @@
       </div>
     </div>
 
-    <!-- 图表区 -->
-    <div class="chart-section">
-      <div class="chart-title">各分公司合同价与审定价对比</div>
-      <div class="bar-chart">
-        <div v-for="item in branchChartData" :key="item.branch" class="bar-group">
-          <div class="bar-label">{{ item.branch }}</div>
-          <div class="bar-row">
-            <div class="bar bar-contract" :style="{ width: item.contractWidth + '%' }">
-              <span class="bar-text">{{ formatNumber(item.contractPrice) }}</span>
-            </div>
-          </div>
-          <div class="bar-row">
-            <div class="bar bar-audit" :style="{ width: item.auditWidth + '%' }">
-              <span class="bar-text">{{ formatNumber(item.auditPrice) }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="chart-legend">
-        <span class="legend-item"><span class="legend-color contract"></span>合同价</span>
-        <span class="legend-item"><span class="legend-color audit"></span>审定价</span>
-      </div>
-    </div>
-
     <!-- 核心数据表 -->
     <div class="table-container">
-      <div class="table-scroll-wrapper">
         <el-table
           :data="sortedTreeData"
           border
@@ -162,10 +137,11 @@
           class="summary-table"
           show-summary
           :summary-method="getSummaries"
+          :header-cell-style="{ backgroundColor: '#4a6fa5', color: '#fff', fontWeight: 'bold', fontSize: '12px' }"
           @sort-change="handleSortChange"
         >
-          <el-table-column prop="branch" label="分公司" width="120" fixed="left" />
-          <el-table-column prop="category1" label="一级分类" width="120" fixed="left" />
+          <el-table-column prop="branch" label="基层单位" width="120" />
+          <el-table-column prop="category1" label="一级分类" width="120" />
           <el-table-column prop="category2" label="二级分类" width="120" />
           <el-table-column prop="category3" label="三级分类" width="120" />
           <el-table-column prop="projectCount" label="项目数量" width="100" align="right" sortable="custom">
@@ -216,15 +192,7 @@
               <span v-else>0</span>
             </template>
           </el-table-column>
-          <el-table-column prop="riskLevel" label="风险等级" width="100" align="center">
-            <template #default="scope">
-              <el-tag :type="scope.row.riskLevel === '高风险' ? 'danger' : 'success'" size="small">
-                {{ scope.row.riskLevel }}
-              </el-tag>
-            </template>
-          </el-table-column>
         </el-table>
-      </div>
     </div>
 
     <!-- 保存筛选方案弹窗 -->
@@ -248,46 +216,24 @@ const emit = defineEmits(['navigate'])
 
 const branchOptions = ['管道工程', '环境建设', '运营养护', '区域发展']
 
-const category1Options = ['水务', '水环境治理', '水利', '城市更新', '市政路桥房建', '固废处理与处置', '土壤修复', '其他']
+const category1Options = ['水务', '水环境治理', '城市更新', '其他']
 
 // 一级→二级分类映射
 const category2Map = {
-  '水务': ['供水工程', '排水工程', '污水处理', '管网工程'],
-  '水环境治理': ['河道治理', '湖泊整治', '黑臭水体治理', '生态修复'],
-  '水利': ['水库工程', '灌溉工程', '防洪工程', '水闸泵站'],
-  '城市更新': ['旧城改造', '城中村改造', '老旧小区改造'],
-  '市政路桥房建': ['道路工程', '桥梁工程', '隧道工程', '房建工程'],
-  '固废处理与处置': ['垃圾处理', '危废处置', '污泥处理'],
-  '土壤修复': ['污染土壤修复', '矿山修复'],
+  '水务': ['城镇水务', '水处理'],
+  '水环境治理': ['清洁小流域治理', '水工构筑物工程'],
+  '城市更新': ['旧城改造', '城市空间提升'],
   '其他': ['其他工程']
 }
 
 // 二级→三级分类映射
 const category3Map = {
-  '供水工程': ['自来水厂', '供水管网', '加压泵站'],
-  '排水工程': ['雨水分流', '污水管网', '排涝泵站'],
-  '污水处理': ['污水处理厂', '再生水利用', '污泥处理'],
-  '管网工程': ['主管网', '支管网', '接驳工程'],
-  '河道治理': ['清淤疏浚', '护岸工程', '水系连通'],
-  '湖泊整治': ['湖泊清淤', '生态护坡', '水质改善'],
-  '黑臭水体治理': ['截污工程', '曝气增氧', '生态浮岛'],
-  '生态修复': ['水生植物', '人工湿地', '生态护岸'],
-  '水库工程': ['大坝工程', '溢洪道', '放空建筑物'],
-  '灌溉工程': ['渠道工程', '泵站工程', '节水灌溉'],
-  '防洪工程': ['堤防工程', '防洪闸', '排涝站'],
-  '水闸泵站': ['节制闸', '排水泵站', '引水闸'],
-  '旧城改造': ['房屋征收', '基础设施', '配套建设'],
-  '城中村改造': ['拆迁安置', '市政配套', '环境整治'],
-  '老旧小区改造': ['外墙改造', '管网更新', '加装电梯'],
-  '道路工程': ['城市道路', '公路工程', '园区道路'],
-  '桥梁工程': ['跨河桥', '立交桥', '人行天桥'],
-  '隧道工程': ['盾构隧道', '明挖隧道', '暗挖隧道'],
-  '房建工程': ['住宅建筑', '公共建筑', '工业厂房'],
-  '垃圾处理': ['垃圾焚烧', '垃圾填埋', '垃圾分类'],
-  '危废处置': ['医疗废物', '工业废物', '化学废物'],
-  '污泥处理': ['污泥干化', '污泥焚烧', '污泥填埋'],
-  '污染土壤修复': ['重金属修复', '有机物修复', '复合修复'],
-  '矿山修复': ['边坡治理', '植被恢复', '土地复垦'],
+  '城镇水务': ['供水', '排水'],
+  '水处理': ['生活污水处理', '再生水利用'],
+  '清洁小流域治理': ['河道清淤', '生态护岸'],
+  '水工构筑物工程': ['泵站', '水闸'],
+  '旧城改造': ['房屋征收', '基础设施改造'],
+  '城市空间提升': ['景观改造', '功能提升'],
   '其他工程': ['其他']
 }
 
@@ -483,8 +429,7 @@ const generateRawData = () => {
             avgTargetProfitRate,
             avgOutputProfitRate,
             profitDeviation: Number((avgOutputProfitRate - avgTargetProfitRate).toFixed(2)),
-            deviationCount: avgOutputProfitRate < avgTargetProfitRate ? Math.floor(projectCount * randomNumber(0.1, 0.5)) : 0,
-            riskLevel: avgOutputProfitRate < avgTargetProfitRate ? '高风险' : '正常'
+            deviationCount: avgOutputProfitRate < avgTargetProfitRate ? Math.floor(projectCount * randomNumber(0.1, 0.5)) : 0
           })
         })
       })
@@ -603,7 +548,7 @@ const treeTableData = computed(() => {
       avgOutputProfitRate: 0,
       profitDeviation: 0,
       deviationCount: 0,
-      riskLevel: '',
+
       contractRatio: 0,
       children: []
     }
@@ -624,7 +569,7 @@ const treeTableData = computed(() => {
         avgOutputProfitRate: 0,
         profitDeviation: 0,
         deviationCount: 0,
-        riskLevel: '',
+  
         contractRatio: 0,
         children: []
       }
@@ -645,7 +590,7 @@ const treeTableData = computed(() => {
           avgOutputProfitRate: 0,
           profitDeviation: 0,
           deviationCount: 0,
-          riskLevel: '',
+    
           contractRatio: 0,
           children: []
         }
@@ -665,7 +610,7 @@ const treeTableData = computed(() => {
             avgOutputProfitRate: item.avgOutputProfitRate,
             profitDeviation: item.profitDeviation,
             deviationCount: item.deviationCount,
-            riskLevel: item.riskLevel,
+
             contractRatio: totalContractPrice > 0 ? (item.contractPrice / totalContractPrice * 100) : 0
           }
           c2Node.children.push(c3Node)
@@ -683,7 +628,6 @@ const treeTableData = computed(() => {
           : 0
         c2Node.profitDeviation = Number((c2Node.avgOutputProfitRate - c2Node.avgTargetProfitRate).toFixed(2))
         c2Node.deviationCount = c3Items.reduce((s, i) => s + i.deviationCount, 0)
-        c2Node.riskLevel = c2Node.profitDeviation < 0 ? '高风险' : '正常'
         c2Node.contractRatio = totalContractPrice > 0 ? (c2Node.contractPrice / totalContractPrice * 100) : 0
 
         c1Node.children.push(c2Node)
@@ -702,7 +646,6 @@ const treeTableData = computed(() => {
         : 0
       c1Node.profitDeviation = Number((c1Node.avgOutputProfitRate - c1Node.avgTargetProfitRate).toFixed(2))
       c1Node.deviationCount = c2All.reduce((s, i) => s + i.deviationCount, 0)
-      c1Node.riskLevel = c1Node.profitDeviation < 0 ? '高风险' : '正常'
       c1Node.contractRatio = totalContractPrice > 0 ? (c1Node.contractPrice / totalContractPrice * 100) : 0
 
       branchNode.children.push(c1Node)
@@ -721,7 +664,6 @@ const treeTableData = computed(() => {
       : 0
     branchNode.profitDeviation = Number((branchNode.avgOutputProfitRate - branchNode.avgTargetProfitRate).toFixed(2))
     branchNode.deviationCount = c1All.reduce((s, i) => s + i.deviationCount, 0)
-    branchNode.riskLevel = branchNode.profitDeviation < 0 ? '高风险' : '正常'
     branchNode.contractRatio = totalContractPrice > 0 ? (branchNode.contractPrice / totalContractPrice * 100) : 0
 
     tree.push(branchNode)
@@ -757,34 +699,6 @@ const summaryStats = computed(() => {
     deviationCount,
     completionRate
   }
-})
-
-// ============================ 图表数据 ============================
-
-const branchChartData = computed(() => {
-  const data = filteredData.value
-  const branchMap = {}
-
-  branchOptions.forEach(b => { branchMap[b] = { contractPrice: 0, auditPrice: 0 } })
-  data.forEach(item => {
-    if (!branchMap[item.branch]) branchMap[item.branch] = { contractPrice: 0, auditPrice: 0 }
-    branchMap[item.branch].contractPrice += item.contractPrice
-    branchMap[item.branch].auditPrice += item.auditPrice
-  })
-
-  const result = Object.keys(branchMap).map(b => ({
-    branch: b,
-    contractPrice: branchMap[b].contractPrice,
-    auditPrice: branchMap[b].auditPrice
-  })).filter(item => item.contractPrice > 0 || item.auditPrice > 0)
-
-  const maxVal = Math.max(...result.map(r => Math.max(r.contractPrice, r.auditPrice)), 1)
-  result.forEach(r => {
-    r.contractWidth = (r.contractPrice / maxVal * 100)
-    r.auditWidth = (r.auditPrice / maxVal * 100)
-  })
-
-  return result
 })
 
 // ============================ 排序 ============================
@@ -843,7 +757,6 @@ const getSummaries = ({ columns }) => {
     if (prop === 'avgOutputProfitRate') return avgOutputProfitRate.toFixed(2) + '%'
     if (prop === 'profitDeviation') return (avgOutputProfitRate - avgTargetProfitRate).toFixed(2) + '%'
     if (prop === 'deviationCount') return totalDeviationCount.toString()
-    if (prop === 'riskLevel') return ''
     return ''
   })
 }
@@ -890,8 +803,7 @@ const handleExport = () => {
         avgTargetProfitRate: node.avgTargetProfitRate.toFixed(2) + '%',
         avgOutputProfitRate: node.avgOutputProfitRate.toFixed(2) + '%',
         profitDeviation: node.profitDeviation.toFixed(2) + '%',
-        deviationCount: node.deviationCount,
-        riskLevel: node.riskLevel || ''
+        deviationCount: node.deviationCount
       })
       if (node.children) {
         flatten(node.children, level + 1)
@@ -901,9 +813,9 @@ const handleExport = () => {
   flatten(treeTableData.value)
 
   const headers = [
-    '分公司', '一级分类', '二级分类', '三级分类', '项目数量',
+    '基层单位', '一级分类', '二级分类', '三级分类', '项目数量',
     '合同价(不含税)', '审定价(不含税)', '合同金额占比',
-    '平均目标利润率', '平均销项利润率', '利润率偏差', '负偏差项目个数', '风险等级'
+    '平均目标利润率', '平均销项利润率', '利润率偏差', '负偏差项目个数'
   ]
 
   let csv = headers.join(',') + '\n'
@@ -912,7 +824,7 @@ const handleExport = () => {
       row.branch, row.category1, row.category2, row.category3,
       row.projectCount, row.contractPrice, row.auditPrice,
       row.contractRatio, row.avgTargetProfitRate, row.avgOutputProfitRate,
-      row.profitDeviation, row.deviationCount, row.riskLevel
+      row.profitDeviation, row.deviationCount
     ].join(',') + '\n'
   })
 
@@ -1002,109 +914,11 @@ const handleExport = () => {
   color: #2563eb;
 }
 
-.chart-section {
-  background: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.chart-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 16px;
-}
-
-.bar-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.bar-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.bar-label {
-  width: 80px;
-  font-size: 13px;
-  color: #666;
-  flex-shrink: 0;
-}
-
-.bar-row {
-  flex: 1;
-  display: flex;
-  align-items: center;
-}
-
-.bar {
-  height: 22px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  padding-left: 8px;
-  min-width: 40px;
-  transition: width 0.5s ease;
-}
-
-.bar-contract {
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-}
-
-.bar-audit {
-  background: linear-gradient(90deg, #f59e0b, #fbbf24);
-}
-
-.bar-text {
-  font-size: 11px;
-  color: #fff;
-  white-space: nowrap;
-}
-
-.chart-legend {
-  display: flex;
-  gap: 24px;
-  justify-content: center;
-  margin-top: 12px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  color: #666;
-}
-
-.legend-color {
-  display: inline-block;
-  width: 16px;
-  height: 12px;
-  border-radius: 2px;
-  margin-right: 6px;
-}
-
-.legend-color.contract {
-  background: #3b82f6;
-}
-
-.legend-color.audit {
-  background: #f59e0b;
-}
-
 .table-container {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-}
-
-.table-scroll-wrapper {
-  overflow-x: auto;
+  overflow: visible;
 }
 
 .drill-link {
@@ -1118,11 +932,11 @@ const handleExport = () => {
 }
 
 :deep(.el-table th) {
-  background-color: #4a6fa5;
-  color: #fff;
-  font-weight: bold;
-  font-size: 12px;
   white-space: nowrap;
+}
+
+:deep(.el-table .el-table__body-wrapper) {
+  overflow-x: auto !important;
 }
 
 :deep(.el-table td) {
@@ -1137,9 +951,5 @@ const handleExport = () => {
 :deep(.el-table .el-table__footer-wrapper td) {
   background-color: #e8f4fc;
   font-weight: bold;
-}
-
-:deep(.el-table .el-table__body-wrapper .el-table__body) {
-  width: max-content;
 }
 </style>

@@ -18,9 +18,102 @@
       </button>
     </div>
 
+    <div class="flex flex-wrap gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">所属区域：</label>
+        <el-select v-model="filters.region" placeholder="请选择" class="w-32">
+          <el-option label="全部" value="" />
+          <el-option label="华东区" value="华东区" />
+          <el-option label="华南区" value="华南区" />
+          <el-option label="华北区" value="华北区" />
+          <el-option label="西南区" value="西南区" />
+          <el-option label="华中地区" value="华中地区" />
+          <el-option label="西北区" value="西北区" />
+          <el-option label="东北区" value="东北区" />
+        </el-select>
+      </div>
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">客户名称：</label>
+        <el-input v-model="filters.customerName" placeholder="请输入" class="w-40" />
+      </div>
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">市场等级：</label>
+        <el-select v-model="filters.marketLevel" placeholder="请选择" class="w-28">
+          <el-option label="全部" value="" />
+          <el-option label="AAA" value="AAA" />
+          <el-option label="AA" value="AA" />
+          <el-option label="A" value="A" />
+        </el-select>
+      </div>
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">项目名称：</label>
+        <el-input v-model="filters.projectName" placeholder="请输入" class="w-48" />
+      </div>
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">实施主体：</label>
+        <el-select v-model="filters.implementUnit" placeholder="请选择" class="w-36">
+          <el-option label="全部" value="" />
+          <el-option label="管网事业部" value="管网事业部" />
+          <el-option label="生态事业部" value="生态事业部" />
+          <el-option label="设计咨询中心" value="设计咨询中心" />
+          <el-option label="城水管管道" value="城水管管道" />
+          <el-option label="环境建设" value="环境建设" />
+        </el-select>
+      </div>
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">项目所在地：</label>
+        <el-select v-model="filters.location" placeholder="请选择" class="w-32">
+          <el-option label="全部" value="" />
+          <el-option label="上海浦东" value="上海浦东" />
+          <el-option label="广州南沙" value="广州南沙" />
+          <el-option label="北京通州" value="北京通州" />
+          <el-option label="浙江宁波" value="浙江宁波" />
+          <el-option label="重庆渝北" value="重庆渝北" />
+          <el-option label="河南郑州" value="河南郑州" />
+          <el-option label="安徽合肥" value="安徽合肥" />
+          <el-option label="广东佛山" value="广东佛山" />
+          <el-option label="甘肃兰州" value="甘肃兰州" />
+          <el-option label="辽宁沈阳" value="辽宁沈阳" />
+        </el-select>
+      </div>
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">业务类型：</label>
+        <el-select v-model="filters.businessType" placeholder="请选择" class="w-32">
+          <el-option label="全部" value="" />
+          <el-option label="管网工程" value="管网工程" />
+          <el-option label="水环境" value="水环境" />
+          <el-option label="供水工程" value="供水工程" />
+          <el-option label="排水工程" value="排水工程" />
+          <el-option label="水务综合" value="水务综合" />
+          <el-option label="信息化" value="信息化" />
+          <el-option label="污水处理" value="污水处理" />
+        </el-select>
+      </div>
+      <div class="flex items-center">
+        <label class="text-sm text-gray-600 mr-2">投标状态：</label>
+        <el-select v-model="filters.bidStatus" placeholder="请选择" class="w-32">
+          <el-option label="全部" value="" />
+          <el-option label="投标中" value="投标中" />
+          <el-option label="准备投标" value="准备投标" />
+          <el-option label="已提交" value="已提交" />
+        </el-select>
+      </div>
+      <div class="flex items-center gap-2 ml-auto">
+        <button
+          class="flex items-center px-4 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50 transition-colors"
+          @click="resetFilters"
+        >
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          重置
+        </button>
+      </div>
+    </div>
+
     <div>
       <el-table
-        :data="tableData"
+        :data="filteredData"
         border
         :header-cell-style="{ backgroundColor: '#5B9BD5', color: '#fff' }"
         :max-height="600"
@@ -121,7 +214,7 @@
     </div>
 
     <div class="mt-4 flex items-center justify-between">
-      <span class="text-gray-600">项目数量：<span class="font-bold text-blue-600">{{ tableData.length }}</span></span>
+      <span class="text-gray-600">项目数量：<span class="font-bold text-blue-600">{{ filteredData.length }}</span></span>
       <span class="text-gray-600">当月投标情况项目合计：<span class="font-bold text-blue-600">{{ formatNumber(totalAmount) }}</span> 元</span>
     </div>
   </div>
@@ -131,6 +224,17 @@
 import { ref, computed } from 'vue'
 
 const currentYear = new Date().getFullYear()
+
+const filters = ref({
+  region: '',
+  customerName: '',
+  marketLevel: '',
+  projectName: '',
+  implementUnit: '',
+  location: '',
+  businessType: '',
+  bidStatus: ''
+})
 
 const tableData = ref([
   { region: '华东区', marketLevel: 'AAA', projectName: '浦东新区污水管网改造', customerName: '上海水务局', location: '上海浦东', businessType: '管网工程', bidLimit: 75000000, bidDeadline: '2026-06-15', legalUnit: '城市环境集团', accountUnit: '市政事业部', implementUnit: '管网事业部', bidStatus: '投标中' },
@@ -145,9 +249,36 @@ const tableData = ref([
   { region: '东北区', marketLevel: 'AA', projectName: '沈阳浑河水环境治理', customerName: '沈阳水务局', location: '辽宁沈阳', businessType: '水环境', bidLimit: 55000000, bidDeadline: '2026-07-10', legalUnit: '城市环境集团', accountUnit: '生态环境事业部', implementUnit: '环境建设', bidStatus: '投标中' }
 ])
 
-const totalAmount = computed(() => {
-  return tableData.value.reduce((sum, item) => sum + item.bidLimit, 0)
+const filteredData = computed(() => {
+  return tableData.value.filter(item => {
+    if (filters.value.region && item.region !== filters.value.region) return false
+    if (filters.value.customerName && !item.customerName.includes(filters.value.customerName)) return false
+    if (filters.value.marketLevel && item.marketLevel !== filters.value.marketLevel) return false
+    if (filters.value.projectName && !item.projectName.includes(filters.value.projectName)) return false
+    if (filters.value.implementUnit && item.implementUnit !== filters.value.implementUnit) return false
+    if (filters.value.location && item.location !== filters.value.location) return false
+    if (filters.value.businessType && item.businessType !== filters.value.businessType) return false
+    if (filters.value.bidStatus && item.bidStatus !== filters.value.bidStatus) return false
+    return true
+  })
 })
+
+const totalAmount = computed(() => {
+  return filteredData.value.reduce((sum, item) => sum + item.bidLimit, 0)
+})
+
+const resetFilters = () => {
+  filters.value = {
+    region: '',
+    customerName: '',
+    marketLevel: '',
+    projectName: '',
+    implementUnit: '',
+    location: '',
+    businessType: '',
+    bidStatus: ''
+  }
+}
 
 const formatNumber = (num) => {
   if (num === undefined || num === null) return '-'
