@@ -3,8 +3,7 @@
     <div class="search-panel">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="基层单位：">
-          <el-select v-model="searchForm.basicUnit" placeholder="请选择">
-            <el-option label="全部" value="" />
+          <el-select v-model="searchForm.basicUnit" multiple collapse-tags placeholder="请选择" class="w-52">
             <el-option v-for="unit in basicUnitOptions" :key="unit.value" :label="unit.label" :value="unit.value" />
           </el-select>
         </el-form-item>
@@ -30,8 +29,39 @@
           stripe
           :height="tableHeight"
           class="branch-table"
+          :row-class-name="getRowClassName"
           :summary-method="getSummaries"
           show-summary
+          :header-cell-style="{ backgroundColor: '#4a6fa5', color: '#fff', fontWeight: 'bold', fontSize: '12px' }"
+        >
+          <el-table-column prop="basicUnit" label="基层单位" width="120" />
+          <el-table-column prop="projectType" label="项目类型" width="140" />
+          <el-table-column prop="projectCount" label="项目数量" width="100" align="right" />
+          <el-table-column prop="contractPrice" label="合同价/审定价" width="140" align="right" />
+          <el-table-column prop="internalNotReportedRevenue" label="已报内部未上报集团营收" width="160" align="right" />
+          <el-table-column prop="internalNotReportedGrossProfit" label="已报内部未上报集团毛利" width="160" align="right" />
+          <el-table-column prop="carryForwardRevenue2027" label="结转至2027年及以后内部营收" width="180" align="right" />
+          <el-table-column prop="completedRevenue2026" label="2026年完成总包营收（内部）" width="160" align="right" />
+          <el-table-column prop="reportedRevenue2026" label="2026年上报集团营收" width="140" align="right" />
+          <el-table-column prop="remainingPlan2026" label="2026年剩余计划" width="120" align="right" />
+          <el-table-column prop="realizedProfit2026" label="2026年内部营收实现利润" width="160" align="right" />
+          <el-table-column prop="reportedGrossProfit2026" label="2026年上报集团毛利" width="140" align="right" />
+          <el-table-column prop="reportedProjects" label="上报项目" width="100" align="right" />
+          <el-table-column prop="averageProfitMargin" label="平均利润率" width="100" align="right" />
+          <el-table-column prop="remainingPlanGrossProfit2026" label="2026年剩余计划毛利" width="140" align="right" />
+          <el-table-column prop="bookedCost" label="项目已入账成本" width="120" align="right" />
+          <el-table-column prop="carriedCost" label="项目已结转成本" width="120" align="right" />
+          <el-table-column prop="projectInventory" label="项目存货" width="100" align="right" />
+          <el-table-column prop="invoicedAmount" label="项目已开票（含税）" width="140" align="right" />
+          <el-table-column prop="receivedAmount" label="项目已收款（含税）" width="140" align="right" />
+          <el-table-column prop="unreceivedAmount" label="未收款（含税）" width="120" align="right" />
+        </el-table>
+        <el-table
+          :data="projectTypeSummaryRows"
+          :show-header="false"
+          border
+          class="summary-footer-table"
+          :row-class-name="() => 'project-type-total-row'"
         >
           <el-table-column prop="basicUnit" label="基层单位" width="120" />
           <el-table-column prop="projectType" label="项目类型" width="140" />
@@ -60,7 +90,7 @@
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50]"
+          :page-sizes="[50, 100, 200]"
           :total="displayData.length"
           layout="total, sizes, prev, pager, next"
           background
@@ -93,7 +123,7 @@ const projectTypeOptions = [
 ]
 
 const searchForm = ref({
-  basicUnit: '',
+  basicUnit: [],
   projectType: ''
 })
 
@@ -148,8 +178,8 @@ const rawData = ref(generateMockData())
 
 const filteredData = computed(() => {
   return rawData.value.filter(item => {
-    const matchBasicUnit = !searchForm.value.basicUnit ||
-      item.basicUnit === basicUnitOptions.find(u => u.value === searchForm.value.basicUnit)?.label
+    const matchBasicUnit = searchForm.value.basicUnit.length === 0 ||
+      searchForm.value.basicUnit.includes(basicUnitOptions.find(u => u.label === item.basicUnit)?.value)
     const matchProjectType = !searchForm.value.projectType ||
       (searchForm.value.projectType === 'before2025' && item.projectType === '2025年以前项目') ||
       (searchForm.value.projectType === 'new2025' && item.projectType === '2025年新接项目') ||
@@ -207,14 +237,55 @@ const displayData = computed(() => {
   return result
 })
 
+// 按项目类型汇总行（独立汇总表，固定在表格底部）
+const projectTypeSummaryRows = computed(() => {
+  const data = filteredData.value
+  const projectTypes = ['2025年以前项目', '2025年新接项目', '2025年销项项目']
+  return projectTypes.map(pt => {
+    const ptItems = data.filter(item => item.projectType === pt)
+    return {
+      basicUnit: `${pt} - 合计`,
+      projectType: '',
+      projectCount: ptItems.reduce((sum, i) => sum + i.projectCount, 0),
+      contractPrice: Number(ptItems.reduce((sum, i) => sum + i.contractPrice, 0).toFixed(2)),
+      internalNotReportedRevenue: Number(ptItems.reduce((sum, i) => sum + i.internalNotReportedRevenue, 0).toFixed(2)),
+      internalNotReportedGrossProfit: Number(ptItems.reduce((sum, i) => sum + i.internalNotReportedGrossProfit, 0).toFixed(2)),
+      carryForwardRevenue2027: Number(ptItems.reduce((sum, i) => sum + i.carryForwardRevenue2027, 0).toFixed(2)),
+      completedRevenue2026: Number(ptItems.reduce((sum, i) => sum + i.completedRevenue2026, 0).toFixed(2)),
+      reportedRevenue2026: Number(ptItems.reduce((sum, i) => sum + i.reportedRevenue2026, 0).toFixed(2)),
+      remainingPlan2026: Number(ptItems.reduce((sum, i) => sum + i.remainingPlan2026, 0).toFixed(2)),
+      realizedProfit2026: Number(ptItems.reduce((sum, i) => sum + i.realizedProfit2026, 0).toFixed(2)),
+      reportedGrossProfit2026: Number(ptItems.reduce((sum, i) => sum + i.reportedGrossProfit2026, 0).toFixed(2)),
+      reportedProjects: ptItems.reduce((sum, i) => sum + i.reportedProjects, 0),
+      averageProfitMargin: ptItems.length > 0
+        ? Number((ptItems.reduce((sum, i) => sum + i.averageProfitMargin * i.projectCount, 0) /
+          ptItems.reduce((sum, i) => sum + i.projectCount, 0)).toFixed(1))
+        : 0,
+      remainingPlanGrossProfit2026: Number(ptItems.reduce((sum, i) => sum + i.remainingPlanGrossProfit2026, 0).toFixed(2)),
+      bookedCost: Number(ptItems.reduce((sum, i) => sum + i.bookedCost, 0).toFixed(2)),
+      carriedCost: Number(ptItems.reduce((sum, i) => sum + i.carriedCost, 0).toFixed(2)),
+      projectInventory: Number(ptItems.reduce((sum, i) => sum + i.projectInventory, 0).toFixed(2)),
+      invoicedAmount: Number(ptItems.reduce((sum, i) => sum + i.invoicedAmount, 0).toFixed(2)),
+      receivedAmount: Number(ptItems.reduce((sum, i) => sum + i.receivedAmount, 0).toFixed(2)),
+      unreceivedAmount: Number(ptItems.reduce((sum, i) => sum + i.unreceivedAmount, 0).toFixed(2))
+    }
+  })
+})
+
 // 分页
 const currentPage = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(50)
 const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
   const end = start + pageSize.value
   return displayData.value.slice(start, end)
 })
+
+const getRowClassName = ({ row }) => {
+  if (row.isProjectTypeTotal) return 'project-type-total-row'
+  if (row.isSubtotal) return 'subtotal-row'
+  return ''
+}
 watch(searchForm, () => {
   currentPage.value = 1
 })
@@ -262,7 +333,7 @@ const handleSearch = () => {}
 
 const handleReset = () => {
   searchForm.value = {
-    basicUnit: '',
+    basicUnit: [],
     projectType: ''
   }
 }
@@ -343,10 +414,6 @@ const handleExport = () => {
 }
 
 :deep(.el-table th) {
-  background-color: #4a6fa5;
-  color: #000;
-  font-weight: bold;
-  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -358,6 +425,31 @@ const handleExport = () => {
 :deep(.el-table .el-table__summary-row td) {
   background-color: #e8f4fc;
   font-weight: bold;
+}
+
+:deep(.el-table .project-type-total-row td) {
+  background-color: #fff3e0 !important;
+  font-weight: bold;
+  color: #e65100;
+}
+
+:deep(.el-table .subtotal-row td) {
+  background-color: #f5f7fa !important;
+  font-weight: bold;
+}
+
+.summary-footer-table {
+  margin-top: -1px;
+  min-width: max-content;
+  width: 100%;
+}
+
+.summary-footer-table :deep(.el-table__body-wrapper) {
+  overflow: hidden !important;
+}
+
+.summary-footer-table :deep(.el-table__inner-wrapper) {
+  box-shadow: none !important;
 }
 
 .pagination-wrapper {

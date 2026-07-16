@@ -127,12 +127,9 @@
     <!-- 核心数据表 -->
     <div class="table-container">
         <el-table
-          :data="sortedTreeData"
+          :data="sortedFlatData"
           border
           stripe
-          row-key="id"
-          :tree-props="{ children: 'children' }"
-          default-expand-all
           :height="tableHeight"
           class="summary-table"
           show-summary
@@ -146,8 +143,7 @@
           <el-table-column prop="category3" label="三级分类" width="120" />
           <el-table-column prop="projectCount" label="项目数量" width="100" align="right" sortable="custom">
             <template #default="scope">
-              <span v-if="scope.row.children">{{ scope.row.projectCount }}</span>
-              <span v-else>{{ scope.row.projectCount }}</span>
+              {{ scope.row.projectCount }}
             </template>
           </el-table-column>
           <el-table-column prop="contractPrice" label="合同价(不含税)" width="140" align="right" sortable="custom">
@@ -508,168 +504,16 @@ const filteredData = computed(() => {
   return result
 })
 
-// ============================ 构建树形表格数据 ============================
+// ============================ 构建扁平表格数据 ============================
 
-const treeTableData = computed(() => {
+const flatTableData = computed(() => {
   const data = filteredData.value
   const totalContractPrice = data.reduce((sum, item) => sum + item.contractPrice, 0)
 
-  // 按 分公司 → 一级 → 二级 → 三级 聚合
-  const branchMap = {}
-
-  data.forEach(item => {
-    if (!branchMap[item.branch]) {
-      branchMap[item.branch] = {}
-    }
-    if (!branchMap[item.branch][item.category1]) {
-      branchMap[item.branch][item.category1] = {}
-    }
-    if (!branchMap[item.branch][item.category1][item.category2]) {
-      branchMap[item.branch][item.category1][item.category2] = []
-    }
-    branchMap[item.branch][item.category1][item.category2].push(item)
-  })
-
-  const tree = []
-  let branchIdx = 0
-
-  Object.keys(branchMap).sort().forEach(branch => {
-    branchIdx++
-    const branchNode = {
-      id: `b${branchIdx}`,
-      branch,
-      category1: '',
-      category2: '',
-      category3: '',
-      projectCount: 0,
-      contractPrice: 0,
-      auditPrice: 0,
-      avgTargetProfitRate: 0,
-      avgOutputProfitRate: 0,
-      profitDeviation: 0,
-      deviationCount: 0,
-
-      contractRatio: 0,
-      children: []
-    }
-
-    let c1Idx = 0
-    Object.keys(branchMap[branch]).sort().forEach(c1 => {
-      c1Idx++
-      const c1Node = {
-        id: `b${branchIdx}-c1${c1Idx}`,
-        branch: '',
-        category1: c1,
-        category2: '',
-        category3: '',
-        projectCount: 0,
-        contractPrice: 0,
-        auditPrice: 0,
-        avgTargetProfitRate: 0,
-        avgOutputProfitRate: 0,
-        profitDeviation: 0,
-        deviationCount: 0,
-  
-        contractRatio: 0,
-        children: []
-      }
-
-      let c2Idx = 0
-      Object.keys(branchMap[branch][c1]).sort().forEach(c2 => {
-        c2Idx++
-        const c2Node = {
-          id: `b${branchIdx}-c1${c1Idx}-c2${c2Idx}`,
-          branch: '',
-          category1: '',
-          category2: c2,
-          category3: '',
-          projectCount: 0,
-          contractPrice: 0,
-          auditPrice: 0,
-          avgTargetProfitRate: 0,
-          avgOutputProfitRate: 0,
-          profitDeviation: 0,
-          deviationCount: 0,
-    
-          contractRatio: 0,
-          children: []
-        }
-
-        const c3Items = branchMap[branch][c1][c2]
-        c3Items.forEach((item, idx) => {
-          const c3Node = {
-            id: `${c2Node.id}-c3${idx + 1}`,
-            branch: '',
-            category1: '',
-            category2: '',
-            category3: item.category3,
-            projectCount: item.projectCount,
-            contractPrice: item.contractPrice,
-            auditPrice: item.auditPrice,
-            avgTargetProfitRate: item.avgTargetProfitRate,
-            avgOutputProfitRate: item.avgOutputProfitRate,
-            profitDeviation: item.profitDeviation,
-            deviationCount: item.deviationCount,
-
-            contractRatio: totalContractPrice > 0 ? (item.contractPrice / totalContractPrice * 100) : 0
-          }
-          c2Node.children.push(c3Node)
-        })
-
-        // 汇总二级
-        c2Node.projectCount = c3Items.reduce((s, i) => s + i.projectCount, 0)
-        c2Node.contractPrice = c3Items.reduce((s, i) => s + i.contractPrice, 0)
-        c2Node.auditPrice = c3Items.reduce((s, i) => s + i.auditPrice, 0)
-        c2Node.avgTargetProfitRate = c3Items.length > 0
-          ? c3Items.reduce((s, i) => s + i.avgTargetProfitRate * i.contractPrice, 0) / c2Node.contractPrice
-          : 0
-        c2Node.avgOutputProfitRate = c3Items.length > 0
-          ? c3Items.reduce((s, i) => s + i.avgOutputProfitRate * i.contractPrice, 0) / c2Node.contractPrice
-          : 0
-        c2Node.profitDeviation = Number((c2Node.avgOutputProfitRate - c2Node.avgTargetProfitRate).toFixed(2))
-        c2Node.deviationCount = c3Items.reduce((s, i) => s + i.deviationCount, 0)
-        c2Node.contractRatio = totalContractPrice > 0 ? (c2Node.contractPrice / totalContractPrice * 100) : 0
-
-        c1Node.children.push(c2Node)
-      })
-
-      // 汇总一级
-      const c2All = c1Node.children
-      c1Node.projectCount = c2All.reduce((s, i) => s + i.projectCount, 0)
-      c1Node.contractPrice = c2All.reduce((s, i) => s + i.contractPrice, 0)
-      c1Node.auditPrice = c2All.reduce((s, i) => s + i.auditPrice, 0)
-      c1Node.avgTargetProfitRate = c1Node.contractPrice > 0
-        ? c2All.reduce((s, i) => s + i.avgTargetProfitRate * i.contractPrice, 0) / c1Node.contractPrice
-        : 0
-      c1Node.avgOutputProfitRate = c1Node.contractPrice > 0
-        ? c2All.reduce((s, i) => s + i.avgOutputProfitRate * i.contractPrice, 0) / c1Node.contractPrice
-        : 0
-      c1Node.profitDeviation = Number((c1Node.avgOutputProfitRate - c1Node.avgTargetProfitRate).toFixed(2))
-      c1Node.deviationCount = c2All.reduce((s, i) => s + i.deviationCount, 0)
-      c1Node.contractRatio = totalContractPrice > 0 ? (c1Node.contractPrice / totalContractPrice * 100) : 0
-
-      branchNode.children.push(c1Node)
-    })
-
-    // 汇总分公司
-    const c1All = branchNode.children
-    branchNode.projectCount = c1All.reduce((s, i) => s + i.projectCount, 0)
-    branchNode.contractPrice = c1All.reduce((s, i) => s + i.contractPrice, 0)
-    branchNode.auditPrice = c1All.reduce((s, i) => s + i.auditPrice, 0)
-    branchNode.avgTargetProfitRate = branchNode.contractPrice > 0
-      ? c1All.reduce((s, i) => s + i.avgTargetProfitRate * i.contractPrice, 0) / branchNode.contractPrice
-      : 0
-    branchNode.avgOutputProfitRate = branchNode.contractPrice > 0
-      ? c1All.reduce((s, i) => s + i.avgOutputProfitRate * i.contractPrice, 0) / branchNode.contractPrice
-      : 0
-    branchNode.profitDeviation = Number((branchNode.avgOutputProfitRate - branchNode.avgTargetProfitRate).toFixed(2))
-    branchNode.deviationCount = c1All.reduce((s, i) => s + i.deviationCount, 0)
-    branchNode.contractRatio = totalContractPrice > 0 ? (branchNode.contractPrice / totalContractPrice * 100) : 0
-
-    tree.push(branchNode)
-  })
-
-  return tree
+  return data.map(item => ({
+    ...item,
+    contractRatio: totalContractPrice > 0 ? (item.contractPrice / totalContractPrice * 100) : 0
+  }))
 })
 
 // ============================ 核心指标卡 ============================
@@ -711,24 +555,19 @@ const handleSortChange = ({ prop, order }) => {
   sortOrder.value = order || ''
 }
 
-const sortTree = (nodes) => {
-  if (!sortProp.value || !sortOrder.value) return nodes
+const sortFlat = (data) => {
+  if (!sortProp.value || !sortOrder.value) return data
   const sortFn = (a, b) => {
     const va = a[sortProp.value] ?? 0
     const vb = b[sortProp.value] ?? 0
     return sortOrder.value === 'ascending' ? va - vb : vb - va
   }
-  return [...nodes].sort(sortFn).map(node => {
-    if (node.children) {
-      return { ...node, children: sortTree(node.children) }
-    }
-    return node
-  })
+  return [...data].sort(sortFn)
 }
 
-// 排序后的树形数据
-const sortedTreeData = computed(() => {
-  return sortTree(treeTableData.value)
+// 排序后的扁平数据
+const sortedFlatData = computed(() => {
+  return sortFlat(flatTableData.value)
 })
 
 // ============================ 汇总行 ============================
@@ -787,30 +626,20 @@ const handleDeviationDrill = (row) => {
 // ============================ 导出 ============================
 
 const handleExport = () => {
-  // 展开树形数据为平铺行
-  const flatRows = []
-  const flatten = (nodes, level = 0) => {
-    nodes.forEach(node => {
-      flatRows.push({
-        branch: node.branch,
-        category1: node.category1,
-        category2: node.category2,
-        category3: node.category3,
-        projectCount: node.projectCount,
-        contractPrice: node.contractPrice,
-        auditPrice: node.auditPrice,
-        contractRatio: node.contractRatio.toFixed(2) + '%',
-        avgTargetProfitRate: node.avgTargetProfitRate.toFixed(2) + '%',
-        avgOutputProfitRate: node.avgOutputProfitRate.toFixed(2) + '%',
-        profitDeviation: node.profitDeviation.toFixed(2) + '%',
-        deviationCount: node.deviationCount
-      })
-      if (node.children) {
-        flatten(node.children, level + 1)
-      }
-    })
-  }
-  flatten(treeTableData.value)
+  const flatRows = flatTableData.value.map(row => ({
+    branch: row.branch,
+    category1: row.category1,
+    category2: row.category2,
+    category3: row.category3,
+    projectCount: row.projectCount,
+    contractPrice: row.contractPrice,
+    auditPrice: row.auditPrice,
+    contractRatio: row.contractRatio.toFixed(2) + '%',
+    avgTargetProfitRate: row.avgTargetProfitRate.toFixed(2) + '%',
+    avgOutputProfitRate: row.avgOutputProfitRate.toFixed(2) + '%',
+    profitDeviation: row.profitDeviation.toFixed(2) + '%',
+    deviationCount: row.deviationCount
+  }))
 
   const headers = [
     '基层单位', '一级分类', '二级分类', '三级分类', '项目数量',

@@ -87,12 +87,9 @@
 
     <div class="table-container">
         <el-table
-          :data="sortedTreeData"
+          :data="sortedFlatData"
           border
           stripe
-          row-key="id"
-          :tree-props="{ children: 'children' }"
-          default-expand-all
           :height="tableHeight"
           class="summary-table"
           show-summary
@@ -226,8 +223,7 @@ const category3Map = {
 }
 
 const projectTypeOptions = [
-  'BT', 'BOT', 'PPP', 'EPC', 'EPC+O', 'DB', 'DBO',
-  '施工总承包', '施工分包', '其他模式'
+  '2025年以前项目', '2025年新接项目', '2025年销项项目'
 ]
 
 // 联动的二级分类选项
@@ -480,112 +476,8 @@ const sumFields = [
   'auditReduction', 'paidAmount', 'unpaidAmount', 'yearEndBalance'
 ]
 
-const createEmptyNode = (id) => {
-  const node = {
-    id,
-    category1: '',
-    category2: '',
-    category3: '',
-    projectType: '',
-    children: []
-  }
-  sumFields.forEach(f => { node[f] = 0 })
-  node.grossProfitRate = 0
-  return node
-}
-
-const aggregateChildren = (node, children) => {
-  sumFields.forEach(f => {
-    node[f] = children.reduce((s, c) => s + (c[f] || 0), 0)
-  })
-  node.grossProfitRate = node.contractPrice > 0
-    ? Number((node.grossProfit / node.contractPrice * 100).toFixed(2))
-    : 0
-}
-
-const treeTableData = computed(() => {
-  const data = filteredData.value
-
-  const c1Map = {}
-  data.forEach(item => {
-    if (!c1Map[item.category1]) {
-      c1Map[item.category1] = {}
-    }
-    if (!c1Map[item.category1][item.category2]) {
-      c1Map[item.category1][item.category2] = {}
-    }
-    if (!c1Map[item.category1][item.category2][item.category3]) {
-      c1Map[item.category1][item.category2][item.category3] = []
-    }
-    c1Map[item.category1][item.category2][item.category3].push(item)
-  })
-
-  const tree = []
-  let c1Idx = 0
-
-  Object.keys(c1Map).sort().forEach(c1 => {
-    c1Idx++
-    const c1Node = createEmptyNode(`c1-${c1Idx}`)
-    c1Node.category1 = c1
-
-    let c2Idx = 0
-    Object.keys(c1Map[c1]).sort().forEach(c2 => {
-      c2Idx++
-      const c2Node = createEmptyNode(`${c1Node.id}-c2-${c2Idx}`)
-      c2Node.category2 = c2
-
-      let c3Idx = 0
-      Object.keys(c1Map[c1][c2]).sort().forEach(c3 => {
-        c3Idx++
-        const c3Node = createEmptyNode(`${c2Node.id}-c3-${c3Idx}`)
-        c3Node.category3 = c3
-
-        const ptItems = c1Map[c1][c2][c3]
-        ptItems.forEach((item, ptIdx) => {
-          const ptNode = {
-            id: `${c3Node.id}-pt-${ptIdx + 1}`,
-            category1: '',
-            category2: '',
-            category3: '',
-            projectType: item.projectType,
-            projectCount: item.projectCount,
-            contractPrice: item.contractPrice,
-            grossProfit: item.grossProfit,
-            grossProfitRate: item.grossProfitRate,
-            revenueInternalBefore2025: item.revenueInternalBefore2025,
-            revenueExternalBefore2025: item.revenueExternalBefore2025,
-            estimatedRevenue2026: item.estimatedRevenue2026,
-            cumulativeRevenueBefore2026: item.cumulativeRevenueBefore2026,
-            plannedRevenue2026: item.plannedRevenue2026,
-            actualRevenue2026: item.actualRevenue2026,
-            newContract2026: item.newContract2026,
-            supplementaryContract2026: item.supplementaryContract2026,
-            reportedBudget: item.reportedBudget,
-            newContract2025: item.newContract2025,
-            projectMeasured: item.projectMeasured,
-            projectSettled: item.projectSettled,
-            outputCompleted: item.outputCompleted,
-            auditReduction: item.auditReduction,
-            paidAmount: item.paidAmount,
-            unpaidAmount: item.unpaidAmount,
-            yearEndBalance: item.yearEndBalance
-          }
-          c3Node.children.push(ptNode)
-        })
-
-        aggregateChildren(c3Node, c3Node.children)
-        c2Node.children.push(c3Node)
-      })
-
-      aggregateChildren(c2Node, c2Node.children)
-      c1Node.children.push(c2Node)
-    })
-
-    aggregateChildren(c1Node, c1Node.children)
-    tree.push(c1Node)
-  })
-
-  return tree
+const flatTableData = computed(() => {
+  return filteredData.value.map(item => ({ ...item }))
 })
 
 // ============================ 统计卡片 ============================
@@ -623,23 +515,18 @@ const handleSortChange = ({ prop, order }) => {
   sortOrder.value = order || ''
 }
 
-const sortTree = (nodes) => {
-  if (!sortProp.value || !sortOrder.value) return nodes
+const sortFlat = (data) => {
+  if (!sortProp.value || !sortOrder.value) return data
   const sortFn = (a, b) => {
     const va = a[sortProp.value] ?? 0
     const vb = b[sortProp.value] ?? 0
     return sortOrder.value === 'ascending' ? va - vb : vb - va
   }
-  return [...nodes].sort(sortFn).map(node => {
-    if (node.children && node.children.length > 0) {
-      return { ...node, children: sortTree(node.children) }
-    }
-    return node
-  })
+  return [...data].sort(sortFn)
 }
 
-const sortedTreeData = computed(() => {
-  return sortTree(treeTableData.value)
+const sortedFlatData = computed(() => {
+  return sortFlat(flatTableData.value)
 })
 
 // ============================ 汇总行 ============================
@@ -677,42 +564,33 @@ const formatNumber = (num, decimals = 2) => {
 // ============================ 导出 ============================
 
 const handleExport = () => {
-  const flatRows = []
-  const flatten = (nodes, level = 0) => {
-    nodes.forEach(node => {
-      flatRows.push({
-        category1: node.category1,
-        category2: node.category2,
-        category3: node.category3,
-        projectType: node.projectType,
-        projectCount: node.projectCount,
-        contractPrice: formatNumber(node.contractPrice),
-        grossProfit: formatNumber(node.grossProfit),
-        grossProfitRate: node.grossProfitRate.toFixed(2) + '%',
-        revenueInternalBefore2025: formatNumber(node.revenueInternalBefore2025),
-        revenueExternalBefore2025: formatNumber(node.revenueExternalBefore2025),
-        estimatedRevenue2026: formatNumber(node.estimatedRevenue2026),
-        cumulativeRevenueBefore2026: formatNumber(node.cumulativeRevenueBefore2026),
-        plannedRevenue2026: formatNumber(node.plannedRevenue2026),
-        actualRevenue2026: formatNumber(node.actualRevenue2026),
-        newContract2026: formatNumber(node.newContract2026),
-        supplementaryContract2026: formatNumber(node.supplementaryContract2026),
-        reportedBudget: formatNumber(node.reportedBudget),
-        newContract2025: formatNumber(node.newContract2025),
-        projectMeasured: formatNumber(node.projectMeasured),
-        projectSettled: formatNumber(node.projectSettled),
-        outputCompleted: formatNumber(node.outputCompleted),
-        auditReduction: formatNumber(node.auditReduction),
-        paidAmount: formatNumber(node.paidAmount),
-        unpaidAmount: formatNumber(node.unpaidAmount),
-        yearEndBalance: formatNumber(node.yearEndBalance)
-      })
-      if (node.children) {
-        flatten(node.children, level + 1)
-      }
-    })
-  }
-  flatten(treeTableData.value)
+  const flatRows = flatTableData.value.map(item => ({
+    category1: item.category1,
+    category2: item.category2,
+    category3: item.category3,
+    projectType: item.projectType,
+    projectCount: item.projectCount,
+    contractPrice: formatNumber(item.contractPrice),
+    grossProfit: formatNumber(item.grossProfit),
+    grossProfitRate: item.grossProfitRate.toFixed(2) + '%',
+    revenueInternalBefore2025: formatNumber(item.revenueInternalBefore2025),
+    revenueExternalBefore2025: formatNumber(item.revenueExternalBefore2025),
+    estimatedRevenue2026: formatNumber(item.estimatedRevenue2026),
+    cumulativeRevenueBefore2026: formatNumber(item.cumulativeRevenueBefore2026),
+    plannedRevenue2026: formatNumber(item.plannedRevenue2026),
+    actualRevenue2026: formatNumber(item.actualRevenue2026),
+    newContract2026: formatNumber(item.newContract2026),
+    supplementaryContract2026: formatNumber(item.supplementaryContract2026),
+    reportedBudget: formatNumber(item.reportedBudget),
+    newContract2025: formatNumber(item.newContract2025),
+    projectMeasured: formatNumber(item.projectMeasured),
+    projectSettled: formatNumber(item.projectSettled),
+    outputCompleted: formatNumber(item.outputCompleted),
+    auditReduction: formatNumber(item.auditReduction),
+    paidAmount: formatNumber(item.paidAmount),
+    unpaidAmount: formatNumber(item.unpaidAmount),
+    yearEndBalance: formatNumber(item.yearEndBalance)
+  }))
 
   const headers = [
     '城市环境一级分类', '城市环境二级分类', '城市环境三级分类', '项目类型',

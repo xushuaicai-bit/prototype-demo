@@ -12,8 +12,7 @@
           <el-input v-model="searchForm.projectName" placeholder="模糊查询" />
         </el-form-item>
         <el-form-item label="基层单位：">
-          <el-select v-model="searchForm.basicUnit" placeholder="请选择">
-            <el-option label="全部" value="" />
+          <el-select v-model="searchForm.basicUnit" multiple collapse-tags placeholder="请选择" class="w-52">
             <el-option v-for="unit in basicUnitOptions" :key="unit.value" :label="unit.label" :value="unit.value" />
           </el-select>
         </el-form-item>
@@ -70,7 +69,6 @@
       >
         <span class="warning-label">蓝色预警</span>
         <span class="warning-count">{{ blueWarningCount }}</span>
-        <span class="warning-desc">预警项目数量</span>
       </div>
       <div
         class="warning-box warning-yellow"
@@ -79,7 +77,6 @@
       >
         <span class="warning-label">黄色预警</span>
         <span class="warning-count">{{ yellowWarningCount }}</span>
-        <span class="warning-desc">预警项目数量</span>
       </div>
       <div
         class="warning-box warning-red"
@@ -88,7 +85,6 @@
       >
         <span class="warning-label">红色预警</span>
         <span class="warning-count">{{ redWarningCount }}</span>
-        <span class="warning-desc">预警项目数量</span>
       </div>
       <el-button
         v-if="activeWarningFilter"
@@ -370,7 +366,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { utils, writeFile, read } from 'xlsx'
 
@@ -595,8 +591,8 @@ const tabFilteredData = computed(() => {
       item.accountingProjectNo === searchForm.value.accountingProjectNo
     const matchProjectName = !searchForm.value.projectName ||
       item.projectName.toLowerCase().includes(searchForm.value.projectName.toLowerCase())
-    const matchBasicUnit = !searchForm.value.basicUnit ||
-      item.basicUnit === searchForm.value.basicUnit
+    const matchBasicUnit = searchForm.value.basicUnit.length === 0 ||
+      searchForm.value.basicUnit.includes(item.basicUnit)
     const matchAccountingOrg = !searchForm.value.accountingOrg ||
       item.accountingOrg.toLowerCase().includes(searchForm.value.accountingOrg.toLowerCase())
     const matchContractAmount = !searchForm.value.contractAmount ||
@@ -759,13 +755,17 @@ const searchForm = ref({
   productionProjectNo: '',
   accountingProjectNo: '',
   projectName: '',
-  basicUnit: '',
+  basicUnit: [],
   accountingOrg: '',
   contractAmount: '',
   projectStatus: ''
 })
 
-const tableHeight = ref(600)
+const tableHeight = ref(Math.max(300, window.innerHeight - 450))
+
+const updateTableHeight = () => {
+  tableHeight.value = Math.max(300, window.innerHeight - 450)
+}
 const financeData = ref([])
 
 // 分页
@@ -942,6 +942,8 @@ const handleDownloadTemplate = () => {
 
 // 初始化：若当前周期已有留存版本，则加载留存版本，停止自动更新（不再生成 mock）
 onMounted(() => {
+  updateTableHeight()
+  window.addEventListener('resize', updateTableHeight)
   loadVersions()
   const lockedId = lockedVersionId.value
   if (lockedId) {
@@ -966,6 +968,10 @@ onMounted(() => {
   }
 })
 
+onUnmounted(() => {
+  window.removeEventListener('resize', updateTableHeight)
+})
+
 localVisibleColumns.value = [...visibleColumns.value]
 
 const filteredData = computed(() => {
@@ -976,8 +982,8 @@ const filteredData = computed(() => {
       item.accountingProjectNo === searchForm.value.accountingProjectNo
     const matchProjectName = !searchForm.value.projectName ||
       item.projectName.toLowerCase().includes(searchForm.value.projectName.toLowerCase())
-    const matchBasicUnit = !searchForm.value.basicUnit ||
-      item.basicUnit === searchForm.value.basicUnit
+    const matchBasicUnit = searchForm.value.basicUnit.length === 0 ||
+      searchForm.value.basicUnit.includes(item.basicUnit)
     const matchAccountingOrg = !searchForm.value.accountingOrg ||
       item.accountingOrg.toLowerCase().includes(searchForm.value.accountingOrg.toLowerCase())
     const matchContractAmount = !searchForm.value.contractAmount ||
@@ -996,7 +1002,7 @@ const handleReset = () => {
     productionProjectNo: '',
     accountingProjectNo: '',
     projectName: '',
-    basicUnit: '',
+    basicUnit: [],
     accountingOrg: '',
     contractAmount: '',
     projectStatus: ''
@@ -1051,41 +1057,25 @@ const handleExport = () => {
 }
 
 .warning-box {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 150px;
-  padding: 12px 16px;
-  border-radius: 8px;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 4px;
   cursor: pointer;
   user-select: none;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.warning-box:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .warning-label {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: bold;
-  margin-bottom: 4px;
 }
 
 .warning-count {
-  font-size: 28px;
+  font-size: 13px;
   font-weight: bold;
-  line-height: 1.2;
-}
-
-.warning-desc {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 4px;
 }
 
 .warning-blue {

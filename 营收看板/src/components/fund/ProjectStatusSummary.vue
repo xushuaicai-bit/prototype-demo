@@ -224,54 +224,57 @@ const summaryData = computed(() => {
       receivedAmount: Number(totalReceivedAmount.toFixed(2)),
       unreceivedAmount: Number((totalInvoicedAmount - totalReceivedAmount).toFixed(2))
     })
-  })
 
-  const completedData = filteredData.value.filter(item => item.projectStatus === '竣工')
-  settlementStatuses.forEach(settlementStatus => {
-    const settlementData = completedData.filter(item => item.settlementStatus === settlementStatus)
+    // 竣工后插入结算状态行（在业务销项之前）
+    if (status === '竣工') {
+      const completedData = filteredData.value.filter(item => item.projectStatus === '竣工')
+      settlementStatuses.forEach(settlementStatus => {
+        const settlementData = completedData.filter(item => item.settlementStatus === settlementStatus)
 
-    const totalContractPrice = settlementData.reduce((sum, item) => sum + item.contractPriceTax, 0)
-    const totalInternalNotReportedRevenue = settlementData.reduce((sum, item) => sum + item.internalNotReportedRevenue, 0)
-    const totalInternalNotReportedGrossProfit = settlementData.reduce((sum, item) => sum + item.grossProfitNotReported, 0)
-    const totalCarryForwardRevenue2027 = settlementData.reduce((sum, item) => sum + item.carryForwardRevenue2027, 0)
-    const totalCompletedRevenue2026 = settlementData.reduce((sum, item) => sum + item.completedRevenue2026, 0)
-    const totalReportedRevenue2026 = settlementData.reduce((sum, item) => sum + item.reportedRevenue2026, 0)
-    const totalRemainingPlan2026 = settlementData.reduce((sum, item) => sum + item.remainingPlan2026, 0)
-    const totalRealizedProfit2026 = settlementData.reduce((sum, item) => sum + item.realizedProfit2026, 0)
-    const totalReportedGrossProfit2026 = settlementData.reduce((sum, item) => sum + item.realizedProfitGroup2026, 0)
-    const totalBookedCost = settlementData.reduce((sum, item) => sum + item.bookedCost, 0)
-    const totalCarriedCost = settlementData.reduce((sum, item) => sum + item.carriedCost, 0)
-    const totalProjectInventory = settlementData.reduce((sum, item) => sum + item.projectInventory, 0)
-    const totalInvoicedAmount = settlementData.reduce((sum, item) => sum + item.cumulativeInvoiced, 0)
-    const totalReceivedAmount = settlementData.reduce((sum, item) => sum + item.cumulativeReceived, 0)
+        const sContractPrice = settlementData.reduce((sum, item) => sum + item.contractPriceTax, 0)
+        const sInternalNotReportedRevenue = settlementData.reduce((sum, item) => sum + item.internalNotReportedRevenue, 0)
+        const sInternalNotReportedGrossProfit = settlementData.reduce((sum, item) => sum + item.grossProfitNotReported, 0)
+        const sCarryForwardRevenue2027 = settlementData.reduce((sum, item) => sum + item.carryForwardRevenue2027, 0)
+        const sCompletedRevenue2026 = settlementData.reduce((sum, item) => sum + item.completedRevenue2026, 0)
+        const sReportedRevenue2026 = settlementData.reduce((sum, item) => sum + item.reportedRevenue2026, 0)
+        const sRemainingPlan2026 = settlementData.reduce((sum, item) => sum + item.remainingPlan2026, 0)
+        const sRealizedProfit2026 = settlementData.reduce((sum, item) => sum + item.realizedProfit2026, 0)
+        const sReportedGrossProfit2026 = settlementData.reduce((sum, item) => sum + item.realizedProfitGroup2026, 0)
+        const sBookedCost = settlementData.reduce((sum, item) => sum + item.bookedCost, 0)
+        const sCarriedCost = settlementData.reduce((sum, item) => sum + item.carriedCost, 0)
+        const sProjectInventory = settlementData.reduce((sum, item) => sum + item.projectInventory, 0)
+        const sInvoicedAmount = settlementData.reduce((sum, item) => sum + item.cumulativeInvoiced, 0)
+        const sReceivedAmount = settlementData.reduce((sum, item) => sum + item.cumulativeReceived, 0)
 
-    const avgProfitMargin = settlementData.length > 0
-      ? Number((settlementData.reduce((sum, item) => sum + item.profitMargin, 0) / settlementData.length).toFixed(2))
-      : 0
+        const sAvgProfitMargin = settlementData.length > 0
+          ? Number((settlementData.reduce((sum, item) => sum + item.profitMargin, 0) / settlementData.length).toFixed(2))
+          : 0
 
-    result.push({
-      projectStatus: '',
-      settlementStatus: settlementStatus,
-      projectCount: settlementData.length,
-      contractPrice: Number(totalContractPrice.toFixed(2)),
-      internalNotReportedRevenue: Number(totalInternalNotReportedRevenue.toFixed(2)),
-      internalNotReportedGrossProfit: Number(totalInternalNotReportedGrossProfit.toFixed(2)),
-      carryForwardRevenue2027: Number(totalCarryForwardRevenue2027.toFixed(2)),
-      completedRevenue2026: Number(totalCompletedRevenue2026.toFixed(2)),
-      reportedRevenue2026: Number(totalReportedRevenue2026.toFixed(2)),
-      remainingPlan2026: Number(totalRemainingPlan2026.toFixed(2)),
-      realizedProfit2026: Number(totalRealizedProfit2026.toFixed(2)),
-      reportedGrossProfit2026: Number(totalReportedGrossProfit2026.toFixed(2)),
-      reportedProjects: Math.floor(settlementData.length * 0.8),
-      avgProfitMargin,
-      remainingPlanGrossProfit2026: Number((totalRemainingPlan2026 * avgProfitMargin / 100).toFixed(2)),
-      bookedCost: Number(totalBookedCost.toFixed(2)),
-      carriedCost: Number(totalCarriedCost.toFixed(2)),
-      projectInventory: Number(totalProjectInventory.toFixed(2)),
-      invoicedAmount: Number(totalInvoicedAmount.toFixed(2)),
-      receivedAmount: Number(totalReceivedAmount.toFixed(2)),
-      unreceivedAmount: Number((totalInvoicedAmount - totalReceivedAmount).toFixed(2))
-    })
+        result.push({
+          projectStatus: '',
+          settlementStatus: settlementStatus,
+          projectCount: settlementData.length,
+          contractPrice: Number(sContractPrice.toFixed(2)),
+          internalNotReportedRevenue: Number(sInternalNotReportedRevenue.toFixed(2)),
+          internalNotReportedGrossProfit: Number(sInternalNotReportedGrossProfit.toFixed(2)),
+          carryForwardRevenue2027: Number(sCarryForwardRevenue2027.toFixed(2)),
+          completedRevenue2026: Number(sCompletedRevenue2026.toFixed(2)),
+          reportedRevenue2026: Number(sReportedRevenue2026.toFixed(2)),
+          remainingPlan2026: Number(sRemainingPlan2026.toFixed(2)),
+          realizedProfit2026: Number(sRealizedProfit2026.toFixed(2)),
+          reportedGrossProfit2026: Number(sReportedGrossProfit2026.toFixed(2)),
+          reportedProjects: Math.floor(settlementData.length * 0.8),
+          avgProfitMargin: sAvgProfitMargin,
+          remainingPlanGrossProfit2026: Number((sRemainingPlan2026 * sAvgProfitMargin / 100).toFixed(2)),
+          bookedCost: Number(sBookedCost.toFixed(2)),
+          carriedCost: Number(sCarriedCost.toFixed(2)),
+          projectInventory: Number(sProjectInventory.toFixed(2)),
+          invoicedAmount: Number(sInvoicedAmount.toFixed(2)),
+          receivedAmount: Number(sReceivedAmount.toFixed(2)),
+          unreceivedAmount: Number((sInvoicedAmount - sReceivedAmount).toFixed(2))
+        })
+      })
+    }
   })
 
   const totals = {
