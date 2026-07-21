@@ -29,7 +29,7 @@
       <div class="bg-white rounded-xl p-4 shadow-sm">
         <div class="flex flex-col h-full">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="font-semibold text-gray-800">施工方案</h3>
+            <h3 class="font-semibold text-gray-800">施工方案及交底</h3>
             <div class="flex gap-2">
               <button
                 v-for="tab in techTabs"
@@ -217,7 +217,7 @@ const selectedQuarter = ref('Q1')
 const techTabs = [
   { key: 'approval', label: '审批完成率' },
   { key: 'scheme', label: '方案退回率' },
-  { key: 'disclosure', label: '交底情况' }
+  { key: 'disclosure', label: '交底完成率' }
 ]
 
 const techData = techDashboardData
@@ -257,7 +257,7 @@ const currentTechSummary = computed(() => {
   const summaries = {
     approval: `审批完成总数${currentTechData.value.summary.total}个，平均完成率${currentTechData.value.summary.avgRate}`,
     scheme: `方案退回次数${currentTechData.value.summary.total}次，平均退回率${currentTechData.value.summary.avgRate}`,
-    disclosure: `方案交底总数${currentTechData.value.summary.total}个，平均交底率${currentTechData.value.summary.avgCount}`
+    disclosure: `方案交底总数${currentTechData.value.summary.total}个，平均交底率${currentTechData.value.summary.avgRate}`
   }
   return summaries[activeTechTab.value]
 })

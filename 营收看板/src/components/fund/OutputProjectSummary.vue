@@ -118,10 +118,6 @@
         <div class="stat-label">利润偏差项目数</div>
         <div class="stat-value" :class="{ 'text-red-600': summaryStats.deviationCount > 0 }">{{ summaryStats.deviationCount }}</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">合同金额完成率</div>
-        <div class="stat-value">{{ summaryStats.completionRate.toFixed(2) }}%</div>
-      </div>
     </div>
 
     <!-- 核心数据表 -->
@@ -134,6 +130,7 @@
           class="summary-table"
           show-summary
           :summary-method="getSummaries"
+          :span-method="spanMethod"
           :header-cell-style="{ backgroundColor: '#4a6fa5', color: '#fff', fontWeight: 'bold', fontSize: '12px' }"
           @sort-change="handleSortChange"
         >
@@ -154,11 +151,6 @@
           <el-table-column prop="auditPrice" label="审定价(不含税)" width="140" align="right" sortable="custom">
             <template #default="scope">
               {{ formatNumber(scope.row.auditPrice) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="contractRatio" label="合同金额占比" width="120" align="right" sortable="custom">
-            <template #default="scope">
-              {{ scope.row.contractRatio.toFixed(2) }}%
             </template>
           </el-table-column>
           <el-table-column prop="avgTargetProfitRate" label="平均目标利润率" width="130" align="right" sortable="custom">
@@ -507,13 +499,7 @@ const filteredData = computed(() => {
 // ============================ 构建扁平表格数据 ============================
 
 const flatTableData = computed(() => {
-  const data = filteredData.value
-  const totalContractPrice = data.reduce((sum, item) => sum + item.contractPrice, 0)
-
-  return data.map(item => ({
-    ...item,
-    contractRatio: totalContractPrice > 0 ? (item.contractPrice / totalContractPrice * 100) : 0
-  }))
+  return filteredData.value.map(item => ({ ...item }))
 })
 
 // ============================ 核心指标卡 ============================
@@ -532,16 +518,13 @@ const summaryStats = computed(() => {
     ? data.reduce((s, i) => s + i.avgOutputProfitRate * i.contractPrice, 0) / totalContractPrice
     : 0
 
-  const completionRate = totalContractPrice > 0 ? (totalAuditPrice / totalContractPrice * 100) : 0
-
   return {
     totalProjectCount,
     totalContractPrice,
     totalAuditPrice,
     avgTargetProfitRate,
     avgOutputProfitRate,
-    deviationCount,
-    completionRate
+    deviationCount
   }
 })
 
@@ -570,6 +553,87 @@ const sortedFlatData = computed(() => {
   return sortFlat(flatTableData.value)
 })
 
+// ============================ 单元格合并（基层单位/一级/二级分类列） ============================
+
+const branchSpans = computed(() => {
+  const data = sortedFlatData.value
+  const spans = new Array(data.length).fill(0)
+  let i = 0
+  while (i < data.length) {
+    let j = i
+    while (j < data.length && data[j].branch === data[i].branch) j++
+    spans[i] = j - i
+    i = j
+  }
+  return spans
+})
+
+// 一级分类合并（在 branch 相同的范围内）
+const category1Spans = computed(() => {
+  const data = sortedFlatData.value
+  const spans = new Array(data.length).fill(0)
+  let i = 0
+  while (i < data.length) {
+    // 找到 branch 相同的范围
+    let branchEnd = i
+    while (branchEnd < data.length && data[branchEnd].branch === data[i].branch) branchEnd++
+    // 在 branch 范围内按 category1 合并
+    let k = i
+    while (k < branchEnd) {
+      let m = k
+      while (m < branchEnd && data[m].category1 === data[k].category1) m++
+      spans[k] = m - k
+      k = m
+    }
+    i = branchEnd
+  }
+  return spans
+})
+
+// 二级分类合并（在 branch + category1 相同的范围内）
+const category2Spans = computed(() => {
+  const data = sortedFlatData.value
+  const spans = new Array(data.length).fill(0)
+  let i = 0
+  while (i < data.length) {
+    // 找到 branch 相同的范围
+    let branchEnd = i
+    while (branchEnd < data.length && data[branchEnd].branch === data[i].branch) branchEnd++
+    // 在 branch 范围内按 category1 分组
+    let k = i
+    while (k < branchEnd) {
+      let c1End = k
+      while (c1End < branchEnd && data[c1End].category1 === data[k].category1) c1End++
+      // 在 category1 范围内按 category2 合并
+      let m = k
+      while (m < c1End) {
+        let n = m
+        while (n < c1End && data[n].category2 === data[m].category2) n++
+        spans[m] = n - m
+        m = n
+      }
+      k = c1End
+    }
+    i = branchEnd
+  }
+  return spans
+})
+
+const spanMethod = ({ rowIndex, columnIndex }) => {
+  if (columnIndex === 0) {
+    const span = branchSpans.value[rowIndex]
+    return span > 0 ? [span, 1] : [0, 0]
+  }
+  if (columnIndex === 1) {
+    const span = category1Spans.value[rowIndex]
+    return span > 0 ? [span, 1] : [0, 0]
+  }
+  if (columnIndex === 2) {
+    const span = category2Spans.value[rowIndex]
+    return span > 0 ? [span, 1] : [0, 0]
+  }
+}
+
 // ============================ 汇总行 ============================
 
 const getSummaries = ({ columns }) => {
@@ -591,7 +655,6 @@ const getSummaries = ({ columns }) => {
     if (prop === 'projectCount') return totalProjectCount.toString()
     if (prop === 'contractPrice') return formatNumber(totalContractPrice)
     if (prop === 'auditPrice') return formatNumber(totalAuditPrice)
-    if (prop === 'contractRatio') return '100.00%'
     if (prop === 'avgTargetProfitRate') return avgTargetProfitRate.toFixed(2) + '%'
     if (prop === 'avgOutputProfitRate') return avgOutputProfitRate.toFixed(2) + '%'
     if (prop === 'profitDeviation') return (avgOutputProfitRate - avgTargetProfitRate).toFixed(2) + '%'
@@ -634,7 +697,6 @@ const handleExport = () => {
     projectCount: row.projectCount,
     contractPrice: row.contractPrice,
     auditPrice: row.auditPrice,
-    contractRatio: row.contractRatio.toFixed(2) + '%',
     avgTargetProfitRate: row.avgTargetProfitRate.toFixed(2) + '%',
     avgOutputProfitRate: row.avgOutputProfitRate.toFixed(2) + '%',
     profitDeviation: row.profitDeviation.toFixed(2) + '%',
@@ -643,7 +705,7 @@ const handleExport = () => {
 
   const headers = [
     '基层单位', '一级分类', '二级分类', '三级分类', '项目数量',
-    '合同价(不含税)', '审定价(不含税)', '合同金额占比',
+    '合同价(不含税)', '审定价(不含税)',
     '平均目标利润率', '平均销项利润率', '利润率偏差', '负偏差项目个数'
   ]
 
@@ -652,7 +714,7 @@ const handleExport = () => {
     csv += [
       row.branch, row.category1, row.category2, row.category3,
       row.projectCount, row.contractPrice, row.auditPrice,
-      row.contractRatio, row.avgTargetProfitRate, row.avgOutputProfitRate,
+      row.avgTargetProfitRate, row.avgOutputProfitRate,
       row.profitDeviation, row.deviationCount
     ].join(',') + '\n'
   })
@@ -713,7 +775,7 @@ const handleExport = () => {
 
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
   margin-bottom: 16px;
 }

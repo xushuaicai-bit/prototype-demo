@@ -31,6 +31,7 @@
           class="branch-table"
           :row-class-name="getRowClassName"
           :summary-method="getSummaries"
+          :span-method="spanMethod"
           show-summary
           :header-cell-style="{ backgroundColor: '#4a6fa5', color: '#fff', fontWeight: 'bold', fontSize: '12px' }"
         >
@@ -207,8 +208,8 @@ const displayData = computed(() => {
     })
 
     const subtotal = {
-      basicUnit: `${unit} - 小计`,
-      projectType: '',
+      basicUnit: unit,
+      projectType: '小计',
       projectCount: items.reduce((sum, i) => sum + i.projectCount, 0),
       contractPrice: Number(items.reduce((sum, i) => sum + i.contractPrice, 0).toFixed(2)),
       internalNotReportedRevenue: Number(items.reduce((sum, i) => sum + i.internalNotReportedRevenue, 0).toFixed(2)),
@@ -280,6 +281,27 @@ const paginatedData = computed(() => {
   const end = start + pageSize.value
   return displayData.value.slice(start, end)
 })
+
+// 基层单位列合并 span（基于当前页数据）
+const branchSpans = computed(() => {
+  const data = paginatedData.value
+  const spans = new Array(data.length).fill(0)
+  let i = 0
+  while (i < data.length) {
+    let j = i
+    while (j < data.length && data[j].basicUnit === data[i].basicUnit) j++
+    spans[i] = j - i
+    i = j
+  }
+  return spans
+})
+
+const spanMethod = ({ rowIndex, columnIndex }) => {
+  if (columnIndex === 0) {
+    const span = branchSpans.value[rowIndex]
+    return span > 0 ? [span, 1] : [0, 0]
+  }
+}
 
 const getRowClassName = ({ row }) => {
   if (row.isProjectTypeTotal) return 'project-type-total-row'

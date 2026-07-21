@@ -5,7 +5,7 @@
         <svg class="w-6 h-6 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        <h2 class="text-lg font-semibold text-gray-800">项目板块业务财务信息汇总</h2>
+        <h2 class="text-lg font-semibold text-gray-800">按项目板块汇总表</h2>
         <span class="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">单位：万元</span>
       </div>
       <div class="header-actions">
@@ -94,6 +94,8 @@
           class="summary-table"
           show-summary
           :summary-method="getSummaries"
+          :span-method="spanMethod"
+          :row-class-name="getRowClassName"
           :header-cell-style="{ backgroundColor: '#4a6fa5', color: '#fff', fontWeight: 'bold', fontSize: '12px' }"
           @sort-change="handleSortChange"
         >
@@ -526,8 +528,116 @@ const sortFlat = (data) => {
 }
 
 const sortedFlatData = computed(() => {
-  return sortFlat(flatTableData.value)
+  const result = []
+  const sorted = sortFlat(flatTableData.value)
+
+  // 按 category1+category2+category3 分组，保持原始顺序（使用 Map 保留插入顺序）
+  const c3Groups = new Map()
+  sorted.forEach(item => {
+    const key = `${item.category1}|${item.category2}|${item.category3}`
+    if (!c3Groups.has(key)) {
+      c3Groups.set(key, {
+        category1: item.category1,
+        category2: item.category2,
+        category3: item.category3,
+        items: []
+      })
+    }
+    c3Groups.get(key).items.push(item)
+  })
+
+  // 遍历每个三级分类组
+  c3Groups.forEach(group => {
+    // 按 projectType 固定顺序排列（2025年以前→新接→销项）
+    projectTypeOptions.forEach(pt => {
+      const item = group.items.find(i => i.projectType === pt)
+      if (item) result.push(item)
+    })
+
+    // 添加小计行（汇总该三级分类下所有项目类型）
+    const subtotal = {
+      category1: group.category1,
+      category2: group.category2,
+      category3: group.category3,
+      projectType: '小计',
+      isSubtotal: true
+    }
+    sumFields.forEach(f => {
+      subtotal[f] = group.items.reduce((s, i) => s + (i[f] || 0), 0)
+    })
+    subtotal.grossProfitRate = subtotal.contractPrice > 0
+      ? Number((subtotal.grossProfit / subtotal.contractPrice * 100).toFixed(2))
+      : 0
+    result.push(subtotal)
+  })
+
+  return result
 })
+
+// ============================ 单元格合并 ============================
+
+const categorySpans = computed(() => {
+  const data = sortedFlatData.value
+  const spans1 = new Array(data.length).fill(0)
+  const spans2 = new Array(data.length).fill(0)
+  const spans3 = new Array(data.length).fill(0)
+
+  let i = 0
+  while (i < data.length) {
+    // 一级分类合并（包含小计行，因为小计行保留了 category 值）
+    let j = i
+    while (j < data.length && data[j].category1 === data[i].category1) {
+      j++
+    }
+    spans1[i] = j - i
+
+    // 二级分类合并（在一级分类组内，包含小计行）
+    let k = i
+    while (k < j) {
+      let m = k
+      while (m < j && data[m].category2 === data[k].category2) {
+        m++
+      }
+      spans2[k] = m - k
+
+      // 三级分类合并（在二级分类组内，包含小计行）
+      let n = k
+      while (n < m) {
+        let p = n
+        while (p < m && data[p].category3 === data[n].category3) {
+          p++
+        }
+        spans3[n] = p - n
+        n = p
+      }
+      k = m
+    }
+
+    i = j
+  }
+
+  return { spans1, spans2, spans3 }
+})
+
+const spanMethod = ({ row, rowIndex, columnIndex }) => {
+  if (columnIndex === 0) {
+    const span = categorySpans.value.spans1[rowIndex]
+    return span > 0 ? [span, 1] : [0, 0]
+  }
+  if (columnIndex === 1) {
+    const span = categorySpans.value.spans2[rowIndex]
+    return span > 0 ? [span, 1] : [0, 0]
+  }
+  if (columnIndex === 2) {
+    const span = categorySpans.value.spans3[rowIndex]
+    return span > 0 ? [span, 1] : [0, 0]
+  }
+}
+
+const getRowClassName = ({ row }) => {
+  if (row.isSubtotal) return 'subtotal-row'
+  return ''
+}
 
 // ============================ 汇总行 ============================
 
@@ -564,7 +674,8 @@ const formatNumber = (num, decimals = 2) => {
 // ============================ 导出 ============================
 
 const handleExport = () => {
-  const flatRows = flatTableData.value.map(item => ({
+  // 使用 sortedFlatData（含小计行），小计行保留 category 值便于识别归属
+  const flatRows = sortedFlatData.value.map(item => ({
     category1: item.category1,
     category2: item.category2,
     category3: item.category3,
@@ -572,7 +683,7 @@ const handleExport = () => {
     projectCount: item.projectCount,
     contractPrice: formatNumber(item.contractPrice),
     grossProfit: formatNumber(item.grossProfit),
-    grossProfitRate: item.grossProfitRate.toFixed(2) + '%',
+    grossProfitRate: (item.grossProfitRate || 0).toFixed(2) + '%',
     revenueInternalBefore2025: formatNumber(item.revenueInternalBefore2025),
     revenueExternalBefore2025: formatNumber(item.revenueExternalBefore2025),
     estimatedRevenue2026: formatNumber(item.estimatedRevenue2026),
@@ -620,7 +731,7 @@ const handleExport = () => {
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
   link.href = URL.createObjectURL(blob)
-  link.download = '项目板块业务财务信息汇总.csv'
+  link.download = '按项目板块汇总表.csv'
   link.click()
   ElMessage.success('导出成功')
 }
@@ -725,5 +836,23 @@ const handleExport = () => {
 :deep(.el-table .el-table__footer-wrapper td) {
   background-color: #e8f4fc;
   font-weight: bold;
+}
+
+/* 小计行样式 */
+:deep(.el-table .subtotal-row td) {
+  background-color: #fff8e1 !important;
+  font-weight: bold;
+  color: #d97706;
+}
+
+/* 固定列小计行样式（同步背景色，避免半透明） */
+:deep(.el-table .subtotal-row .el-table-fixed-column--left) {
+  background-color: #fff8e1 !important;
+}
+
+/* 固定列表头样式（防止白底白字） */
+:deep(.el-table th.el-table-fixed-column--left) {
+  background-color: #4a6fa5 !important;
+  color: #fff !important;
 }
 </style>

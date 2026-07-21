@@ -97,7 +97,7 @@ const viewMap = {
   '按项目状态分类汇总表': markRaw(ProjectStatusSummary),
   '按分公司分类报表': markRaw(BranchReport),
   '销项项目汇总': markRaw(OutputProjectSummary),
-  '项目板块业务财务信息汇总': markRaw(SectorBusinessFinanceSummary)
+  '按项目板块汇总表': markRaw(SectorBusinessFinanceSummary)
 }
 
 const currentViewComponent = computed(() => {

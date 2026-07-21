@@ -347,7 +347,7 @@ export const techDashboardData = {
       { name: '已交底', data: [38, 32, 35, 28, 25, 32, 30, 28, 32] },
       { name: '未交底', data: [12, 15, 12, 18, 15, 12, 15, 18, 12] }
     ],
-    summary: { total: 280, avgCount: '3.2' }
+    summary: { total: 280, avgRate: '68%' }
   },
   disclosureByBusiness: {
     categories: ['水务', '水环境治理', '水利', '固废处理', '土壤修复', '城市更新', '市政路桥', '其他'],
@@ -355,7 +355,7 @@ export const techDashboardData = {
       { name: '已交底', data: [45, 38, 32, 22, 18, 25, 40, 20] },
       { name: '未交底', data: [15, 18, 15, 12, 10, 15, 18, 12] }
     ],
-    summary: { total: 245, avgCount: '2.8' }
+    summary: { total: 245, avgRate: '65%' }
   },
   knowledgeBase: {
     totalUpload: 1250,
