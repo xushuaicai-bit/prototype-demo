@@ -54,37 +54,6 @@
       </el-form>
     </div>
 
-    <div class="stat-cards">
-      <div class="stat-card">
-        <div class="stat-label">项目总数</div>
-        <div class="stat-value">{{ formatNumber(summaryStats.totalProjectCount, 0) }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">合同金额(含税)</div>
-        <div class="stat-value">{{ formatNumber(summaryStats.totalContractPrice) }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">已完工程毛利</div>
-        <div class="stat-value">{{ formatNumber(summaryStats.totalGrossProfit) }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">已完工程毛利率</div>
-        <div class="stat-value">{{ summaryStats.avgGrossProfitRate.toFixed(2) }}%</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">2026年实际收入</div>
-        <div class="stat-value">{{ formatNumber(summaryStats.totalActualRevenue2026) }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">项目已销项</div>
-        <div class="stat-value">{{ formatNumber(summaryStats.totalOutputCompleted) }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">年末余额</div>
-        <div class="stat-value">{{ formatNumber(summaryStats.totalYearEndBalance) }}</div>
-      </div>
-    </div>
-
     <div class="table-container">
         <el-table
           :data="sortedFlatData"
@@ -104,65 +73,57 @@
           <el-table-column prop="category3" label="城市环境三级分类" width="140" fixed="left" />
           <el-table-column prop="projectType" label="项目类型" width="120" fixed="left" />
           <el-table-column prop="projectCount" label="项目数量" width="100" align="right" sortable="custom" />
-          <el-table-column prop="contractPrice" label="合同金额(含税)" width="140" align="right" sortable="custom">
+          <el-table-column prop="contractPrice" label="合同价/审定价" width="140" align="right" sortable="custom">
             <template #default="scope">{{ formatNumber(scope.row.contractPrice) }}</template>
           </el-table-column>
-          <el-table-column prop="grossProfit" label="已完工程毛利" width="130" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.grossProfit) }}</template>
+          <el-table-column prop="internalNotReportedRevenue" label="已报内部未上报集团营收" width="160" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.internalNotReportedRevenue) }}</template>
           </el-table-column>
-          <el-table-column prop="grossProfitRate" label="已完工程毛利率" width="130" align="right" sortable="custom">
-            <template #default="scope">{{ scope.row.grossProfitRate.toFixed(2) }}%</template>
+          <el-table-column prop="internalNotReportedGrossProfit" label="已报内部未上报集团毛利" width="160" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.internalNotReportedGrossProfit) }}</template>
           </el-table-column>
-          <el-table-column prop="revenueInternalBefore2025" label="当年至2025年完成收入-内部" width="170" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.revenueInternalBefore2025) }}</template>
+          <el-table-column prop="carryForwardRevenue2027" label="结转至2027年及以后内部营收" width="180" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.carryForwardRevenue2027) }}</template>
           </el-table-column>
-          <el-table-column prop="revenueExternalBefore2025" label="当年至2025年完成收入-外部" width="170" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.revenueExternalBefore2025) }}</template>
+          <el-table-column prop="completedRevenue2026" label="2026年完成总包营收（内部）" width="160" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.completedRevenue2026) }}</template>
           </el-table-column>
-          <el-table-column prop="estimatedRevenue2026" label="2026年当年收入预计" width="150" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.estimatedRevenue2026) }}</template>
+          <el-table-column prop="reportedRevenue2026" label="2026年上报集团营收" width="140" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.reportedRevenue2026) }}</template>
           </el-table-column>
-          <el-table-column prop="cumulativeRevenueBefore2026" label="2026年上年累积" width="140" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.cumulativeRevenueBefore2026) }}</template>
+          <el-table-column prop="remainingPlan2026" label="2026年剩余计划" width="120" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.remainingPlan2026) }}</template>
           </el-table-column>
-          <el-table-column prop="plannedRevenue2026" label="2026年编制计划" width="140" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.plannedRevenue2026) }}</template>
+          <el-table-column prop="realizedProfit2026" label="2026年内部营收实现利润" width="160" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.realizedProfit2026) }}</template>
           </el-table-column>
-          <el-table-column prop="actualRevenue2026" label="2026年实际收入" width="130" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.actualRevenue2026) }}</template>
+          <el-table-column prop="reportedGrossProfit2026" label="2026年上报集团毛利" width="140" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.reportedGrossProfit2026) }}</template>
           </el-table-column>
-          <el-table-column prop="newContract2026" label="2026年新签合同" width="140" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.newContract2026) }}</template>
+          <el-table-column prop="reportedProjects" label="上报项目" width="100" align="right" sortable="custom" />
+          <el-table-column prop="averageProfitMargin" label="平均利润率" width="100" align="right" sortable="custom">
+            <template #default="scope">{{ scope.row.averageProfitMargin.toFixed(1) }}%</template>
           </el-table-column>
-          <el-table-column prop="supplementaryContract2026" label="2026年补充合同" width="140" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.supplementaryContract2026) }}</template>
+          <el-table-column prop="remainingPlanGrossProfit2026" label="2026年剩余计划毛利" width="140" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.remainingPlanGrossProfit2026) }}</template>
           </el-table-column>
-          <el-table-column prop="reportedBudget" label="上报预算" width="120" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.reportedBudget) }}</template>
+          <el-table-column prop="bookedCost" label="项目已入账成本" width="120" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.bookedCost) }}</template>
           </el-table-column>
-          <el-table-column prop="newContract2025" label="2025年新签合同" width="140" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.newContract2025) }}</template>
+          <el-table-column prop="carriedCost" label="项目已结转成本" width="120" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.carriedCost) }}</template>
           </el-table-column>
-          <el-table-column prop="projectMeasured" label="项目已入量" width="120" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.projectMeasured) }}</template>
+          <el-table-column prop="projectInventory" label="项目存货" width="100" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.projectInventory) }}</template>
           </el-table-column>
-          <el-table-column prop="projectSettled" label="项目已结算" width="120" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.projectSettled) }}</template>
+          <el-table-column prop="invoicedAmount" label="项目已开票（含税）" width="140" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.invoicedAmount) }}</template>
           </el-table-column>
-          <el-table-column prop="outputCompleted" label="项目已销项" width="120" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.outputCompleted) }}</template>
+          <el-table-column prop="receivedAmount" label="项目已收款（含税）" width="140" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.receivedAmount) }}</template>
           </el-table-column>
-          <el-table-column prop="auditReduction" label="项目已审减" width="120" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.auditReduction) }}</template>
-          </el-table-column>
-          <el-table-column prop="paidAmount" label="项目已付款" width="120" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.paidAmount) }}</template>
-          </el-table-column>
-          <el-table-column prop="unpaidAmount" label="项目未付款" width="120" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.unpaidAmount) }}</template>
-          </el-table-column>
-          <el-table-column prop="yearEndBalance" label="年末余额" width="120" align="right" sortable="custom">
-            <template #default="scope">{{ formatNumber(scope.row.yearEndBalance) }}</template>
+          <el-table-column prop="unreceivedAmount" label="未收款（含税）" width="120" align="right" sortable="custom">
+            <template #default="scope">{{ formatNumber(scope.row.unreceivedAmount) }}</template>
           </el-table-column>
         </el-table>
     </div>
@@ -384,27 +345,11 @@ const generateRawData = () => {
       const c3List = category3Map[c2] || []
       c3List.forEach(c3 => {
         projectTypeOptions.forEach(pt => {
-          const projectCount = Math.floor(randomNumber(1, 10, 0))
-          const contractPrice = randomNumber(100, 5000)
-          const grossProfitRate = randomNumber(3, 25, 2)
-          const grossProfit = Number((contractPrice * grossProfitRate / 100).toFixed(2))
-          const revenueInternalBefore2025 = randomNumber(50, 2000)
-          const revenueExternalBefore2025 = randomNumber(50, 2000)
-          const estimatedRevenue2026 = randomNumber(100, 3000)
-          const cumulativeRevenueBefore2026 = randomNumber(100, 2500)
-          const plannedRevenue2026 = randomNumber(200, 4000)
-          const actualRevenue2026 = randomNumber(100, 3500)
-          const newContract2026 = randomNumber(200, 5000)
-          const supplementaryContract2026 = randomNumber(10, 500)
-          const reportedBudget = randomNumber(300, 6000)
-          const newContract2025 = randomNumber(150, 4000)
-          const projectMeasured = randomNumber(100, 3000)
-          const projectSettled = randomNumber(80, 2800)
-          const outputCompleted = randomNumber(50, 2500)
-          const auditReduction = randomNumber(5, 200)
-          const paidAmount = randomNumber(50, 2000)
-          const unpaidAmount = randomNumber(20, 1000)
-          const yearEndBalance = randomNumber(30, 1500)
+          const contractPrice = randomNumber(1000, 50000)
+          const completedRevenue2026 = randomNumber(0, contractPrice * 0.8)
+          const averageProfitMargin = randomNumber(3, 18, 1)
+          const invoicedAmount = randomNumber(0, contractPrice * 1.1)
+          const receivedAmount = randomNumber(0, invoicedAmount)
 
           data.push({
             id: id++,
@@ -412,27 +357,25 @@ const generateRawData = () => {
             category2: c2,
             category3: c3,
             projectType: pt,
-            projectCount,
-            contractPrice,
-            grossProfit,
-            grossProfitRate,
-            revenueInternalBefore2025,
-            revenueExternalBefore2025,
-            estimatedRevenue2026,
-            cumulativeRevenueBefore2026,
-            plannedRevenue2026,
-            actualRevenue2026,
-            newContract2026,
-            supplementaryContract2026,
-            reportedBudget,
-            newContract2025,
-            projectMeasured,
-            projectSettled,
-            outputCompleted,
-            auditReduction,
-            paidAmount,
-            unpaidAmount,
-            yearEndBalance
+            projectCount: Math.floor(randomNumber(1, 20)),
+            contractPrice: Number(contractPrice.toFixed(2)),
+            internalNotReportedRevenue: randomNumber(0, 5000),
+            internalNotReportedGrossProfit: randomNumber(0, 2000),
+            carryForwardRevenue2027: randomNumber(0, 15000),
+            completedRevenue2026: Number(completedRevenue2026.toFixed(2)),
+            reportedRevenue2026: randomNumber(0, 12000),
+            remainingPlan2026: randomNumber(0, 8000),
+            realizedProfit2026: Number(randomNumber(0, completedRevenue2026 * 0.15).toFixed(2)),
+            reportedGrossProfit2026: randomNumber(0, 3000),
+            reportedProjects: Math.floor(randomNumber(0, 15)),
+            averageProfitMargin,
+            remainingPlanGrossProfit2026: randomNumber(0, 1500),
+            bookedCost: randomNumber(0, contractPrice * 0.7),
+            carriedCost: randomNumber(0, contractPrice * 0.6),
+            projectInventory: randomNumber(0, 3000),
+            invoicedAmount: Number(invoicedAmount.toFixed(2)),
+            receivedAmount: Number(receivedAmount.toFixed(2)),
+            unreceivedAmount: Number((invoicedAmount - receivedAmount).toFixed(2))
           })
         })
       })
@@ -468,43 +411,17 @@ const filteredData = computed(() => {
 // ============================ 构建树形表格数据 ============================
 
 const sumFields = [
-  'projectCount', 'contractPrice', 'grossProfit',
-  'revenueInternalBefore2025', 'revenueExternalBefore2025',
-  'estimatedRevenue2026', 'cumulativeRevenueBefore2026',
-  'plannedRevenue2026', 'actualRevenue2026',
-  'newContract2026', 'supplementaryContract2026',
-  'reportedBudget', 'newContract2025',
-  'projectMeasured', 'projectSettled', 'outputCompleted',
-  'auditReduction', 'paidAmount', 'unpaidAmount', 'yearEndBalance'
+  'projectCount', 'contractPrice',
+  'internalNotReportedRevenue', 'internalNotReportedGrossProfit',
+  'carryForwardRevenue2027', 'completedRevenue2026',
+  'reportedRevenue2026', 'remainingPlan2026', 'realizedProfit2026',
+  'reportedGrossProfit2026', 'reportedProjects',
+  'remainingPlanGrossProfit2026', 'bookedCost', 'carriedCost',
+  'projectInventory', 'invoicedAmount', 'receivedAmount', 'unreceivedAmount'
 ]
 
 const flatTableData = computed(() => {
   return filteredData.value.map(item => ({ ...item }))
-})
-
-// ============================ 统计卡片 ============================
-
-const summaryStats = computed(() => {
-  const data = filteredData.value
-  const totalProjectCount = data.reduce((s, i) => s + i.projectCount, 0)
-  const totalContractPrice = data.reduce((s, i) => s + i.contractPrice, 0)
-  const totalGrossProfit = data.reduce((s, i) => s + i.grossProfit, 0)
-  const avgGrossProfitRate = totalContractPrice > 0
-    ? totalGrossProfit / totalContractPrice * 100
-    : 0
-  const totalActualRevenue2026 = data.reduce((s, i) => s + i.actualRevenue2026, 0)
-  const totalOutputCompleted = data.reduce((s, i) => s + i.outputCompleted, 0)
-  const totalYearEndBalance = data.reduce((s, i) => s + i.yearEndBalance, 0)
-
-  return {
-    totalProjectCount,
-    totalContractPrice,
-    totalGrossProfit,
-    avgGrossProfitRate,
-    totalActualRevenue2026,
-    totalOutputCompleted,
-    totalYearEndBalance
-  }
 })
 
 // ============================ 排序 ============================
@@ -565,8 +482,8 @@ const sortedFlatData = computed(() => {
     sumFields.forEach(f => {
       subtotal[f] = group.items.reduce((s, i) => s + (i[f] || 0), 0)
     })
-    subtotal.grossProfitRate = subtotal.contractPrice > 0
-      ? Number((subtotal.grossProfit / subtotal.contractPrice * 100).toFixed(2))
+    subtotal.averageProfitMargin = subtotal.projectCount > 0
+      ? Number((group.items.reduce((s, i) => s + (i.averageProfitMargin || 0) * (i.projectCount || 0), 0) / subtotal.projectCount).toFixed(1))
       : 0
     result.push(subtotal)
   })
@@ -647,16 +564,17 @@ const getSummaries = ({ columns }) => {
   sumFields.forEach(f => {
     totals[f] = data.reduce((s, i) => s + (i[f] || 0), 0)
   })
-  const avgGrossProfitRate = totals.contractPrice > 0
-    ? totals.grossProfit / totals.contractPrice * 100
+  const totalCount = totals.projectCount
+  const weightedMargin = totalCount > 0
+    ? data.reduce((s, i) => s + (i.averageProfitMargin || 0) * (i.projectCount || 0), 0) / totalCount
     : 0
 
   return columns.map((col) => {
     const prop = col.property
     if (prop === 'category1') return '合计'
-    if (prop === 'grossProfitRate') return avgGrossProfitRate.toFixed(2) + '%'
+    if (prop === 'averageProfitMargin') return weightedMargin.toFixed(1) + '%'
+    if (prop === 'projectCount' || prop === 'reportedProjects') return totals[prop].toString()
     if (sumFields.includes(prop)) {
-      if (prop === 'projectCount') return totals[prop].toString()
       return formatNumber(totals[prop])
     }
     return ''
@@ -682,49 +600,45 @@ const handleExport = () => {
     projectType: item.projectType,
     projectCount: item.projectCount,
     contractPrice: formatNumber(item.contractPrice),
-    grossProfit: formatNumber(item.grossProfit),
-    grossProfitRate: (item.grossProfitRate || 0).toFixed(2) + '%',
-    revenueInternalBefore2025: formatNumber(item.revenueInternalBefore2025),
-    revenueExternalBefore2025: formatNumber(item.revenueExternalBefore2025),
-    estimatedRevenue2026: formatNumber(item.estimatedRevenue2026),
-    cumulativeRevenueBefore2026: formatNumber(item.cumulativeRevenueBefore2026),
-    plannedRevenue2026: formatNumber(item.plannedRevenue2026),
-    actualRevenue2026: formatNumber(item.actualRevenue2026),
-    newContract2026: formatNumber(item.newContract2026),
-    supplementaryContract2026: formatNumber(item.supplementaryContract2026),
-    reportedBudget: formatNumber(item.reportedBudget),
-    newContract2025: formatNumber(item.newContract2025),
-    projectMeasured: formatNumber(item.projectMeasured),
-    projectSettled: formatNumber(item.projectSettled),
-    outputCompleted: formatNumber(item.outputCompleted),
-    auditReduction: formatNumber(item.auditReduction),
-    paidAmount: formatNumber(item.paidAmount),
-    unpaidAmount: formatNumber(item.unpaidAmount),
-    yearEndBalance: formatNumber(item.yearEndBalance)
+    internalNotReportedRevenue: formatNumber(item.internalNotReportedRevenue),
+    internalNotReportedGrossProfit: formatNumber(item.internalNotReportedGrossProfit),
+    carryForwardRevenue2027: formatNumber(item.carryForwardRevenue2027),
+    completedRevenue2026: formatNumber(item.completedRevenue2026),
+    reportedRevenue2026: formatNumber(item.reportedRevenue2026),
+    remainingPlan2026: formatNumber(item.remainingPlan2026),
+    realizedProfit2026: formatNumber(item.realizedProfit2026),
+    reportedGrossProfit2026: formatNumber(item.reportedGrossProfit2026),
+    reportedProjects: item.reportedProjects,
+    averageProfitMargin: (item.averageProfitMargin || 0).toFixed(1) + '%',
+    remainingPlanGrossProfit2026: formatNumber(item.remainingPlanGrossProfit2026),
+    bookedCost: formatNumber(item.bookedCost),
+    carriedCost: formatNumber(item.carriedCost),
+    projectInventory: formatNumber(item.projectInventory),
+    invoicedAmount: formatNumber(item.invoicedAmount),
+    receivedAmount: formatNumber(item.receivedAmount),
+    unreceivedAmount: formatNumber(item.unreceivedAmount)
   }))
 
   const headers = [
     '城市环境一级分类', '城市环境二级分类', '城市环境三级分类', '项目类型',
-    '项目数量', '合同金额(含税)', '已完工程毛利', '已完工程毛利率',
-    '当年至2025年完成收入-内部', '当年至2025年完成收入-外部',
-    '2026年当年收入预计', '2026年上年累积', '2026年编制计划', '2026年实际收入',
-    '2026年新签合同', '2026年补充合同', '上报预算', '2025年新签合同',
-    '项目已入量', '项目已结算', '项目已销项', '项目已审减',
-    '项目已付款', '项目未付款', '年末余额'
+    '项目数量', '合同价/审定价', '已报内部未上报集团营收', '已报内部未上报集团毛利',
+    '结转至2027年及以后内部营收', '2026年完成总包营收（内部）', '2026年上报集团营收',
+    '2026年剩余计划', '2026年内部营收实现利润', '2026年上报集团毛利', '上报项目',
+    '平均利润率', '2026年剩余计划毛利', '项目已入账成本', '项目已结转成本',
+    '项目存货', '项目已开票（含税）', '项目已收款（含税）', '未收款（含税）'
   ]
 
   let csv = headers.join(',') + '\n'
   flatRows.forEach(row => {
     csv += [
       row.category1, row.category2, row.category3, row.projectType,
-      row.projectCount, row.contractPrice, row.grossProfit, row.grossProfitRate,
-      row.revenueInternalBefore2025, row.revenueExternalBefore2025,
-      row.estimatedRevenue2026, row.cumulativeRevenueBefore2026,
-      row.plannedRevenue2026, row.actualRevenue2026,
-      row.newContract2026, row.supplementaryContract2026,
-      row.reportedBudget, row.newContract2025,
-      row.projectMeasured, row.projectSettled, row.outputCompleted,
-      row.auditReduction, row.paidAmount, row.unpaidAmount, row.yearEndBalance
+      row.projectCount, row.contractPrice, row.internalNotReportedRevenue,
+      row.internalNotReportedGrossProfit, row.carryForwardRevenue2027,
+      row.completedRevenue2026, row.reportedRevenue2026, row.remainingPlan2026,
+      row.realizedProfit2026, row.reportedGrossProfit2026, row.reportedProjects,
+      row.averageProfitMargin, row.remainingPlanGrossProfit2026, row.bookedCost,
+      row.carriedCost, row.projectInventory, row.invoicedAmount, row.receivedAmount,
+      row.unreceivedAmount
     ].join(',') + '\n'
   })
 
@@ -775,38 +689,6 @@ const handleExport = () => {
   display: flex;
   flex-wrap: wrap;
   gap: 0;
-}
-
-.stat-cards {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.stat-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #888;
-  margin-bottom: 8px;
-}
-
-.stat-value {
-  font-size: 22px;
-  font-weight: bold;
-  color: #2563eb;
 }
 
 .table-container {

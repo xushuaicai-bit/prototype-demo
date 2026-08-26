@@ -605,6 +605,20 @@ const updateMarketTrackingChart = () => {
     amountData = [85.2, 72.5, 65.8, 78.3, 68.5, 75.2, 82.6, 68.9, 72.3]
   }
 
+  // 按数量比例拆分各等级金额
+  const aAmountData = aData.map((v, i) => {
+    const total = aData[i] + aaData[i] + aaaData[i]
+    return total > 0 ? Number((amountData[i] * v / total).toFixed(2)) : 0
+  })
+  const aaAmountData = aaData.map((v, i) => {
+    const total = aData[i] + aaData[i] + aaaData[i]
+    return total > 0 ? Number((amountData[i] * v / total).toFixed(2)) : 0
+  })
+  const aaaAmountData = aaaData.map((v, i) => {
+    const total = aData[i] + aaData[i] + aaaData[i]
+    return total > 0 ? Number((amountData[i] * v / total).toFixed(2)) : 0
+  })
+
   const chartData = {
     legend: ['A级项目', 'AA级项目', 'AAA级项目', '跟踪金额'],
     categories: categories,
@@ -623,6 +637,23 @@ const updateMarketTrackingChart = () => {
 
   const chart = initDualAxisChart(projectChartRef, chartData, '项目数量(个)', '金额(亿)')
   if (chart) {
+    chart.setOption({
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        formatter: function (params) {
+          const idx = params[0].dataIndex
+          let result = params[0].axisValue + '<br/>'
+          result += params[0].marker + 'A级项目: ' + params[0].value + '个 (金额: ' + aAmountData[idx] + '亿)<br/>'
+          result += params[1].marker + 'AA级项目: ' + params[1].value + '个 (金额: ' + aaAmountData[idx] + '亿)<br/>'
+          result += params[2].marker + 'AAA级项目: ' + params[2].value + '个 (金额: ' + aaaAmountData[idx] + '亿)<br/>'
+          const totalCount = params[0].value + params[1].value + params[2].value
+          result += '<b>总数量: ' + totalCount + '个</b><br/>'
+          result += params[3].marker + '跟踪金额: ' + params[3].value + '亿'
+          return result
+        }
+      }
+    })
     charts[1] = chart
   }
 }
@@ -674,6 +705,20 @@ const updateBidChart = () => {
     }
   }
 
+  // 按数量比例拆分各等级金额
+  const aAmountData = aData.map((v, i) => {
+    const total = aData[i] + aaData[i] + aaaData[i]
+    return total > 0 ? Number((amountData[i] * v / total).toFixed(2)) : 0
+  })
+  const aaAmountData = aaData.map((v, i) => {
+    const total = aData[i] + aaData[i] + aaaData[i]
+    return total > 0 ? Number((amountData[i] * v / total).toFixed(2)) : 0
+  })
+  const aaaAmountData = aaaData.map((v, i) => {
+    const total = aData[i] + aaData[i] + aaaData[i]
+    return total > 0 ? Number((amountData[i] * v / total).toFixed(2)) : 0
+  })
+
   const chartData = {
     legend: [`A级${label}`, `AA级${label}`, `AAA级${label}`, `${label}金额`],
     categories: categories,
@@ -692,6 +737,23 @@ const updateBidChart = () => {
 
   const chart = initDualAxisChart(bidChartRef, chartData, '数量(个)', '金额(亿)')
   if (chart) {
+    chart.setOption({
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        formatter: function (params) {
+          const idx = params[0].dataIndex
+          let result = params[0].axisValue + '<br/>'
+          result += params[0].marker + params[0].seriesName + ': ' + params[0].value + '个 (金额: ' + aAmountData[idx] + '亿)<br/>'
+          result += params[1].marker + params[1].seriesName + ': ' + params[1].value + '个 (金额: ' + aaAmountData[idx] + '亿)<br/>'
+          result += params[2].marker + params[2].seriesName + ': ' + params[2].value + '个 (金额: ' + aaaAmountData[idx] + '亿)<br/>'
+          const totalCount = params[0].value + params[1].value + params[2].value
+          result += '<b>总数量: ' + totalCount + '个</b><br/>'
+          result += params[3].marker + params[3].seriesName + ': ' + params[3].value + '亿'
+          return result
+        }
+      }
+    })
     charts[2] = chart
   }
 }
@@ -735,27 +797,90 @@ const updateContractChart = () => {
 
   const chart = initDualAxisChart(contractChartRef, chartData, '合同数量(个)', '金额(亿)')
   if (chart) {
+    chart.setOption({
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        formatter: function (params) {
+          let result = params[0].axisValue + '<br/>'
+          params.forEach(item => {
+            if (item.seriesName && item.seriesName.includes('金额')) {
+              const color = item.color
+              const lineMarker = '<span style="display:inline-block;margin-right:4px;width:14px;height:2px;background-color:' + color + ';vertical-align:middle;position:relative;"><span style="position:absolute;left:4px;top:-3px;width:6px;height:6px;border-radius:50%;background-color:' + color + ';"></span></span>'
+              result += lineMarker + item.seriesName + ': ' + item.value + '亿<br/>'
+            } else {
+              result += item.marker + item.seriesName + ': ' + item.value + '个<br/>'
+            }
+          })
+          return result
+        }
+      }
+    })
     charts[4] = chart
   }
 }
 
-const initCharts = () => {
+const initKeyProjectChart = () => {
+  const aData = [45, 38, 32, 40, 35, 42, 46, 36, 38]
+  const aaData = [25, 20, 18, 25, 22, 24, 28, 20, 22]
+  const aaaData = [15, 14, 15, 13, 13, 16, 14, 12, 15]
+  const amountData = [18.5, 15.2, 13.8, 16.5, 14.2, 17.8, 19.5, 14.8, 15.6]
+
+  // 按数量比例拆分各等级金额
+  const aAmountData = aData.map((v, i) => {
+    const total = aData[i] + aaData[i] + aaaData[i]
+    return total > 0 ? Number((amountData[i] * v / total).toFixed(2)) : 0
+  })
+  const aaAmountData = aaData.map((v, i) => {
+    const total = aData[i] + aaData[i] + aaaData[i]
+    return total > 0 ? Number((amountData[i] * v / total).toFixed(2)) : 0
+  })
+  const aaaAmountData = aaaData.map((v, i) => {
+    const total = aData[i] + aaData[i] + aaaData[i]
+    return total > 0 ? Number((amountData[i] * v / total).toFixed(2)) : 0
+  })
+
   const keyProjectData = {
-    legend: ['A级项目', 'AA级项目', 'AAA级项目'],
+    legend: ['A级项目', 'AA级项目', 'AAA级项目', '重点跟踪金额'],
     categories: companyCategories,
     series: [
-      { name: 'A级项目', data: [45, 38, 32, 40, 35, 42, 46, 36, 38], yAxisIndex: 0, color: '#3b82f6' },
-      { name: 'AA级项目', data: [25, 20, 18, 25, 22, 24, 28, 20, 22], yAxisIndex: 0, color: '#10b981' },
-      { name: 'AAA级项目', data: [15, 14, 15, 13, 13, 16, 14, 12, 15], yAxisIndex: 0, color: '#f59e0b' }
+      { name: 'A级项目', data: aData, yAxisIndex: 0, color: '#3b82f6' },
+      { name: 'AA级项目', data: aaData, yAxisIndex: 0, color: '#10b981' },
+      { name: 'AAA级项目', data: aaaData, yAxisIndex: 0, color: '#f59e0b' },
+      { name: '重点跟踪金额', data: amountData, yAxisIndex: 1, color: '#8b5cf6' }
     ]
   }
 
-  // 使用单列图表
-  const keyProjectChart = initSingleAxisChart(keyProjectChartRef, keyProjectData, '项目数量(个)')
-  if (keyProjectChart) {
-    charts[0] = keyProjectChart
+  if (charts[0]) {
+    charts[0].dispose()
+    charts.splice(0, 1)
   }
 
+  const keyProjectChart = initDualAxisChart(keyProjectChartRef, keyProjectData, '项目数量(个)', '金额(亿)')
+  if (keyProjectChart) {
+    keyProjectChart.setOption({
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        formatter: function (params) {
+          const idx = params[0].dataIndex
+          let result = params[0].axisValue + '<br/>'
+          result += params[0].marker + 'A级项目: ' + params[0].value + '个 (金额: ' + aAmountData[idx] + '亿)<br/>'
+          result += params[1].marker + 'AA级项目: ' + params[1].value + '个 (金额: ' + aaAmountData[idx] + '亿)<br/>'
+          result += params[2].marker + 'AAA级项目: ' + params[2].value + '个 (金额: ' + aaaAmountData[idx] + '亿)<br/>'
+          const totalCount = params[0].value + params[1].value + params[2].value
+          result += '<b>总数量: ' + totalCount + '个</b><br/>'
+          result += params[3].marker + '重点跟踪金额: ' + params[3].value + '亿'
+          return result
+        }
+      }
+    })
+    charts[0] = keyProjectChart
+  }
+}
+
+const initCharts = () => {
+  initKeyProjectChart()
   updateMarketTrackingChart()
   updateBidChart()
   updateContractChart()

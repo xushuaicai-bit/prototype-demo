@@ -177,10 +177,6 @@
           <span class="inline-block w-4 h-[2px]" style="background:#f59e0b"></span>
           <span class="text-gray-600">计划指标线</span>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="inline-block w-3 h-3 rounded-sm" style="background:#bfdbfe"></span>
-          <span class="text-gray-600">未达标(弱化)</span>
-        </div>
       </div>
       <div ref="expenseChartRef" class="w-full h-[380px]"></div>
       </div>
@@ -526,11 +522,9 @@ const updateAchievementChart = () => {
       xAxis: {
         type: 'category',
         data: data.map(d => d.name),
-        axisLabel: {
-          interval: 0,
-          rotate: 30,
-          fontSize: 10
-        }
+        axisLabel: { show: false },
+        axisTick: { show: false },
+        axisLine: { show: false }
       },
       yAxis: {
         type: 'value'
@@ -542,7 +536,13 @@ const updateAchievementChart = () => {
           data: data.map(d => ({
             value: d.count,
             itemStyle: { color: d.color }
-          }))
+          })),
+          label: {
+            show: true,
+            position: 'top',
+            formatter: '{c}',
+            fontSize: 11
+          }
         }
       ]
     }
@@ -603,8 +603,6 @@ const updateAchievementChart = () => {
 const EXP_COLOR = {
   special: '#3b82f6',
   support: '#10b981',
-  mutedSpecial: '#bfdbfe',
-  mutedSupport: '#a7f3d0',
   planLine: '#f59e0b',
   risk: '#ef4444',
   ok: '#10b981'
@@ -649,25 +647,15 @@ const updateExpenseChart = () => {
   const list = d.list
   const categories = d.categories
 
-  const specialData = list.map(item => {
-    const plan = item.special.plan
-    const actual = item.special.actual
-    const rate = plan ? actual / plan : 0
-    return {
-      value: actual,
-      itemStyle: { color: rate >= 1 ? EXP_COLOR.special : EXP_COLOR.mutedSpecial }
-    }
-  })
+  const specialData = list.map(item => ({
+    value: item.special.actual,
+    itemStyle: { color: EXP_COLOR.special }
+  }))
 
-  const supportData = list.map(item => {
-    const plan = item.supporting.plan
-    const actual = item.supporting.actual
-    const rate = plan ? actual / plan : 0
-    return {
-      value: actual,
-      itemStyle: { color: rate >= 1 ? EXP_COLOR.support : EXP_COLOR.mutedSupport }
-    }
-  })
+  const supportData = list.map(item => ({
+    value: item.supporting.actual,
+    itemStyle: { color: EXP_COLOR.support }
+  }))
 
   const customData = []
   list.forEach((item, i) => {
