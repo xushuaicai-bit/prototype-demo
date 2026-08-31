@@ -241,7 +241,9 @@
             <el-table-column v-if="visibleColumns.includes('contractPriceTax')" prop="contractPriceTax" label="合同签约价（含税）" width="140" />
             <el-table-column v-if="visibleColumns.includes('provisionalSumTax')" prop="provisionalSumTax" label="暂列金（含税）" width="120" />
             <el-table-column v-if="visibleColumns.includes('contractPriceNoTax')" prop="contractPriceNoTax" label="合同价（不含税）" width="140" />
-            <el-table-column v-if="visibleColumns.includes('contractTaxRate')" prop="contractTaxRate" label="总包合同税率" width="100" />
+            <el-table-column v-if="visibleColumns.includes('contractTaxRate')" prop="contractTaxRate" label="总包合同税率" width="100">
+              <template #default="scope">{{ scope.row.contractTaxRate }}%</template>
+            </el-table-column>
           </el-table-column>
 
           <el-table-column v-if="['startDate', 'projectStatus', 'currentStatusStartDate', 'completionDate'].some(p => visibleColumns.includes(p))" label="业务信息-工程部">
@@ -640,8 +642,8 @@ const generateMockData = () => {
 
   for (let i = 1; i <= 100; i++) {
     const contractPriceNoTax = randomNumber(1000, 50000)
-    const contractTaxRate = randomNumber(9, 13, 0) / 100
-    const contractPriceTax = Number((contractPriceNoTax * (1 + contractTaxRate)).toFixed(2))
+    const contractTaxRate = randomNumber(9, 13, 0) // 税率百分数（如 13 表示 13%）
+    const contractPriceTax = Number((contractPriceNoTax * (1 + contractTaxRate / 100)).toFixed(2))
     const provisionalSumTax = randomNumber(0, contractPriceTax * 0.1)
 
     data.push({
@@ -1021,6 +1023,7 @@ const handleExport = () => {
     exportColumns.forEach(col => {
       row[col.label] = col.prop === 'index' ? index + 1 : item[col.prop]
     })
+    row['总包合同税率'] = `${item.contractTaxRate}%`
     return row
   })
   const sheet = utils.json_to_sheet(rows, { header: exportColumns.map(c => c.label) })
