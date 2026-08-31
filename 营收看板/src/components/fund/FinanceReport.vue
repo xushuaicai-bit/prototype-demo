@@ -219,12 +219,12 @@
           <el-table-column v-if="visibleColumns.includes('projectName')" prop="projectName" label="项目名称" width="150" />
           <el-table-column v-if="visibleColumns.includes('ownerUnitName')" prop="ownerUnitName" label="业主单位名称" width="140" />
 
-          <el-table-column v-if="['customerType', 'customerNature', 'basicUnit', 'accountingOrg', 'originalSector', 'regionMarket', 'implementationMode', 'subcontractMode'].some(p => visibleColumns.includes(p))" label="业务信息">
+          <el-table-column v-if="['customerType', 'customerNature', 'basicUnit', 'accountingOrg', 'isCTPGProject', 'regionMarket', 'implementationMode', 'subcontractMode'].some(p => visibleColumns.includes(p))" label="业务信息">
             <el-table-column v-if="visibleColumns.includes('customerType')" prop="customerType" label="客户情况" width="100" />
             <el-table-column v-if="visibleColumns.includes('customerNature')" prop="customerNature" label="客户性质" width="100" />
             <el-table-column v-if="visibleColumns.includes('basicUnit')" prop="basicUnit" label="所属基层单位" width="120" />
             <el-table-column v-if="visibleColumns.includes('accountingOrg')" prop="accountingOrg" label="核算组织" width="120" />
-            <el-table-column v-if="visibleColumns.includes('originalSector')" prop="originalSector" label="原所属板块" width="100" />
+            <el-table-column v-if="visibleColumns.includes('isCTPGProject')" prop="isCTPGProject" label="是否城投排管项目" width="130" />
             <el-table-column v-if="visibleColumns.includes('regionMarket')" prop="regionMarket" label="所属区域市场" width="100" />
             <el-table-column v-if="visibleColumns.includes('implementationMode')" prop="implementationMode" label="项目实施模式" width="100" />
             <el-table-column v-if="visibleColumns.includes('subcontractMode')" prop="subcontractMode" label="分包模式" width="100" />
@@ -251,6 +251,24 @@
             <el-table-column v-if="visibleColumns.includes('completionDate')" prop="completionDate" label="竣工时间" width="100" />
           </el-table-column>
 
+          <el-table-column v-if="['settlementStatus', 'settlementPriceTax', 'settlementPriceNoTax', 'settlementDate', 'projectManager', 'projectLeader'].some(p => visibleColumns.includes(p))" label="业务信息-经管部">
+            <el-table-column v-if="visibleColumns.includes('settlementStatus')" prop="settlementStatus" label="项目结算状态" width="120" />
+            <el-table-column v-if="visibleColumns.includes('settlementPriceTax')" prop="settlementPriceTax" label="结算审定价（含税）" width="140" />
+            <el-table-column v-if="visibleColumns.includes('settlementPriceNoTax')" prop="settlementPriceNoTax" label="结算审定价（不含税）" width="140" />
+            <el-table-column v-if="visibleColumns.includes('settlementDate')" prop="settlementDate" label="结算完成日期" width="120" />
+            <el-table-column v-if="visibleColumns.includes('projectManager')" prop="projectManager" label="项目经理" width="100" />
+            <el-table-column v-if="visibleColumns.includes('projectLeader')" prop="projectLeader" label="项目负责人" width="100" />
+          </el-table-column>
+
+          <el-table-column v-if="['cumulativeRevenue2025', 'cumulativeOutput2025', 'carryForwardRevenue2026', 'planRevenue2026', 'planAdjustment2026', 'adjustedPlanNoTax'].some(p => visibleColumns.includes(p))" label="营收数据-工程部">
+            <el-table-column v-if="visibleColumns.includes('cumulativeRevenue2025')" prop="cumulativeRevenue2025" label="至2025年末开累总包营收（内部）" width="180" />
+            <el-table-column v-if="visibleColumns.includes('cumulativeOutput2025')" prop="cumulativeOutput2025" label="至2025年末开累总包产值（内部）" width="180" />
+            <el-table-column v-if="visibleColumns.includes('carryForwardRevenue2026')" prop="carryForwardRevenue2026" label="结转至2026年以后营收（内部）" width="180" />
+            <el-table-column v-if="visibleColumns.includes('planRevenue2026')" prop="planRevenue2026" label="2026年计划完成营收（内部）" width="160" />
+            <el-table-column v-if="visibleColumns.includes('planAdjustment2026')" prop="planAdjustment2026" label="2026年计划调整数" width="140" />
+            <el-table-column v-if="visibleColumns.includes('adjustedPlanNoTax')" prop="adjustedPlanNoTax" label="调整后计划（不含税）" width="140" />
+          </el-table-column>
+
           <el-table-column v-if="['planRevenue2027', 'completedRevenue2026', 'cumulativeRevenue', 'completedOutput2026', 'cumulativeOutput', 'lastOutput', 'approvalDate', 'remainingPlan2026', 'contractCompletionRate', 'carryForwardRevenue2027', 'carryForwardPlanRevenue2027', 'reportedRevenue2025', 'reportedRevenue2026', 'cumulativeReportedRevenue', 'internalNotReportedRevenue', 'internalNotReportedOutput', 'reportedOutput2026', 'cumulativeReportedOutput', 'contractAsset'].some(p => visibleColumns.includes(p))" label="营收数据">
             <el-table-column v-if="visibleColumns.includes('planRevenue2027')" prop="planRevenue2027" label="2027年计划完成营收（内部）" width="160" />
             <el-table-column v-if="visibleColumns.includes('completedRevenue2026')" prop="completedRevenue2026" label="2026年完成总包营收（内部）" width="160" />
@@ -271,24 +289,6 @@
             <el-table-column v-if="visibleColumns.includes('reportedOutput2026')" prop="reportedOutput2026" label="2026年上报集团产值" width="140" />
             <el-table-column v-if="visibleColumns.includes('cumulativeReportedOutput')" prop="cumulativeReportedOutput" label="上报集团开累产值" width="140" />
             <el-table-column v-if="visibleColumns.includes('contractAsset')" prop="contractAsset" label="合同资产" width="100" />
-          </el-table-column>
-
-          <el-table-column v-if="['settlementStatus', 'settlementPriceTax', 'settlementPriceNoTax', 'settlementDate', 'projectManager', 'projectLeader'].some(p => visibleColumns.includes(p))" label="业务信息-经管部">
-            <el-table-column v-if="visibleColumns.includes('settlementStatus')" prop="settlementStatus" label="项目结算状态" width="120" />
-            <el-table-column v-if="visibleColumns.includes('settlementPriceTax')" prop="settlementPriceTax" label="结算审定价（含税）" width="140" />
-            <el-table-column v-if="visibleColumns.includes('settlementPriceNoTax')" prop="settlementPriceNoTax" label="结算审定价（不含税）" width="140" />
-            <el-table-column v-if="visibleColumns.includes('settlementDate')" prop="settlementDate" label="结算完成日期" width="120" />
-            <el-table-column v-if="visibleColumns.includes('projectManager')" prop="projectManager" label="项目经理" width="100" />
-            <el-table-column v-if="visibleColumns.includes('projectLeader')" prop="projectLeader" label="项目负责人" width="100" />
-          </el-table-column>
-
-          <el-table-column v-if="['cumulativeRevenue2025', 'cumulativeOutput2025', 'carryForwardRevenue2026', 'planRevenue2026', 'planAdjustment2026', 'adjustedPlanNoTax'].some(p => visibleColumns.includes(p))" label="营收数据-工程部">
-            <el-table-column v-if="visibleColumns.includes('cumulativeRevenue2025')" prop="cumulativeRevenue2025" label="至2025年末开累总包营收（内部）" width="180" />
-            <el-table-column v-if="visibleColumns.includes('cumulativeOutput2025')" prop="cumulativeOutput2025" label="至2025年末开累总包产值（内部）" width="180" />
-            <el-table-column v-if="visibleColumns.includes('carryForwardRevenue2026')" prop="carryForwardRevenue2026" label="结转至2026年以后营收（内部）" width="180" />
-            <el-table-column v-if="visibleColumns.includes('planRevenue2026')" prop="planRevenue2026" label="2026年计划完成营收（内部）" width="160" />
-            <el-table-column v-if="visibleColumns.includes('planAdjustment2026')" prop="planAdjustment2026" label="2026年计划调整数" width="140" />
-            <el-table-column v-if="visibleColumns.includes('adjustedPlanNoTax')" prop="adjustedPlanNoTax" label="调整后计划（不含税）" width="140" />
           </el-table-column>
 
           <el-table-column v-if="['targetProfitMarginNoTax', 'targetProfitMarginTax'].some(p => visibleColumns.includes(p))" label="利润数据-经管部">
@@ -395,7 +395,7 @@ const projectStatusOptions = [
 
 const customerTypes = ['大客户', '一般客户']
 const customerNatures = ['政府', '国企', '民企', '外资']
-const originalSectors = ['基础设施', '房地产', '环保', '能源']
+const isCTPGOptions = ['是', '否']
 const regionMarkets = ['华东', '华北', '华南', '西南', '西北']
 const implementationModes = ['EPC', '总承包', '专业分包', '劳务分包']
 const subcontractModes = ['总分包', '专业分包', '劳务分包']
@@ -416,7 +416,7 @@ const allColumnsFlat = [
   { prop: 'customerNature', label: '客户性质', width: 100 },
   { prop: 'basicUnit', label: '所属基层单位', width: 120 },
   { prop: 'accountingOrg', label: '核算组织', width: 120 },
-  { prop: 'originalSector', label: '原所属板块', width: 100 },
+  { prop: 'isCTPGProject', label: '是否城投排管项目', width: 130 },
   { prop: 'regionMarket', label: '所属区域市场', width: 100 },
   { prop: 'implementationMode', label: '项目实施模式', width: 100 },
   { prop: 'subcontractMode', label: '分包模式', width: 100 },
@@ -520,12 +520,12 @@ const activeTab = ref('transfer')
 const groupedColumns = computed(() => {
   const groups = {
     '基础信息': allColumnsFlat.filter(c => ['index', 'productionProjectNo', 'accountingProjectNo', 'projectName', 'ownerUnitName'].includes(c.prop)),
-    '业务信息': allColumnsFlat.filter(c => ['customerType', 'customerNature', 'basicUnit', 'accountingOrg', 'originalSector', 'regionMarket', 'implementationMode', 'subcontractMode'].includes(c.prop)),
+    '业务信息': allColumnsFlat.filter(c => ['customerType', 'customerNature', 'basicUnit', 'accountingOrg', 'isCTPGProject', 'regionMarket', 'implementationMode', 'subcontractMode'].includes(c.prop)),
     '业务信息-市场部': allColumnsFlat.filter(c => ['cityEnvLevel1', 'cityEnvLevel2', 'cityEnvLevel3', 'provinceCity', 'cityDistrict', 'bidDate', 'contractSignDate', 'contractPriceTax', 'provisionalSumTax', 'contractPriceNoTax', 'contractTaxRate'].includes(c.prop)),
     '业务信息-工程部': allColumnsFlat.filter(c => ['startDate', 'projectStatus', 'currentStatusStartDate', 'completionDate'].includes(c.prop)),
-    '营收数据': allColumnsFlat.filter(c => ['planRevenue2027', 'completedRevenue2026', 'cumulativeRevenue', 'completedOutput2026', 'cumulativeOutput', 'lastOutput', 'approvalDate', 'remainingPlan2026', 'contractCompletionRate', 'carryForwardRevenue2027', 'carryForwardPlanRevenue2027', 'reportedRevenue2025', 'reportedRevenue2026', 'cumulativeReportedRevenue', 'internalNotReportedRevenue', 'internalNotReportedOutput', 'reportedOutput2026', 'cumulativeReportedOutput', 'contractAsset'].includes(c.prop)),
     '业务信息-经管部': allColumnsFlat.filter(c => ['settlementStatus', 'settlementPriceTax', 'settlementPriceNoTax', 'settlementDate', 'projectManager', 'projectLeader'].includes(c.prop)),
     '营收数据-工程部': allColumnsFlat.filter(c => ['cumulativeRevenue2025', 'cumulativeOutput2025', 'carryForwardRevenue2026', 'planRevenue2026', 'planAdjustment2026', 'adjustedPlanNoTax'].includes(c.prop)),
+    '营收数据': allColumnsFlat.filter(c => ['planRevenue2027', 'completedRevenue2026', 'cumulativeRevenue', 'completedOutput2026', 'cumulativeOutput', 'lastOutput', 'approvalDate', 'remainingPlan2026', 'contractCompletionRate', 'carryForwardRevenue2027', 'carryForwardPlanRevenue2027', 'reportedRevenue2025', 'reportedRevenue2026', 'cumulativeReportedRevenue', 'internalNotReportedRevenue', 'internalNotReportedOutput', 'reportedOutput2026', 'cumulativeReportedOutput', 'contractAsset'].includes(c.prop)),
     '利润数据-经管部': allColumnsFlat.filter(c => ['targetProfitMarginNoTax', 'targetProfitMarginTax'].includes(c.prop)),
     '利润数据': allColumnsFlat.filter(c => ['grossProfitNotReported', 'targetProfit', 'profitMargin', 'actualProfit', 'currentProfitImpact', 'carryForwardGrossProfit2026', 'accruedGrossProfit2025', 'realizedProfit2026', 'cumulativeAccruedGrossProfit', 'planGrossProfit2026', 'carryForwardTargetGrossProfit2027', 'accruedGrossProfitGroup2025', 'realizedProfitGroup2026', 'cumulativeAccruedGrossProfitGroup', 'remainingPlanGrossProfit2026'].includes(c.prop)),
     '成本数据': allColumnsFlat.filter(c => ['rdCost2025', 'rdCostJan', 'cumulativeRdCost', 'bookedCost', 'carriedCost', 'projectInventory', 'rdPlusCarriedCost', 'estimatedCost', 'subcontractComparison', 'taxAmount', 'accruedProfit', 'grossMarginInProgress', 'grossMarginDeviation'].includes(c.prop)),
@@ -653,7 +653,7 @@ const generateMockData = () => {
       customerNature: randomItem(customerNatures),
       basicUnit: basicUnits[i % basicUnits.length],
       accountingOrg: `${['华东', '华北', '华南'][i % 3]}区域核算中心`,
-      originalSector: randomItem(originalSectors),
+      isCTPGProject: randomItem(isCTPGOptions),
       regionMarket: randomItem(regionMarkets),
       implementationMode: randomItem(implementationModes),
       subcontractMode: randomItem(subcontractModes),
