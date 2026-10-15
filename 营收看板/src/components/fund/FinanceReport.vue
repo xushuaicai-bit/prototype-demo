@@ -218,6 +218,7 @@
           <el-table-column v-if="visibleColumns.includes('accountingProjectNo')" prop="accountingProjectNo" label="核算项目编号" width="120" />
           <el-table-column v-if="visibleColumns.includes('projectName')" prop="projectName" label="项目名称" width="150" />
           <el-table-column v-if="visibleColumns.includes('ownerUnitName')" prop="ownerUnitName" label="业主单位名称" width="140" />
+          <el-table-column v-if="visibleColumns.includes('isCollaborativeProject')" prop="isCollaborativeProject" label="是否协同项目" width="120" />
 
           <el-table-column v-if="['customerType', 'customerNature', 'basicUnit', 'accountingOrg', 'isCTPGProject', 'regionMarket', 'implementationMode', 'subcontractMode'].some(p => visibleColumns.includes(p))" label="业务信息">
             <el-table-column v-if="visibleColumns.includes('customerType')" prop="customerType" label="客户情况" width="100" />
@@ -271,23 +272,26 @@
             <el-table-column v-if="visibleColumns.includes('adjustedPlanNoTax')" prop="adjustedPlanNoTax" label="调整后计划（不含税）" width="140" />
           </el-table-column>
 
-          <el-table-column v-if="['planRevenue2027', 'completedRevenue2026', 'cumulativeRevenue', 'completedOutput2026', 'cumulativeOutput', 'lastOutput', 'approvalDate', 'remainingPlan2026', 'contractCompletionRate', 'carryForwardRevenue2027', 'carryForwardPlanRevenue2027', 'reportedRevenue2025', 'reportedRevenue2026', 'cumulativeReportedRevenue', 'internalNotReportedRevenue', 'internalNotReportedOutput', 'reportedOutput2026', 'cumulativeReportedOutput', 'contractAsset'].some(p => visibleColumns.includes(p))" label="营收数据">
+          <el-table-column v-if="['planRevenue2027', 'monthlyCompletedRevenue', 'completedRevenue2026', 'cumulativeRevenue', 'monthlyCompletedOutput', 'completedOutput2026', 'cumulativeOutput', 'approvalDate', 'remainingPlan2026', 'contractCompletionRate', 'carryForwardRevenue2027', 'carryForwardPlanRevenue2027', 'reportedRevenue2025', 'monthlyReportedRevenue', 'reportedRevenue2026', 'cumulativeReportedRevenue', 'internalNotReportedRevenue', 'internalNotReportedOutput', 'monthlyReportedOutput', 'reportedOutput2026', 'cumulativeReportedOutput', 'contractAsset'].some(p => visibleColumns.includes(p))" label="营收数据">
             <el-table-column v-if="visibleColumns.includes('planRevenue2027')" prop="planRevenue2027" label="2027年计划完成营收（内部）" width="160" />
+            <el-table-column v-if="visibleColumns.includes('monthlyCompletedRevenue')" prop="monthlyCompletedRevenue" :label="`${currentMonth}月完成总包营收（内部）`" width="170" />
             <el-table-column v-if="visibleColumns.includes('completedRevenue2026')" prop="completedRevenue2026" label="2026年完成总包营收（内部）" width="160" />
             <el-table-column v-if="visibleColumns.includes('cumulativeRevenue')" prop="cumulativeRevenue" label="开累总包营收（内部）" width="140" />
+            <el-table-column v-if="visibleColumns.includes('monthlyCompletedOutput')" prop="monthlyCompletedOutput" :label="`${currentMonth}月完成总包产值（内部）`" width="170" />
             <el-table-column v-if="visibleColumns.includes('completedOutput2026')" prop="completedOutput2026" label="2026年完成总包产值（内部）" width="160" />
             <el-table-column v-if="visibleColumns.includes('cumulativeOutput')" prop="cumulativeOutput" label="开累总包产值（内部）" width="140" />
-            <el-table-column v-if="visibleColumns.includes('lastOutput')" prop="lastOutput" label="最后一次总包产值" width="120" />
             <el-table-column v-if="visibleColumns.includes('approvalDate')" prop="approvalDate" label="批复时间" width="100" />
             <el-table-column v-if="visibleColumns.includes('remainingPlan2026')" prop="remainingPlan2026" label="26年剩余计划" width="120" />
             <el-table-column v-if="visibleColumns.includes('contractCompletionRate')" prop="contractCompletionRate" label="开累完成合同百分比" width="140" />
             <el-table-column v-if="visibleColumns.includes('carryForwardRevenue2027')" prop="carryForwardRevenue2027" label="结转至2027年及以后营收（内部）" width="180" />
             <el-table-column v-if="visibleColumns.includes('carryForwardPlanRevenue2027')" prop="carryForwardPlanRevenue2027" label="结转至2027年及以后计划营收" width="180" />
             <el-table-column v-if="visibleColumns.includes('reportedRevenue2025')" prop="reportedRevenue2025" label="至2025年上报集团开累营收" width="160" />
+            <el-table-column v-if="visibleColumns.includes('monthlyReportedRevenue')" prop="monthlyReportedRevenue" :label="`${currentMonth}月上报集团营收`" width="150" />
             <el-table-column v-if="visibleColumns.includes('reportedRevenue2026')" prop="reportedRevenue2026" label="2026年上报集团营收" width="140" />
             <el-table-column v-if="visibleColumns.includes('cumulativeReportedRevenue')" prop="cumulativeReportedRevenue" label="上报集团开累营收" width="140" />
             <el-table-column v-if="visibleColumns.includes('internalNotReportedRevenue')" prop="internalNotReportedRevenue" label="已报内部未上报集团营收" width="160" />
             <el-table-column v-if="visibleColumns.includes('internalNotReportedOutput')" prop="internalNotReportedOutput" label="已报内部未上报集团产值" width="160" />
+            <el-table-column v-if="visibleColumns.includes('monthlyReportedOutput')" prop="monthlyReportedOutput" :label="`${currentMonth}月上报集团产值`" width="150" />
             <el-table-column v-if="visibleColumns.includes('reportedOutput2026')" prop="reportedOutput2026" label="2026年上报集团产值" width="140" />
             <el-table-column v-if="visibleColumns.includes('cumulativeReportedOutput')" prop="cumulativeReportedOutput" label="上报集团开累产值" width="140" />
             <el-table-column v-if="visibleColumns.includes('contractAsset')" prop="contractAsset" label="合同资产" width="100" />
@@ -332,12 +336,13 @@
             <el-table-column v-if="visibleColumns.includes('grossMarginDeviation')" prop="grossMarginDeviation" label="毛利率偏差" width="120" />
           </el-table-column>
 
-          <el-table-column v-if="['safetyFeeRate', 'specialReserveBeginning', 'specialReserveJan提取', 'cumulativeSafetyFee提取', 'specialReserveJan使用', 'cumulativeSpecialReserve使用', 'specialReserveBalance'].some(p => visibleColumns.includes(p))" label="专项储备">
+          <el-table-column v-if="['safetyFeeRate', 'specialReserveBeginning', 'specialReserveJan提取', 'cumulativeSafetyFee提取', 'specialReserveJan使用', 'cumulativeSpecialReserve使用', 'specialReserveBeginningUsage', 'specialReserveBalance'].some(p => visibleColumns.includes(p))" label="专项储备">
             <el-table-column v-if="visibleColumns.includes('safetyFeeRate')" prop="safetyFeeRate" label="安措费计提比率" width="120" />
             <el-table-column v-if="visibleColumns.includes('specialReserveBeginning')" prop="specialReserveBeginning" label="专项储备期初提取数" width="140" />
             <el-table-column v-if="visibleColumns.includes('specialReserveJan提取')" prop="specialReserveJan提取" label="1月提取数" width="100" />
             <el-table-column v-if="visibleColumns.includes('cumulativeSafetyFee提取')" prop="cumulativeSafetyFee提取" label="安全生产费累计提取数" width="140" />
             <el-table-column v-if="visibleColumns.includes('specialReserveJan使用')" prop="specialReserveJan使用" label="1月使用数" width="100" />
+            <el-table-column v-if="visibleColumns.includes('specialReserveBeginningUsage')" prop="specialReserveBeginningUsage" label="专项储备期初使用数" width="140" />
             <el-table-column v-if="visibleColumns.includes('cumulativeSpecialReserve使用')" prop="cumulativeSpecialReserve使用" label="专项储备累计使用数" width="140" />
             <el-table-column v-if="visibleColumns.includes('specialReserveBalance')" prop="specialReserveBalance" label="专项储备结存数" width="120" />
           </el-table-column>
@@ -408,12 +413,16 @@ const provinceCities = ['上海市', '江苏省', '浙江省', '安徽省', '山
 const cityDistricts = ['黄浦区', '浦东新区', '杭州市', '南京市', '苏州市']
 const settlementStatuses = ['未结算', '结算中', '已结算']
 
+// 当前月份（用于动态列标题，如"10月完成总包营收（内部）"）
+const currentMonth = new Date().getMonth() + 1
+
 const allColumnsFlat = [
   { prop: 'index', label: '序号', width: 60, required: true },
   { prop: 'productionProjectNo', label: '生产项目编号', width: 120, required: true },
   { prop: 'accountingProjectNo', label: '核算项目编号', width: 120, required: true },
   { prop: 'projectName', label: '项目名称', width: 150, required: true },
   { prop: 'ownerUnitName', label: '业主单位名称', width: 140 },
+  { prop: 'isCollaborativeProject', label: '是否协同项目', width: 120 },
   { prop: 'customerType', label: '客户情况', width: 100 },
   { prop: 'customerNature', label: '客户性质', width: 100 },
   { prop: 'basicUnit', label: '所属基层单位', width: 120 },
@@ -438,21 +447,24 @@ const allColumnsFlat = [
   { prop: 'currentStatusStartDate', label: '当前状态开始时间', width: 140 },
   { prop: 'completionDate', label: '竣工时间', width: 100 },
   { prop: 'planRevenue2027', label: '2027年计划完成营收（内部）', width: 160 },
+  { prop: 'monthlyCompletedRevenue', label: `${currentMonth}月完成总包营收（内部）`, width: 170 },
   { prop: 'completedRevenue2026', label: '2026年完成总包营收（内部）', width: 160 },
   { prop: 'cumulativeRevenue', label: '开累总包营收（内部）', width: 140 },
+  { prop: 'monthlyCompletedOutput', label: `${currentMonth}月完成总包产值（内部）`, width: 170 },
   { prop: 'completedOutput2026', label: '2026年完成总包产值（内部）', width: 160 },
   { prop: 'cumulativeOutput', label: '开累总包产值（内部）', width: 140 },
-  { prop: 'lastOutput', label: '最后一次总包产值', width: 120 },
   { prop: 'approvalDate', label: '批复时间', width: 100 },
   { prop: 'remainingPlan2026', label: '26年剩余计划', width: 120 },
   { prop: 'contractCompletionRate', label: '开累完成合同百分比', width: 140 },
   { prop: 'carryForwardRevenue2027', label: '结转至2027年及以后营收（内部）', width: 180 },
   { prop: 'carryForwardPlanRevenue2027', label: '结转至2027年及以后计划营收', width: 180 },
   { prop: 'reportedRevenue2025', label: '至2025年上报集团开累营收', width: 160 },
+  { prop: 'monthlyReportedRevenue', label: `${currentMonth}月上报集团营收`, width: 150 },
   { prop: 'reportedRevenue2026', label: '2026年上报集团营收', width: 140 },
   { prop: 'cumulativeReportedRevenue', label: '上报集团开累营收', width: 140 },
   { prop: 'internalNotReportedRevenue', label: '已报内部未上报集团营收', width: 160 },
   { prop: 'internalNotReportedOutput', label: '已报内部未上报集团产值', width: 160 },
+  { prop: 'monthlyReportedOutput', label: `${currentMonth}月上报集团产值`, width: 150 },
   { prop: 'reportedOutput2026', label: '2026年上报集团产值', width: 140 },
   { prop: 'cumulativeReportedOutput', label: '上报集团开累产值', width: 140 },
   { prop: 'contractAsset', label: '合同资产', width: 100 },
@@ -503,6 +515,7 @@ const allColumnsFlat = [
   { prop: 'specialReserveJan提取', label: '1月提取数', width: 100 },
   { prop: 'cumulativeSafetyFee提取', label: '安全生产费累计提取数', width: 140 },
   { prop: 'specialReserveJan使用', label: '1月使用数', width: 100 },
+  { prop: 'specialReserveBeginningUsage', label: '专项储备期初使用数', width: 140 },
   { prop: 'cumulativeSpecialReserve使用', label: '专项储备累计使用数', width: 140 },
   { prop: 'specialReserveBalance', label: '专项储备结存数', width: 120 },
   { prop: 'invoicedThisYear', label: '本年度开票（含税）', width: 140 },
@@ -521,17 +534,17 @@ const activeTab = ref('transfer')
 
 const groupedColumns = computed(() => {
   const groups = {
-    '基础信息': allColumnsFlat.filter(c => ['index', 'productionProjectNo', 'accountingProjectNo', 'projectName', 'ownerUnitName'].includes(c.prop)),
+    '基础信息': allColumnsFlat.filter(c => ['index', 'productionProjectNo', 'accountingProjectNo', 'projectName', 'ownerUnitName', 'isCollaborativeProject'].includes(c.prop)),
     '业务信息': allColumnsFlat.filter(c => ['customerType', 'customerNature', 'basicUnit', 'accountingOrg', 'isCTPGProject', 'regionMarket', 'implementationMode', 'subcontractMode'].includes(c.prop)),
     '业务信息-市场部': allColumnsFlat.filter(c => ['cityEnvLevel1', 'cityEnvLevel2', 'cityEnvLevel3', 'provinceCity', 'cityDistrict', 'bidDate', 'contractSignDate', 'contractPriceTax', 'provisionalSumTax', 'contractPriceNoTax', 'contractTaxRate'].includes(c.prop)),
     '业务信息-工程部': allColumnsFlat.filter(c => ['startDate', 'projectStatus', 'currentStatusStartDate', 'completionDate'].includes(c.prop)),
     '业务信息-经管部': allColumnsFlat.filter(c => ['settlementStatus', 'settlementPriceTax', 'settlementPriceNoTax', 'settlementDate', 'projectManager', 'projectLeader'].includes(c.prop)),
     '营收数据-工程部': allColumnsFlat.filter(c => ['cumulativeRevenue2025', 'cumulativeOutput2025', 'carryForwardRevenue2026', 'planRevenue2026', 'planAdjustment2026', 'adjustedPlanNoTax'].includes(c.prop)),
-    '营收数据': allColumnsFlat.filter(c => ['planRevenue2027', 'completedRevenue2026', 'cumulativeRevenue', 'completedOutput2026', 'cumulativeOutput', 'lastOutput', 'approvalDate', 'remainingPlan2026', 'contractCompletionRate', 'carryForwardRevenue2027', 'carryForwardPlanRevenue2027', 'reportedRevenue2025', 'reportedRevenue2026', 'cumulativeReportedRevenue', 'internalNotReportedRevenue', 'internalNotReportedOutput', 'reportedOutput2026', 'cumulativeReportedOutput', 'contractAsset'].includes(c.prop)),
+    '营收数据': allColumnsFlat.filter(c => ['planRevenue2027', 'monthlyCompletedRevenue', 'completedRevenue2026', 'cumulativeRevenue', 'monthlyCompletedOutput', 'completedOutput2026', 'cumulativeOutput', 'approvalDate', 'remainingPlan2026', 'contractCompletionRate', 'carryForwardRevenue2027', 'carryForwardPlanRevenue2027', 'reportedRevenue2025', 'monthlyReportedRevenue', 'reportedRevenue2026', 'cumulativeReportedRevenue', 'internalNotReportedRevenue', 'internalNotReportedOutput', 'monthlyReportedOutput', 'reportedOutput2026', 'cumulativeReportedOutput', 'contractAsset'].includes(c.prop)),
     '利润数据-经管部': allColumnsFlat.filter(c => ['targetProfitMarginNoTax', 'targetProfitMarginTax'].includes(c.prop)),
     '利润数据': allColumnsFlat.filter(c => ['grossProfitNotReported', 'targetProfit', 'profitMargin', 'actualProfit', 'currentProfitImpact', 'carryForwardGrossProfit2026', 'accruedGrossProfit2025', 'realizedProfit2026', 'cumulativeAccruedGrossProfit', 'planGrossProfit2026', 'carryForwardTargetGrossProfit2027', 'accruedGrossProfitGroup2025', 'realizedProfitGroup2026', 'cumulativeAccruedGrossProfitGroup', 'remainingPlanGrossProfit2026'].includes(c.prop)),
     '成本数据': allColumnsFlat.filter(c => ['rdCost2025', 'rdCostJan', 'cumulativeRdCost', 'bookedCost', 'carriedCost', 'projectInventory', 'rdPlusCarriedCost', 'estimatedCost', 'subcontractComparison', 'taxAmount', 'accruedProfit', 'grossMarginInProgress', 'grossMarginDeviation'].includes(c.prop)),
-    '专项储备': allColumnsFlat.filter(c => ['safetyFeeRate', 'specialReserveBeginning', 'specialReserveJan提取', 'cumulativeSafetyFee提取', 'specialReserveJan使用', 'cumulativeSpecialReserve使用', 'specialReserveBalance'].includes(c.prop)),
+    '专项储备': allColumnsFlat.filter(c => ['safetyFeeRate', 'specialReserveBeginning', 'specialReserveJan提取', 'cumulativeSafetyFee提取', 'specialReserveJan使用', 'cumulativeSpecialReserve使用', 'specialReserveBeginningUsage', 'specialReserveBalance'].includes(c.prop)),
     '资金数据': allColumnsFlat.filter(c => ['invoicedThisYear', 'cumulativeInvoiced', 'lastInvoiceDate', 'receivedThisYear', 'cumulativeReceived', 'invoicedNotReceived'].includes(c.prop))
   }
   return Object.entries(groups).map(([group, columns]) => ({ group, columns }))
@@ -651,6 +664,7 @@ const generateMockData = () => {
       accountingProjectNo: `HS${String(i).padStart(4, '0')}`,
       projectName: `项目${['道路改造', '污水治理', '桥梁建设', '河道整治', '绿化工程'][i % 5]}${i}标段`,
       ownerUnitName: `${['上海市政', '江苏城建', '浙江建工', '安徽建设', '山东基建'][i % 5]}有限公司`,
+      isCollaborativeProject: randomItem(['是', '否']),
       customerType: randomItem(customerTypes),
       customerNature: randomItem(customerNatures),
       basicUnit: basicUnits[i % basicUnits.length],
@@ -675,21 +689,24 @@ const generateMockData = () => {
       currentStatusStartDate: randomDate('2024-06-01', '2026-05-01'),
       completionDate: i % 3 === 0 ? randomDate('2025-01-01', '2026-05-01') : '',
       planRevenue2027: randomNumber(0, 30000),
+      monthlyCompletedRevenue: randomNumber(0, contractPriceNoTax * 0.08),
       completedRevenue2026: randomNumber(0, contractPriceNoTax * 0.8),
       cumulativeRevenue: i % 8 === 0 ? 0 : randomNumber(1, contractPriceNoTax),
+      monthlyCompletedOutput: randomNumber(0, contractPriceNoTax * 0.07),
       completedOutput2026: randomNumber(0, contractPriceNoTax * 0.7),
       cumulativeOutput: randomNumber(0, contractPriceNoTax),
-      lastOutput: randomNumber(0, 5000),
       approvalDate: randomDate('2026-01-01', '2026-05-21'),
       remainingPlan2026: randomNumber(0, 10000),
       contractCompletionRate: randomNumber(0, 100, 1),
       carryForwardRevenue2027: randomNumber(0, 20000),
       carryForwardPlanRevenue2027: randomNumber(0, 15000),
       reportedRevenue2025: randomNumber(0, 20000),
+      monthlyReportedRevenue: randomNumber(0, 1500),
       reportedRevenue2026: randomNumber(0, 15000),
       cumulativeReportedRevenue: randomNumber(0, 35000),
       internalNotReportedRevenue: randomNumber(0, 5000),
       internalNotReportedOutput: randomNumber(0, 5000),
+      monthlyReportedOutput: randomNumber(0, 1200),
       reportedOutput2026: randomNumber(0, 12000),
       cumulativeReportedOutput: randomNumber(0, 30000),
       contractAsset: randomNumber(0, 8000),
@@ -741,6 +758,7 @@ const generateMockData = () => {
       cumulativeSafetyFee提取: randomNumber(0, 1500),
       specialReserveJan使用: randomNumber(0, 150),
       cumulativeSpecialReserve使用: randomNumber(0, 1200),
+      specialReserveBeginningUsage: randomNumber(0, 300),
       specialReserveBalance: i % 7 === 0 ? randomNumber(-300, -10) : randomNumber(0, 800),
       invoicedThisYear: randomNumber(0, 15000),
       cumulativeInvoiced: randomNumber(0, contractPriceTax),

@@ -9,10 +9,6 @@
         <span class="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">单位：万元</span>
       </div>
       <div class="header-actions">
-        <el-select v-model="selectedScheme" placeholder="选择筛选方案" class="scheme-select" clearable @change="loadScheme">
-          <el-option v-for="scheme in savedSchemes" :key="scheme.name" :label="scheme.name" :value="scheme.name" />
-        </el-select>
-        <el-button @click="showSaveDialog = true" size="small">保存筛选方案</el-button>
         <el-button @click="handleExport" type="warning" size="small">导出Excel</el-button>
       </div>
     </div>
@@ -127,14 +123,6 @@
           </el-table-column>
         </el-table>
     </div>
-
-    <el-dialog v-model="showSaveDialog" title="保存筛选方案" width="400px">
-      <el-input v-model="schemeName" placeholder="请输入方案名称" />
-      <template #footer>
-        <el-button @click="showSaveDialog = false">取消</el-button>
-        <el-button type="primary" @click="saveScheme">保存</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -277,57 +265,7 @@ const handleReset = () => {
     category3: [],
     projectType: []
   }
-  selectedScheme.value = ''
 }
-
-// ============================ 保存筛选方案 ============================
-
-const showSaveDialog = ref(false)
-const schemeName = ref('')
-const selectedScheme = ref('')
-const savedSchemes = ref([])
-
-const loadSchemes = () => {
-  try {
-    const stored = localStorage.getItem('sectorBusinessFinanceSchemes')
-    if (stored) {
-      savedSchemes.value = JSON.parse(stored)
-    }
-  } catch (e) {
-    savedSchemes.value = []
-  }
-}
-
-const saveScheme = () => {
-  if (!schemeName.value.trim()) {
-    ElMessage.warning('请输入方案名称')
-    return
-  }
-  const scheme = {
-    name: schemeName.value.trim(),
-    filters: JSON.parse(JSON.stringify(filters.value))
-  }
-  const existingIndex = savedSchemes.value.findIndex(s => s.name === scheme.name)
-  if (existingIndex >= 0) {
-    savedSchemes.value[existingIndex] = scheme
-  } else {
-    savedSchemes.value.push(scheme)
-  }
-  localStorage.setItem('sectorBusinessFinanceSchemes', JSON.stringify(savedSchemes.value))
-  ElMessage.success('方案保存成功')
-  showSaveDialog.value = false
-  schemeName.value = ''
-}
-
-const loadScheme = (name) => {
-  if (!name) return
-  const scheme = savedSchemes.value.find(s => s.name === name)
-  if (scheme) {
-    filters.value = JSON.parse(JSON.stringify(scheme.filters))
-  }
-}
-
-loadSchemes()
 
 // ============================ Mock 数据生成 ============================
 
@@ -357,6 +295,7 @@ const generateRawData = () => {
             category2: c2,
             category3: c3,
             projectType: pt,
+            isCTGWater: c3 === '供水' ? Math.random() < 0.6 : false,
             projectCount: Math.floor(randomNumber(1, 20)),
             contractPrice: Number(contractPrice.toFixed(2)),
             internalNotReportedRevenue: randomNumber(0, 5000),
@@ -468,7 +407,29 @@ const sortedFlatData = computed(() => {
     // 按 projectType 固定顺序排列（2025年以前→新接→销项）
     projectTypeOptions.forEach(pt => {
       const item = group.items.find(i => i.projectType === pt)
-      if (item) result.push(item)
+      if (item) {
+        result.push(item)
+
+        // 供水分类下，每个项目类型行后插入"其中：城投供排水"统计行
+        if (group.category3 === '供水') {
+          const ctgItems = group.items.filter(i => i.projectType === pt && i.isCTGWater)
+          const ctgRow = {
+            category1: group.category1,
+            category2: group.category2,
+            category3: group.category3,
+            projectType: '其中：城投供排水',
+            isCTGSub: true
+          }
+          sumFields.forEach(f => {
+            ctgRow[f] = ctgItems.reduce((s, i) => s + (i[f] || 0), 0)
+          })
+          const ctgCount = ctgItems.reduce((s, i) => s + (i.projectCount || 0), 0)
+          ctgRow.averageProfitMargin = ctgCount > 0
+            ? Number((ctgItems.reduce((s, i) => s + (i.averageProfitMargin || 0) * (i.projectCount || 0), 0) / ctgCount).toFixed(1))
+            : 0
+          result.push(ctgRow)
+        }
+      }
     })
 
     // 添加小计行（汇总该三级分类下所有项目类型）
@@ -553,6 +514,7 @@ const spanMethod = ({ row, rowIndex, columnIndex }) => {
 
 const getRowClassName = ({ row }) => {
   if (row.isSubtotal) return 'subtotal-row'
+  if (row.isCTGSub) return 'ctg-sub-row'
   return ''
 }
 
@@ -673,10 +635,6 @@ const handleExport = () => {
   gap: 8px;
 }
 
-.scheme-select {
-  width: 160px;
-}
-
 .filter-panel {
   background: #fff;
   border-radius: 8px;
@@ -730,6 +688,17 @@ const handleExport = () => {
 /* 固定列小计行样式（同步背景色，避免半透明） */
 :deep(.el-table .subtotal-row .el-table-fixed-column--left) {
   background-color: #fff8e1 !important;
+}
+
+/* 城投供排水子行样式 */
+:deep(.el-table .ctg-sub-row td) {
+  background-color: #fef3f2 !important;
+  color: #b91c1c;
+}
+
+/* 固定列城投供排水子行样式（同步背景色，避免半透明） */
+:deep(.el-table .ctg-sub-row .el-table-fixed-column--left) {
+  background-color: #fef3f2 !important;
 }
 
 /* 固定列表头样式（防止白底白字） */

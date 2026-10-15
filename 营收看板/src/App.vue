@@ -38,7 +38,14 @@
           @navigate="handleNavigate"
           @menu-change="handleChildMenuChange"
         />
-        <component 
+        <component
+          v-else-if="currentMenu === '业财分析报表'"
+          :is="fundReportComponent"
+          @drill-down="handleDrillDown"
+          @navigate="handleNavigate"
+          @menu-change="handleChildMenuChange"
+        />
+        <component
           v-else-if="currentViewComponent"
           :is="currentViewComponent" 
           @drill-down="handleDrillDown"
@@ -75,7 +82,6 @@ import UnifiedDashboard from './views/UnifiedDashboard.vue'
 import SafetyDashboard from './views/SafetyDashboard.vue'
 import FinanceReport from './components/fund/FinanceReport.vue'
 import ProjectStatusSummary from './components/fund/ProjectStatusSummary.vue'
-import BranchReport from './components/fund/BranchReport.vue'
 import OutputProjectSummary from './components/fund/OutputProjectSummary.vue'
 import SectorBusinessFinanceSummary from './components/fund/SectorBusinessFinanceSummary.vue'
 
@@ -92,13 +98,18 @@ const viewMap = {
   '技术科研看板': markRaw(TechResearchDashboard),
   '经济管理看板': markRaw(EconomyDashboard),
   '产运看板': markRaw(UnifiedDashboard),
-  '安全子看板': markRaw(SafetyDashboard),
-  '业财统计报表': markRaw(FinanceReport),
-  '按项目状态分类汇总表': markRaw(ProjectStatusSummary),
-  '按分公司分类报表': markRaw(BranchReport),
-  '销项项目汇总': markRaw(OutputProjectSummary),
-  '按项目板块汇总表': markRaw(SectorBusinessFinanceSummary)
+  '安全子看板': markRaw(SafetyDashboard)
 }
+
+// 业财分析报表（资金管理）子报表组件映射
+const fundReportMap = {
+  'finance-report': markRaw(FinanceReport),
+  'project-status-summary': markRaw(ProjectStatusSummary),
+  'sector-business-finance-summary': markRaw(SectorBusinessFinanceSummary),
+  'output-project-summary': markRaw(OutputProjectSummary)
+}
+
+const fundReportComponent = computed(() => fundReportMap[currentSubMenu.value] || fundReportMap['finance-report'])
 
 const currentViewComponent = computed(() => {
   return viewMap[currentMenu.value] || null
@@ -136,7 +147,7 @@ const handleNavigate = (data) => {
       'production': '生产看板',
       'tech': '技术科研看板',
       'market': '市场报表',
-      'finance-report': '业财统计报表'
+      'finance-report': '业财分析报表'
     }
     const targetMenu = menuMap[data.view] || data.view
     if (data.report) {
@@ -147,7 +158,7 @@ const handleNavigate = (data) => {
       currentSubMenu.value = data.filter.report
     } else {
       currentMenu.value = targetMenu
-      currentSubMenu.value = ''
+      currentSubMenu.value = targetMenu === '业财分析报表' ? 'finance-report' : ''
     }
   }
 }
