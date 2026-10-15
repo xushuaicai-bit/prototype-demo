@@ -96,7 +96,6 @@
           <el-table-column prop="reportedGrossProfit2026" label="2026年上报集团毛利" width="140" align="right" sortable="custom">
             <template #default="scope">{{ formatNumber(scope.row.reportedGrossProfit2026) }}</template>
           </el-table-column>
-          <el-table-column prop="reportedProjects" label="上报项目" width="100" align="right" sortable="custom" />
           <el-table-column prop="averageProfitMargin" label="平均利润率" width="100" align="right" sortable="custom">
             <template #default="scope">{{ scope.row.averageProfitMargin.toFixed(1) }}%</template>
           </el-table-column>
@@ -306,7 +305,6 @@ const generateRawData = () => {
             remainingPlan2026: randomNumber(0, 8000),
             realizedProfit2026: Number(randomNumber(0, completedRevenue2026 * 0.15).toFixed(2)),
             reportedGrossProfit2026: randomNumber(0, 3000),
-            reportedProjects: Math.floor(randomNumber(0, 15)),
             averageProfitMargin,
             remainingPlanGrossProfit2026: randomNumber(0, 1500),
             bookedCost: randomNumber(0, contractPrice * 0.7),
@@ -354,7 +352,7 @@ const sumFields = [
   'internalNotReportedRevenue', 'internalNotReportedGrossProfit',
   'carryForwardRevenue2027', 'completedRevenue2026',
   'reportedRevenue2026', 'remainingPlan2026', 'realizedProfit2026',
-  'reportedGrossProfit2026', 'reportedProjects',
+  'reportedGrossProfit2026',
   'remainingPlanGrossProfit2026', 'bookedCost', 'carriedCost',
   'projectInventory', 'invoicedAmount', 'receivedAmount', 'unreceivedAmount'
 ]
@@ -535,7 +533,7 @@ const getSummaries = ({ columns }) => {
     const prop = col.property
     if (prop === 'category1') return '合计'
     if (prop === 'averageProfitMargin') return weightedMargin.toFixed(1) + '%'
-    if (prop === 'projectCount' || prop === 'reportedProjects') return totals[prop].toString()
+    if (prop === 'projectCount') return totals.projectCount.toString()
     if (sumFields.includes(prop)) {
       return formatNumber(totals[prop])
     }
@@ -570,7 +568,6 @@ const handleExport = () => {
     remainingPlan2026: formatNumber(item.remainingPlan2026),
     realizedProfit2026: formatNumber(item.realizedProfit2026),
     reportedGrossProfit2026: formatNumber(item.reportedGrossProfit2026),
-    reportedProjects: item.reportedProjects,
     averageProfitMargin: (item.averageProfitMargin || 0).toFixed(1) + '%',
     remainingPlanGrossProfit2026: formatNumber(item.remainingPlanGrossProfit2026),
     bookedCost: formatNumber(item.bookedCost),
@@ -585,7 +582,7 @@ const handleExport = () => {
     '城市环境一级分类', '城市环境二级分类', '城市环境三级分类', '项目类型',
     '项目数量', '合同价/审定价', '已报内部未上报集团营收', '已报内部未上报集团毛利',
     '结转至2027年及以后内部营收', '2026年完成总包营收（内部）', '2026年上报集团营收',
-    '2026年剩余计划', '2026年内部营收实现利润', '2026年上报集团毛利', '上报项目',
+    '2026年剩余计划', '2026年内部营收实现利润', '2026年上报集团毛利',
     '平均利润率', '2026年剩余计划毛利', '项目已入账成本', '项目已结转成本',
     '项目存货', '项目已开票（含税）', '项目已收款（含税）', '未收款（含税）'
   ]
@@ -597,7 +594,7 @@ const handleExport = () => {
       row.projectCount, row.contractPrice, row.internalNotReportedRevenue,
       row.internalNotReportedGrossProfit, row.carryForwardRevenue2027,
       row.completedRevenue2026, row.reportedRevenue2026, row.remainingPlan2026,
-      row.realizedProfit2026, row.reportedGrossProfit2026, row.reportedProjects,
+      row.realizedProfit2026, row.reportedGrossProfit2026,
       row.averageProfitMargin, row.remainingPlanGrossProfit2026, row.bookedCost,
       row.carriedCost, row.projectInventory, row.invoicedAmount, row.receivedAmount,
       row.unreceivedAmount
